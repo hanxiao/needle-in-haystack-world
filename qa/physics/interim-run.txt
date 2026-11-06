@@ -1,0 +1,118 @@
+
+=== physics audit (interim-robotv2) — http://127.0.0.1:4183/ — 97.8s ===
+PASS  A1 app boots, ready flag set
+      ready=true after 6.6s; room=LIVING ROOM
+PASS  A2 no console errors / page errors
+      0 errors
+PASS  A3 no console warnings
+      0 warnings
+PASS  A4 no failed network requests
+      0 failed
+PASS  A5 runtime errors array empty
+      __APP__.errors = []
+PASS  A6 steady fps >= 50 @1440x900
+      60.0 fps over 2 s (reported 60.0); drawCalls=296
+PASS  A7 draw calls <= 450
+      drawCalls=296 triangles=61788
+PASS  B1 gravity is -9.81 m/s2 on Y
+      gravity = [0, -9.81, 0]
+PASS  B2 fixed timestep is 1/60 s
+      world.timestep = 0.016666668 s (1/60 = 0.016666667)
+PASS  B3 simulation runs at fixed 60 Hz
+      59.94 physics steps/s measured over 2002 ms (120 steps)
+PASS  B4 solver iterations >= 8
+      world.numSolverIterations = 8
+PASS  B5 empirical free-fall g ~= 9.81 m/s2
+      measured g=9.810 m/s2 from dv/dt over 30 steps (v: 0.00 -> -4.91 m/s)
+PASS  B6 max drive speed 0.40 m/s (boost 0.55)
+      normal=0.400 m/s, boost=0.550 m/s
+PASS  B7 heavy furniture (>=20 kg) damping >= 0.25/0.5
+      all 8 heavy bodies >= 0.25/0.5
+PASS  B8 friction in (0,1.2] and restitution in [0,1]
+      228 dynamic colliders; badFriction=0, badRestitution=0
+PASS  B9 heavy furniture colliders friction >= 0.8
+      all 33 heavy colliders >= 0.8
+PASS  B10 every dynamic body has damping > 0
+      171/171 bodies have lin+ang damping > 0
+PASS  B11 objects settle to sleep (>=90%)
+      171/171 dynamic bodies asleep after settle (100%)
+PASS  B12 all body transforms/velocities finite (no NaN)
+      193/193 bodies finite
+PASS  B13 positive finite principal inertia on all dynamic bodies
+      171/171 dynamic bodies have positive finite inertia
+INFO  B14 CCD coverage reported
+      1/171 dynamic bodies have CCD enabled (tunneling checked in G4)
+PASS  B15 joint count sane at rest
+      world.impulseJoints = 0 at rest (expected 0)
+PASS  C1 every dynamic body has mass > 0 and finite
+      171/171 dynamic bodies have positive finite mass
+PASS  C2 declared mass == Rapier body mass (compound distribution)
+      171/171 exact within 1%
+PASS  C3 collider mass sum == body mass
+      171/171 colliders sum to body mass
+PASS  C4 every dynamic object classified against a realistic range
+      171/171 objects classified
+PASS  C5 masses realistic (no outliers)
+      all 171 dynamic masses within realistic ranges
+PASS  C6 gravityScale == 1 for dynamic bodies
+      171/171 at 1.0
+FAIL  C7 grabbable == (mass <= 0.5 kg)  <<<
+      50 mismatch: trash_bin 1.6kg grabbable=true, bedside_lamp 1.8kg grabbable=true, laundry_basket 1kg grabbable=true, desk_lamp 1.5kg grabbable=true, study_box_1 1.8kg grabbable=true, study_box_2 1.2kg grabbable=true
+PASS  C8 every dynamic body has >= 1 collider
+      171/171 bodies have colliders
+PASS  D1 all architecture objects are static (fixed)
+      21 architecture objects static, bodyType=fixed
+PASS  D2 doors are static (no dynamic door leaf)
+      no separate door objects; door leaves merged into static `walls` body (src/world/apartment.js addDoorLeaf -> walls batch)
+PASS  D3 robot cannot drive through walls (4 sides, 2 s boost)
+      north (z-): end (-3.256, -3.565) moved 0.183 m; south (z+): end (-3, 3.094) moved 0.094 m; west (x-): end (-5.04, -1) moved 0.14 m; east (x+): end (5.365, -1) moved 0.465 m
+PASS  D4 walls/static bodies do not move at all
+      22 static bodies bit-identical after 4 wall impacts
+INFO  D5 no dynamic object reads as wall/door
+      large dynamic slabs: bookshelf (42 kg, 0.32x1.86x1.00 m), wardrobe (120 kg, 1.14x2.03x0.60 m), study_shelves (18 kg, 0.30x1.80x0.90 m) — immovable per spec but visually architecture-scale
+PASS  E1 heavy furniture displacement < 0.01 m (2 s boost)
+      sofa 0.0000m, bed 0.0001m, wardrobe 0.0001m, fridge 0.0000m, bookshelf 0.0002m, dining_table 0.0002m, desk 0.0004m
+PASS  E1b armchair 21 kg (ROBOT_SPEC lists < 0.01 m)
+      armchair 0.0003m — mission push list excludes armchair; ROBOT_SPEC line 39 includes it
+PASS  E2 light objects pushable > 0.03 m (2 s boost)
+      chair_1 0.454m, study_box_1 0.087m, study_box_2 0.118m, trash_bin 0.302m, laundry_basket 0.595m
+PASS  E3 push tests made real contact
+      14/14 pushes validated by robot-object contact
+PASS  F1 arm limits are 0.5 kg payload / 0.34 m reach
+      arm.maxLiftKg=0.5, arm.reach=0.34
+PASS  F2 laptop 1.6 kg refused (too_heavy)
+      laptop mass=1.6; grab={"ok":false,"reason":"too_heavy","held":null}
+PASS  F3 kettle 1.0 kg / book stack 1.4 kg refused
+      kettle={"ok":false,"reason":"too_heavy","held":null}, book_stack_1={"ok":false,"reason":"too_heavy","held":null}
+PASS  F4 mug 0.32 kg on coffee table accepted from floor
+      mug y=0.5153917670249939, robot drove 0.456 m to table, shoulder→mug=0.261 m, canReach=true, grab={"ok":true,"reason":null,"held":"mug_white"}
+PASS  F5 reach boundary ~0.34 m (0.30 in, 0.45 out)
+      canReach(0.30m)=true, canReach(0.32m)=true, canReach(0.45m)=false
+PASS  F6 dining table (0.76 m) out of reach
+      canReach(table top)=false; plate on table: mass=0.45, grab={"ok":false,"reason":"out_of_reach","held":null}
+PASS  F7 grab creates fixed joint; release drops it
+      joints held=1, after release=0, lift={"before":0.515,"after":0.516}
+PASS  F8 held mug lands on surface, no fall-through
+      mug lifted 0.000 m, released, final y=0.515 m
+PASS  F9 robot total mass 7.0 kg (3.6 base + 3.4 arm)
+      robot.getState().mass=7 kg
+FAIL  G1 no spawn interpenetration > 10 mm  <<<
+      18 pair(s) > 10 mm; worst: shoe_2↔shoe_4 -36mm, monitor↔bottle_desk -35mm, study_book_3↔study_book_7 -33mm, bed↔sock_floor -27mm, windows↔dish_rack -23mm, floor_tile↔bath_mat -20mm
+FAIL  G2 no dynamic body below floor (collider minY >= -5 mm)  <<<
+      bath_mat minY=-12.3mm, sock_floor minY=-11.6mm
+INFO  G2b static ground/exterior colliders below y=0 (expected)
+      4 static bodies: floor_wood, floor_tile, exterior, city_view
+PASS  G3 stacks stay put over 3 s (rel drift < 5 mm)
+      45 dynamic-on-dynamic resting pairs; max relative drift 0.00 mm
+PASS  G4 no passive drift / jitter (max drift < 2 mm, all asleep)
+      max drift 0.00 mm; 171/171 asleep; max |v| 0.0000 m/s
+PASS  G5 nudged stacks re-settle (< 50 mm, < 5 deg, asleep)
+      8 stacks nudged: max shift 0.2 mm (cushion_3), max tilt 0.18 deg, 8/8 asleep
+PASS  G6 no tunneling (needle drop + 6 m/s 3 cm ball)
+      needle drop from 0.9 m -> y=0.0124; 3 cm ball @6 m/s -> y=0.0399 (no CCD)
+PASS  G7 all bodies finite and inside the apartment after all tests
+      171 dynamic bodies finite, inside shell, 171/171 asleep
+
+50 PASS / 3 FAIL / 3 INFO — VERDICT: SHIP (with P2 notes)
+report: qa/reports/physics.md
+json:   qa/physics/last-run.json

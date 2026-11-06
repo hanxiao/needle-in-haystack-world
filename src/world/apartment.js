@@ -142,12 +142,12 @@ function buildFloors(ctx) {
   for (const [x0, x1, z0, z1] of tileRegions) {
     const w = x1 - x0;
     const d = z1 - z0;
-    const geo = gBox(w, d, 0.13, [(x0 + x1) / 2, FLOOR_TOP - 0.055, (z0 + z1) / 2]);
+    const geo = gBox(w, d, 0.13, [(x0 + x1) / 2, FLOOR_TOP - 0.065, (z0 + z1) / 2]);
     scaleUV(geo, w * 0.55, d * 0.55);
     tile.add(tileMat, geo);
   }
   for (const [x0, x1, z0, z1] of tileRegions) {
-    tile.colliderBox(x1 - x0, z1 - z0, 0.13, [(x0 + x1) / 2, FLOOR_TOP - 0.055, (z0 + z1) / 2]);
+    tile.colliderBox(x1 - x0, z1 - z0, 0.13, [(x0 + x1) / 2, FLOOR_TOP - 0.065, (z0 + z1) / 2]);
   }
   const tileObj = tile.finish({ name: 'floor_tile', isStatic: true, material: 'tile', tags: ['architecture', 'floor'], shadows: true });
 

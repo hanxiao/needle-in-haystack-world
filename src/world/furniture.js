@@ -30,7 +30,7 @@ export const SURFACES = {
   fridge: { x: 5.18, z: -3.2, top: 1.86 },
   bed: { x: -4.15, z: 2.55, top: 0.58, w: 1.62, d: 2.02, yaw: Math.PI },
   nightstand: { x: -3.0, z: 3.45, top: 0.56 },
-  wardrobe: { x: -2.0, z: 1.06, top: 2.02 },
+  wardrobe: { x: -2.04, z: 1.06, top: 2.02 },
   laundryBasket: { x: -2.2, z: 1.85, top: 0.44 },
   desk: { x: 4.15, z: 3.32, top: 0.75, w: 1.4, d: 0.7 },
   deskChair: { x: 4.15, z: 2.6, seatTop: 0.47 },
@@ -96,8 +96,10 @@ function buildSofa(ctx, shadows) {
     room: 'living',
     tags: ['furniture', 'seat'],
     grabbable: false,
-    linearDamping: 0.4,
-    angularDamping: 0.7,
+    linearDamping: 0.25,
+    angularDamping: 0.5,
+    friction: 1.0,
+    restitution: 0,
   });
   shadows.add(SURFACES.sofa.x, SURFACES.sofa.z, 2.45, 1.2, { y: 0.004 });
   return obj;
@@ -108,12 +110,10 @@ function buildCoffeeTable(ctx, shadows) {
   const wood = variant(ctx, 'woodWarm', { color: 0x86613f });
   const metal = variant(ctx, 'metalDark', { color: 0x2e3032 });
   b.box(wood, 1.2, 0.62, 0.055, [0, 0.428, 0]);
-  b.box(wood, 0.98, 0.48, 0.02, [0, 0.15, 0]);
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
     b.box(metal, 0.045, 0.045, 0.4, [sx * 0.52, 0.2, sz * 0.24]);
   }
   b.colliderBox(1.2, 0.62, 0.055, [0, 0.428, 0]);
-  b.colliderBox(0.98, 0.48, 0.02, [0, 0.15, 0]);
   b.colliderBox(0.05, 0.05, 0.4, [-0.52, 0.2, -0.24]);
   b.colliderBox(0.05, 0.05, 0.4, [0.52, 0.2, -0.24]);
   b.colliderBox(0.05, 0.05, 0.4, [-0.52, 0.2, 0.24]);
@@ -185,6 +185,10 @@ function buildArmchair(ctx, shadows) {
     room: 'living',
     tags: ['furniture', 'seat'],
     grabbable: false,
+    linearDamping: 0.25,
+    angularDamping: 0.5,
+    friction: 1.0,
+    restitution: 0,
   });
   shadows.add(-4.55, -1.75, 1.1, 1.1, { y: 0.004 });
   return obj;
@@ -220,8 +224,10 @@ function buildBookshelf(ctx, shadows) {
     room: 'living',
     tags: ['furniture', 'shelf'],
     grabbable: false,
-    linearDamping: 0.35,
-    angularDamping: 0.7,
+    linearDamping: 0.25,
+    angularDamping: 0.5,
+    friction: 1.0,
+    restitution: 0,
   });
   shadows.add(SURFACES.bookshelf.x, SURFACES.bookshelf.z, 0.7, 1.25, { y: 0.004 });
   return obj;
@@ -381,9 +387,9 @@ function buildTv(ctx) {
   b.colliderBox(0.4, 0.2, 0.03, [0, 0.02, 0]);
   return b.finish({
     name: 'tv',
-    pos: [SURFACES.tvStand.x, SURFACES.tvStand.top + 0.0075, SURFACES.tvStand.z],
+    pos: [SURFACES.tvStand.x, SURFACES.tvStand.top + 0.0145, SURFACES.tvStand.z],
     mass: 11,
-    material: 'glass',
+    material: 'fabric',
     room: 'living',
     tags: ['furniture', 'screen'],
     grabbable: false,
@@ -497,7 +503,7 @@ function buildStove(ctx, shadows) {
   for (const x of [-0.2, -0.07, 0.07, 0.2]) {
     b.cyl(dark, 0.022, 0.022, 0.025, [x, 0.79, d / 2 + 0.02], [Math.PI / 2, 0, 0], 10);
   }
-  b.colliderBox(w, d, 0.93, [0, 0.465, 0]);
+  b.colliderBox(w, d, 0.925, [0, 0.4625, 0]);
   const obj = b.finish({
     name: 'stove',
     pos: [SURFACES.stove.x, 0, SURFACES.stove.z],
@@ -538,8 +544,10 @@ function buildFridge(ctx, shadows) {
     room: 'kitchen',
     tags: ['furniture', 'appliance'],
     grabbable: false,
-    linearDamping: 0.4,
-    angularDamping: 0.7,
+    linearDamping: 0.25,
+    angularDamping: 0.5,
+    friction: 1.0,
+    restitution: 0,
   });
   shadows.add(SURFACES.fridge.x, SURFACES.fridge.z, 0.95, 0.95, { y: 0.004 });
   return obj;
@@ -569,6 +577,10 @@ function buildDiningTable(ctx, shadows) {
     room: 'kitchen',
     tags: ['furniture', 'table'],
     grabbable: false,
+    linearDamping: 0.25,
+    angularDamping: 0.5,
+    friction: 1.0,
+    restitution: 0,
   });
   shadows.add(SURFACES.diningTable.x, SURFACES.diningTable.z, 1.85, 1.15, { y: 0.004 });
   return obj;
@@ -762,8 +774,10 @@ function buildBed(ctx, shadows) {
     room: 'bedroom',
     tags: ['furniture', 'bed'],
     grabbable: false,
-    linearDamping: 0.4,
-    angularDamping: 0.7,
+    linearDamping: 0.25,
+    angularDamping: 0.5,
+    friction: 1.0,
+    restitution: 0,
   });
   shadows.add(SURFACES.bed.x, SURFACES.bed.z, 1.95, 2.35, { y: 0.004 });
   return obj;
@@ -821,8 +835,10 @@ function buildWardrobe(ctx, shadows) {
     room: 'bedroom',
     tags: ['furniture', 'storage'],
     grabbable: false,
-    linearDamping: 0.4,
-    angularDamping: 0.7,
+    linearDamping: 0.25,
+    angularDamping: 0.5,
+    friction: 1.0,
+    restitution: 0,
   });
   shadows.add(SURFACES.wardrobe.x, SURFACES.wardrobe.z, 1.4, 0.85, { y: 0.004 });
   return obj;
@@ -855,8 +871,8 @@ function buildBedsideLamp(ctx) {
   b.colliderBox(0.26, 0.26, 0.3, [0, 0.28, 0]);
   return b.finish({
     name: 'bedside_lamp',
-    pos: [SURFACES.nightstand.x, SURFACES.nightstand.top + 0.002, SURFACES.nightstand.z],
-    mass: 1.3,
+    pos: [SURFACES.nightstand.x, SURFACES.nightstand.top + 0.008, SURFACES.nightstand.z],
+    mass: 1.8,
     material: 'metal',
     room: 'bedroom',
     tags: ['furniture', 'lamp'],
@@ -1071,7 +1087,7 @@ function buildBathMat(ctx) {
   b.colliderBox(0.75, 0.45, 0.02, [0, 0.01, 0]);
   return b.finish({
     name: 'bath_mat',
-    pos: [1.7, 0, 2.65],
+    pos: [1.78, 0.003, 2.65],
     mass: 0.35,
     material: 'fabric',
     room: 'bathroom',
@@ -1117,6 +1133,10 @@ function buildDesk(ctx, shadows) {
     room: 'study',
     tags: ['furniture', 'table'],
     grabbable: false,
+    linearDamping: 0.25,
+    angularDamping: 0.5,
+    friction: 1.0,
+    restitution: 0,
   });
   shadows.add(SURFACES.desk.x, SURFACES.desk.z, 1.65, 0.95, { y: 0.004 });
   return obj;
@@ -1169,7 +1189,7 @@ function buildMonitor(ctx) {
     pos: [SURFACES.monitor.x, SURFACES.desk.top + 0.002, 3.48],
     yaw: Math.PI,
     mass: 4.5,
-    material: 'glass',
+    material: 'fabric',
     room: 'study',
     tags: ['furniture', 'screen'],
     grabbable: false,
@@ -1239,7 +1259,7 @@ function buildDeskLamp(ctx) {
   return b.finish({
     name: 'desk_lamp',
     pos: [4.7, SURFACES.desk.top + 0.002, 3.28],
-    mass: 1.1,
+    mass: 1.5,
     material: 'metal',
     room: 'study',
     tags: ['furniture', 'lamp'],

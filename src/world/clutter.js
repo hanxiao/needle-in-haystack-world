@@ -20,7 +20,7 @@ function fin(b, name, opts) {
     material,
     room,
     tags,
-    grabbable: grabbable ?? mass <= 2.5,
+    grabbable: grabbable ?? mass <= 0.5,
     shadows,
     ccd,
     ...damping,
@@ -402,7 +402,7 @@ function addCushion(ctx, name, x, y, z, o = {}) {
   b.add(fab, gEllipsoid(0.21, 0.062, 0.2, [0, 0.065, 0], [0, 0, 0], 18));
   b.box(fab, 0.36, 0.32, 0.02, [0, 0.008, 0]);
   b.colliderBox(0.42, 0.4, 0.13, [0, 0.065, 0]);
-  return fin(b, name, { x, y, z, yaw: o.yaw ?? 0, mass: 0.45, material: 'fabric', room: o.room ?? 'living', tags: ['clutter', 'cushion'] });
+  return fin(b, name, { x, y, z, yaw: o.yaw ?? 0, mass: o.mass ?? 0.45, material: 'fabric', room: o.room ?? 'living', tags: ['clutter', 'cushion'] });
 }
 
 function addThrow(ctx, name, x, y, z, o = {}) {
@@ -905,7 +905,7 @@ function buildDrapes(ctx) {
   clothOver(b, throwFab, { x: -1.55, z: -2.75, topY: 0.7, axis: 'z', width: 0.44, drop: 0.3, sideOffset: 0.1 });
   // hoodie over desk chair back
   clothOver(b, hoodie, { x: 4.15, z: 2.4, topY: 0.96, axis: 'x', width: 0.32, drop: 0.3, sideOffset: 0.075 });
-  b.colliderBox(0.4, 0.08, 0.06, [1.72, 0.97, -1.75]);
+  b.colliderBox(0.4, 0.08, 0.06, [1.72, 0.995, -1.75]);
   b.colliderBox(0.24, 0.5, 0.06, [-1.55, 0.74, -2.75]);
   b.colliderBox(0.4, 0.08, 0.06, [4.15, 1.0, 2.4]);
   return b.finish({ name: 'drapes', pos: [0, 0, 0], isStatic: true, material: 'fabric', room: '', tags: ['clutter', 'clothes'], recenter: false, shadows: true });
@@ -916,7 +916,7 @@ function buildDrapes(ctx) {
 export function buildClutter(ctx) {
   const objects = [];
   const add = (o) => objects.push(o);
-  const CT = 0.458; // coffee table top (table sits on the rug)
+  const CT = 0.4695; // coffee table collider top (table sits on the rug)
   const RUG_Y = 0.014;
 
   // ---- living: coffee table
@@ -932,13 +932,13 @@ export function buildClutter(ctx) {
   add(addCandle(ctx, 'candle', -2.98, CT + 0.002, -1.6));
   add(addTippedMug(ctx, 'mug_tipped', -2.44, CT + 0.04, -1.62, { yaw: 0.5, color: 0x9aa88f }));
   add(addTissueBox(ctx, 'tissue_box', -2.1, CT + 0.002, -1.36, { yaw: 0.1 }));
-  add(addNotebook(ctx, 'notebook_shelf', -2.55, 0.168, -1.5, { yaw: 0.4, room: 'living' }));
+  add(addNotebook(ctx, 'notebook_shelf', -3.4, 0.014, -1.95, { yaw: 0.4, room: 'living' }));
 
   // ---- living: sofa
-  add(addCushion(ctx, 'cushion_1', -3.1, 0.547, -2.78, { yaw: 0.18, color: 0xb8a487 }));
-  add(addCushion(ctx, 'cushion_2', -1.95, 0.547, -2.78, { yaw: -0.25, color: 0x8b8f86 }));
-  add(addCushion(ctx, 'cushion_3', -4.55, 0.542, -1.72, { yaw: 0.3, color: 0xb08a4c }));
-  add(addThrow(ctx, 'sofa_throw', -2.52, 0.547, -2.7, { yaw: -0.15, color: 0xa88d6f }));
+  add(addCushion(ctx, 'cushion_1', -3.1, 0.547, -2.6, { yaw: 0.18, color: 0xb8a487 }));
+  add(addCushion(ctx, 'cushion_2', -1.95, 0.547, -2.6, { yaw: -0.25, color: 0x8b8f86 }));
+  add(addCushion(ctx, 'cushion_3', -4.42, 0.542, -1.72, { yaw: 0.3, color: 0xb08a4c }));
+  add(addThrow(ctx, 'sofa_throw', -2.52, 0.547, -2.62, { yaw: -0.15, color: 0xa88d6f }));
 
   // ---- living: bookshelf (yaw PI/2; shelf boards at local y 0.094/0.454/0.814/1.174/1.534)
   const shelfYs = [0.052, 0.456, 0.816, 1.176, 1.536];
@@ -1010,7 +1010,7 @@ export function buildClutter(ctx) {
 
   // ---- living: floor mess
   add(addPaper(ctx, 'paper_floor_1', -3.95, 0.002, -2.2, { yaw: 0.4 }));
-  add(addPaper(ctx, 'paper_floor_2', -3.75, 0.002, -1.95, { yaw: -0.2 }));
+  add(addPaper(ctx, 'paper_floor_2', -3.7, 0.002, -1.9, { yaw: -0.2 }));
   add(addPaper(ctx, 'paper_floor_3', -1.9, 0.002, -0.55, { yaw: 1.1 }));
   add(addBook(ctx, 'magazine', -4.35, 0.002, -0.75, { yaw: 0.9, w: 0.29, d: 0.21, h: 0.012, color: 0x77706a, mass: 0.3 }));
   add(addSock(ctx, 'sock_1', -4.25, 0.002, -2.95, { yaw: 0.5 }));
@@ -1024,11 +1024,11 @@ export function buildClutter(ctx) {
   add(addJar(ctx, 'jar_2', 2.09, 0.9 + 0.002, -3.62, { yaw: -0.1, h: 0.13 }));
   add(addJar(ctx, 'jar_3', 2.2, 0.9 + 0.002, -3.58, { yaw: 0.4, h: 0.19 }));
   add(addDishTowel(ctx, 'dish_towel', 2.42, 0.9 + 0.002, -3.6, { yaw: 0.2 }));
-  add(addSmallPlant(ctx, 'herb_pot', 3.86, 1.05, -3.7, { room: 'kitchen' }));
-  add(addDishRack(ctx, 'dish_rack', 3.28, 0.9 + 0.002, -3.56, { yaw: 0.1 }));
-  add(addCuttingBoard(ctx, 'cutting_board', 3.55, 0.9 + 0.002, -3.25, { yaw: 0.15 }));
-  add(addBottle(ctx, 'wine_bottle', 3.2, 0.9 + 0.002, -3.2, { yaw: 0.3, h: 0.3 }));
-  add(addMug(ctx, 'mug_kitchen', 3.62, 0.9 + 0.002, -3.6, { yaw: -0.4, color: 0x9aa88f, room: 'kitchen' }));
+  add(addSmallPlant(ctx, 'herb_pot', 3.86, 1.05, -3.66, { room: 'kitchen' }));
+  add(addDishRack(ctx, 'dish_rack', 3.3, 0.9 + 0.002, -3.25, { yaw: 0.1 }));
+  add(addCuttingBoard(ctx, 'cutting_board', 3.55, 0.9 + 0.002, -3.56, { yaw: 0.15 }));
+  add(addBottle(ctx, 'wine_bottle', 3.62, 0.9 + 0.002, -3.3, { yaw: 0.3, h: 0.3 }));
+  add(addMug(ctx, 'mug_kitchen', 3.3, 0.9 + 0.002, -3.62, { yaw: -0.4, color: 0x9aa88f, room: 'kitchen' }));
   add(addBottleSmall(ctx, 'dish_soap', 1.92, 0.9 + 0.002, -3.28, { yaw: 0.2, h: 0.19, color: 0xa9b8a2, room: 'kitchen', tags: ['clutter', 'bottle'] }));
 
   // ---- kitchen sink
@@ -1047,38 +1047,38 @@ export function buildClutter(ctx) {
   add(addPlate(ctx, 'plate_dining', 1.72, 0.75 + 0.002, -0.66, { room: 'kitchen' }));
   add(addMug(ctx, 'mug_dining', 2.6, 0.75 + 0.002, -0.5, { room: 'kitchen', color: 0xd7c3a8, coffee: true }));
   add(addPaper(ctx, 'paper_dining_1', 1.95, 0.75 + 0.002, -1.02, { yaw: 0.5, room: 'kitchen' }));
-  add(addPaper(ctx, 'paper_dining_2', 1.98, 0.758, -1.0, { yaw: -0.3, room: 'kitchen' }));
+  add(addPaper(ctx, 'paper_dining_2', 1.92, 0.758, -0.9, { yaw: -0.3, room: 'kitchen' }));
   add(addBook(ctx, 'book_dining', 2.18, 0.75 + 0.002, -1.06, { yaw: 0.35, w: 0.2, d: 0.14, h: 0.026, color: 0x4a6b4a, mass: 0.4, room: 'kitchen' }));
 
   // ---- kitchen mess
-  add(addShirt(ctx, 'shirt_chair_2', 2.68, 0.505, -1.53, { yaw: 0.5, color: 0x8c9aa8 }));
-  add(addHoodie(ctx, 'hoodie_chair_4', 2.68, 0.505, -0.04, { yaw: -0.4, color: 0x6a7076 }));
+  add(addShirt(ctx, 'shirt_chair_2', 2.68, 0.505, -1.45, { yaw: 0.5, color: 0x8c9aa8 }));
+  add(addHoodie(ctx, 'hoodie_chair_4', 2.68, 0.507, -0.075, { yaw: 0.02, color: 0x6a7076 }));
   add(addGroceryBag(ctx, 'grocery_bag', 2.05, 0.002, -2.88, { yaw: 0.4 }));
   add(addOnion(ctx, 'onion', 2.55, 0.002, -2.78, { yaw: 0 }));
   add(addPaper(ctx, 'paper_kitchen_1', 1.35, 0.002, -2.55, { yaw: 1.2, room: 'kitchen' }));
-  add(addPaper(ctx, 'paper_kitchen_2', 1.62, 0.002, -2.72, { yaw: -0.3, room: 'kitchen' }));
+  add(addPaper(ctx, 'paper_kitchen_2', 1.7, 0.002, -2.5, { yaw: -0.3, room: 'kitchen' }));
   add(addPaperBall(ctx, 'paper_ball', 1.78, 0.002, -3.18, { room: 'kitchen' }));
   add(addCable(ctx, 'cable_kitchen', 3.9, 0.002, -2.6, { yaw: 0.8, room: 'kitchen' }));
-  add(addPan(ctx, 'pan_stove', 3.98, 0.915, -3.5, { yaw: 0.35, room: 'kitchen' }));
+  add(addPan(ctx, 'pan_stove', 3.98, 0.927, -3.5, { yaw: 0.35, room: 'kitchen' }));
   add(addCerealBox(ctx, 'cereal_box', 5.18, 1.862, -3.2, { yaw: 0.25, room: 'kitchen' }));
   add(addMail(ctx, 'mail_counter', 2.08, 0.902, -3.2, { yaw: 0.4, room: 'kitchen' }));
 
   // ---- bedroom bed
-  add(addCushion(ctx, 'pillow_1', -4.52, 0.612, 2.94, { yaw: 0.1, color: 0xe3dccb }));
-  add(addCushion(ctx, 'pillow_2', -3.78, 0.612, 2.96, { yaw: -0.12, color: 0xd8d0bd }));
-  add(addThrow(ctx, 'blanket_bed', -4.1, 0.612, 2.0, { yaw: 0.04, color: 0xa9ae9e, w: 1.4, d: 0.8, mass: 1.4 }));
+  add(addCushion(ctx, 'pillow_1', -4.52, 0.612, 2.94, { yaw: 0.1, color: 0xe3dccb, mass: 0.7, room: 'bedroom' }));
+  add(addCushion(ctx, 'pillow_2', -3.78, 0.612, 2.96, { yaw: -0.12, color: 0xd8d0bd, mass: 0.7, room: 'bedroom' }));
+  add(addThrow(ctx, 'blanket_bed', -4.1, 0.612, 2.0, { yaw: 0.04, color: 0xa9ae9e, w: 1.4, d: 0.8, mass: 1.4, room: 'bedroom' }));
   add(addBook(ctx, 'book_bed', -4.5, 0.674, 1.95, { yaw: 0.6, w: 0.2, d: 0.14, h: 0.03, color: 0x8b3f36, mass: 0.45, room: 'bedroom' }));
   add(addPhone(ctx, 'phone_bed', -4.2, 0.674, 2.0, { yaw: -0.4, room: 'bedroom' }));
 
   // ---- bedroom nightstand
-  add(addGlasses(ctx, 'glasses', -3.1, 0.562, 3.32, { yaw: 0.5 }));
-  add(addMug(ctx, 'mug_bedside', -2.88, 0.562, 3.55, { yaw: 0.2, color: 0x8aa1b1, room: 'bedroom' }));
-  add(addHairbrush(ctx, 'hairbrush', -3.15, 0.562, 3.52, { yaw: 0.9 }));
+  add(addGlasses(ctx, 'glasses', -3.1, 0.572, 3.32, { yaw: 0.5 }));
+  add(addMug(ctx, 'mug_bedside', -2.88, 0.572, 3.55, { yaw: 0.2, color: 0x8aa1b1, room: 'bedroom' }));
+  add(addHairbrush(ctx, 'hairbrush', -3.15, 0.572, 3.52, { yaw: 0.9 }));
 
   // ---- bedroom floor
-  add(addShirt(ctx, 'shirt_floor', -4.78, 0.002, 1.35, { yaw: 0.7, color: 0x7c8b9c, room: 'bedroom' }));
-  add(addHoodie(ctx, 'jeans_floor', -4.15, 0.002, 1.02, { yaw: -0.5, color: 0x3e5878, room: 'bedroom' }));
-  add(addSock(ctx, 'sock_floor', -3.95, 0.002, 1.45, { yaw: 0.3, room: 'bedroom' }));
+  add(addShirt(ctx, 'shirt_floor', -4.85, 0.002, 1.25, { yaw: 0.7, color: 0x7c8b9c, room: 'bedroom' }));
+  add(addHoodie(ctx, 'jeans_floor', -3.95, 0.014, 1.2, { yaw: -0.5, color: 0x3e5878, room: 'bedroom' }));
+  add(addSock(ctx, 'sock_floor', -4.35, 0.002, 1.3, { yaw: 0.3, room: 'bedroom' }));
   add(addSlipper(ctx, 'slipper_1', -3.3, 0.014, 1.2, { yaw: 0.1 }));
   add(addSlipper(ctx, 'slipper_2', -3.05, 0.014, 1.3, { yaw: -0.2 }));
   add(addCable(ctx, 'charger_cable', -3.0, 0.002, 2.2, { yaw: 0.9, room: 'bedroom' }));
@@ -1089,10 +1089,10 @@ export function buildClutter(ctx) {
   add(addBottleSmall(ctx, 'shampoo', 2.33, 0.842, 1.55, { yaw: 0.1, h: 0.19, color: 0xd8cfc0 }));
   add(addBottleSmall(ctx, 'conditioner', 2.33, 0.842, 1.7, { yaw: -0.2, h: 0.17, color: 0xc8b9a4 }));
   add(addBottleSmall(ctx, 'lotion', 2.62, 0.842, 1.5, { yaw: 0.3, h: 0.12, color: 0xe0d6c2 }));
-  add(addSoap(ctx, 'soap', 2.62, 0.842, 2.12, { yaw: 0.4 }));
-  add(addToothbrush(ctx, 'toothbrush', 2.4, 0.842, 2.14, { yaw: 0.7 }));
-  add(addToothbrush(ctx, 'toothbrush_2', 2.46, 0.842, 2.16, { yaw: 0.2 }));
-  add(addBottleSmall(ctx, 'toothpaste', 2.55, 0.842, 2.18, { yaw: 1.2, h: 0.11, r: 0.028, color: 0xe4e0d6, cap: 0x4a6b8a }));
+  add(addSoap(ctx, 'soap', 2.33, 0.842, 1.95, { yaw: 0.4 }));
+  add(addToothbrush(ctx, 'toothbrush', 2.36, 0.842, 2.14, { yaw: 0.7 }));
+  add(addToothbrush(ctx, 'toothbrush_2', 2.62, 0.842, 2.12, { yaw: 0.2 }));
+  add(addBottleSmall(ctx, 'toothpaste', 2.55, 0.842, 2.18, { yaw: 1.2, h: 0.11, r: 0.028, color: 0xe4e0d6, cap: 0x4a6b8a, mass: 0.12 }));
   add(addToiletRoll(ctx, 'toilet_roll', 0.85, 1.002, 2.45, { yaw: 0.1 }));
   add(addScale(ctx, 'bathroom_scale', 1.55, 0.002, 1.15, { yaw: 0.2 }));
   add(addSponge(ctx, 'sponge_bath', 1.35, 0.662, 3.62, { room: 'bathroom' }));
@@ -1101,14 +1101,14 @@ export function buildClutter(ctx) {
   add(addKeyboard(ctx, 'keyboard', 4.1, 0.752, 3.08, { yaw: 0.02 }));
   add(addMouse(ctx, 'mouse', 4.4, 0.752, 3.08, { yaw: 0.2 }));
   add(addNotebook(ctx, 'notebook', 3.65, 0.752, 3.12, { yaw: 0.15 }));
-  add(addPaper(ctx, 'paper_desk_1', 3.66, 0.752, 3.42, { yaw: -0.2, room: 'study' }));
-  add(addPaper(ctx, 'paper_desk_2', 3.7, 0.760, 3.35, { yaw: 0.5, room: 'study' }));
+  add(addPaper(ctx, 'paper_desk_1', 3.66, 0.752, 3.44, { yaw: -0.2, room: 'study' }));
+  add(addPaper(ctx, 'paper_desk_2', 3.68, 0.760, 3.44, { yaw: 0.5, room: 'study' }));
   add(addPenHolder(ctx, 'pen_holder', 4.55, 0.752, 3.35));
   add(addMug(ctx, 'mug_desk', 4.62, 0.752, 3.12, { yaw: -0.3, color: 0x3f4a52, room: 'study' }));
   add(addHeadphones(ctx, 'headphones', 4.75, 0.752, 3.55, { yaw: 0.4 }));
   add(addStickyNotes(ctx, 'sticky_notes', 4.42, 0.752, 3.5, { yaw: 0.2 }));
   add(addCable(ctx, 'cable_floor_study', 3.6, 0.002, 2.35, { yaw: 0.5, room: 'study' }));
-  add(addWaterBottle(ctx, 'bottle_desk', 4.32, 0.752, 3.46, { yaw: 0.3, room: 'study' }));
+  add(addWaterBottle(ctx, 'bottle_desk', 4.45, 0.752, 3.4, { yaw: 0.3, room: 'study' }));
 
   // ---- study shelves (local shelf tops 0.04/0.4325/0.7925/1.1525/1.5125, yaw PI/2)
   const studyShelfY = [0.042, 0.4345, 0.7945, 1.1545];
@@ -1126,7 +1126,7 @@ export function buildClutter(ctx) {
     }));
   }
     for (let i = 0; i < 4; i++) {
-    add(addBook(ctx, `study_book_${5 + i}`, 3.01, studyShelfY[i] + 0.002, 1.62 + (i % 2) * 0.14, {
+    add(addBook(ctx, `study_book_${5 + i}`, 3.01, studyShelfY[i] + 0.002, 1.55 + (i % 2) * 0.13, {
       yaw: Math.PI / 2,
       w: 0.045,
       d: 0.19,
@@ -1143,12 +1143,12 @@ export function buildClutter(ctx) {
 
   // ---- hallway entry mess
   add(addBackpack(ctx, 'backpack', -0.42, 0.002, 3.02, { yaw: 0.5 }));
-  add(addShoe(ctx, 'shoe_1', -0.95, 0.002, 2.86, { yaw: 0.15, color: 0x4a3f37 }));
-  add(addShoe(ctx, 'shoe_2', -0.78, 0.002, 2.94, { yaw: -0.35, color: 0x4a3f37 }));
-  add(addShoe(ctx, 'shoe_3', -0.88, 0.002, 2.64, { yaw: 0.7, color: 0x6a5a48 }));
-  add(addShoe(ctx, 'shoe_4', -0.7, 0.002, 2.74, { yaw: 0.3, color: 0x6a5a48 }));
-  add(addMail(ctx, 'mail_1', -0.5, 0.002, 2.85, { yaw: 0.6 }));
-  add(addMail(ctx, 'mail_2', -0.34, 0.002, 2.93, { yaw: -0.3 }));
+  add(addShoe(ctx, 'shoe_1', -1.02, 0.002, 2.9, { yaw: 0.15, color: 0x4a3f37 }));
+  add(addShoe(ctx, 'shoe_2', -0.86, 0.002, 3.0, { yaw: -0.35, color: 0x4a3f37 }));
+  add(addShoe(ctx, 'shoe_3', -0.94, 0.002, 2.62, { yaw: 0.7, color: 0x6a5a48 }));
+  add(addShoe(ctx, 'shoe_4', -0.65, 0.002, 2.78, { yaw: 0.3, color: 0x6a5a48 }));
+  add(addMail(ctx, 'mail_1', -0.3, 0.004, 2.62, { yaw: 0.6 }));
+  add(addMail(ctx, 'mail_2', -0.15, 0.004, 2.75, { yaw: -0.3 }));
   add(addKeys(ctx, 'keys_floor', -0.62, 0.002, 3.18, { yaw: 1.2, room: 'hallway' }));
   add(addUmbrella(ctx, 'umbrella', 0.35, 0, 3.55, { yaw: 0.6 }));
 

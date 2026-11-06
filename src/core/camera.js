@@ -103,7 +103,7 @@ export function createCameraRig(camera, physics) {
     if (state.mode === 'first') {
       state.fpYaw = yaw;
       _dir.set(-Math.sin(yaw), 0, -Math.cos(yaw));
-      camera.position.set(rp.x + _dir.x * 0.16, rp.y + 0.35, rp.z + _dir.z * 0.16);
+      camera.position.set(rp.x + _dir.x * 0.14, rp.y + 0.30, rp.z + _dir.z * 0.14);
       const e = new THREE.Euler(state.fpPitch, yaw, 0, 'YXZ');
       camera.quaternion.setFromEuler(e);
       camera.fov = 62;

@@ -326,6 +326,8 @@ export class Batch {
       linearDamping,
       angularDamping,
       ccd,
+      friction,
+      restitution,
     } = opts;
 
     const q = quat
@@ -367,6 +369,8 @@ export class Batch {
       ...(linearDamping !== undefined ? { linearDamping } : {}),
       ...(angularDamping !== undefined ? { angularDamping } : {}),
       ...(ccd !== undefined ? { ccd } : {}),
+      ...(friction !== undefined ? { friction } : {}),
+      ...(restitution !== undefined ? { restitution } : {}),
     });
     return obj;
   }

@@ -69,10 +69,12 @@ export class Physics {
       tags = [],
       room = '',
       grabbable,
-      linearDamping = 0.12,
-      angularDamping = 0.35,
+      linearDamping = 0.02,
+      angularDamping = 0.15,
       ccd = false,
       shadows = true,
+      friction,
+      restitution,
     } = opts;
 
     if (!name) throw new Error('physics.addObject: name required');
@@ -96,7 +98,7 @@ export class Physics {
       const c = colliders[i];
       const desc = colliderDesc(c);
       if (!desc) continue;
-      desc.setFriction(preset.friction).setRestitution(preset.restitution);
+      desc.setFriction(friction ?? preset.friction).setRestitution(restitution ?? preset.restitution);
       if (c.offset) desc.setTranslation(c.offset[0], c.offset[1], c.offset[2]);
       if (c.quat) desc.setRotation({ x: c.quat[0], y: c.quat[1], z: c.quat[2], w: c.quat[3] });
       if (!isStatic && mass) desc.setMass((mass * volumes[i]) / totalVolume);
@@ -106,16 +108,19 @@ export class Physics {
     }
     if (!colliderObjs.length) throw new Error(`physics.addObject: "${name}" produced no colliders`);
 
+    const objMass = isStatic ? Infinity : mass ?? body.mass();
+    let objGrabbable = grabbable ?? (!isStatic && objMass <= CONFIG.robot.maxLiftKg);
+    if (objGrabbable && !isStatic && objMass > CONFIG.robot.maxLiftKg) objGrabbable = false;
     const obj = {
       name,
       mesh: mesh || null,
       body,
       colliders: colliderObjs,
-      mass: isStatic ? Infinity : mass ?? body.mass(),
+      mass: objMass,
       isStatic,
       tags,
       room,
-      grabbable: grabbable ?? (!isStatic && (mass ?? 0) <= CONFIG.robot.maxLiftKg),
+      grabbable: objGrabbable,
       initial: { pos: [...pos], quat: [...quat] },
     };
 

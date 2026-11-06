@@ -314,3 +314,64 @@ html[data-ready="1"] #boot { opacity: 0; pointer-events: none; }
   .hud-map-dot { border-left-width: 3px; border-right-width: 3px; border-bottom-width: 7px; }
   .hud-fps { right: 10px; bottom: 10px; }
 }
+
+/* ---------------------------------------------------------------- control panel */
+.hud-controls {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  width: 236px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px 8px 6px;
+  background: rgba(8, 10, 12, 0.58);
+  border: 1px solid var(--line);
+  font-size: 8px;
+}
+.hud-controls-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 4px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  color: var(--dim);
+}
+.hud-arm { color: var(--amber); letter-spacing: 0.08em; font-size: 7.5px; }
+.hud-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 15px; }
+.hud-keys { display: flex; gap: 3px; }
+.hud-controls kbd {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  line-height: 1.2;
+  color: var(--ink);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1px 4px;
+  min-width: 15px;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+.hud-controls kbd.is-on { background: var(--amber); border-color: var(--amber); color: #0b0c0e; }
+.hud-act { font-size: 7.5px; letter-spacing: 0.12em; color: var(--dim); text-align: right; white-space: nowrap; }
+.hud-act b { color: var(--ink); font-weight: normal; letter-spacing: 0.08em; }
+.hud-act b.is-on { color: var(--amber); }
+.hud-trail {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+}
+.hud-trail i { flex: 1; height: 2px; background: linear-gradient(90deg, #4fd1c5, #f0b35c, #e05f8a); }
+
+@media (max-width: 760px) {
+  .hud-controls { display: none; }
+}

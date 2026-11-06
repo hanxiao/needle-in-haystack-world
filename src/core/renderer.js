@@ -117,7 +117,7 @@ export function createRenderSystem(canvas, hudCanvas) {
     preserveDrawingBuffer: true,
     stencil: false,
   });
-  hudRenderer.setPixelRatio(1);
+  hudRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   hudRenderer.setSize(window.innerWidth, window.innerHeight, false);
   hudRenderer.outputColorSpace = THREE.SRGBColorSpace;
   hudRenderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -235,12 +235,13 @@ export function createRenderSystem(canvas, hudCanvas) {
     renderer.render(scene, camera);
   }
 
-  function setHudViewport(rect, dpr) {
-    const canvasH = hudRenderer.domElement.height;
-    const x = Math.round(rect.x * dpr);
-    const y = Math.round(canvasH - (rect.y + rect.h) * dpr);
-    const w = Math.max(2, Math.round(rect.w * dpr));
-    const h = Math.max(2, Math.round(rect.h * dpr));
+  function setHudViewport(rect) {
+    // rect is in CSS pixels; three multiplies viewport/scissor by the renderer pixel ratio.
+    const cssH = hudRenderer.getSize(new THREE.Vector2()).y;
+    const x = Math.round(rect.x);
+    const y = Math.round(cssH - (rect.y + rect.h));
+    const w = Math.max(2, Math.round(rect.w));
+    const h = Math.max(2, Math.round(rect.h));
     hudRenderer.setViewport(x, y, w, h);
     hudRenderer.setScissor(x, y, w, h);
     hudRenderer.setScissorTest(true);
@@ -257,7 +258,11 @@ export function createRenderSystem(canvas, hudCanvas) {
   // layout: { panels: [{key, x, y, w, h}], map: {x, y, w, h} } in CSS px
   function renderHud(robot, layout) {
     if (!robot || !robot.cameras) return;
-    const dpr = hudRenderer.getPixelRatio();
+    const wantDpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (hudRenderer.getPixelRatio() !== wantDpr) {
+      hudRenderer.setPixelRatio(wantDpr);
+      hudRenderer.setSize(window.innerWidth, window.innerHeight, false);
+    }
     const prevVisible = robot.group ? robot.group.visible : true;
     if (robot.group) robot.group.visible = false;
     scene.environment = hudEnvRT.texture;
@@ -269,7 +274,7 @@ export function createRenderSystem(canvas, hudCanvas) {
       if (!cam) continue;
       cam.aspect = p.w / p.h;
       cam.updateProjectionMatrix();
-      setHudViewport(p, dpr);
+      setHudViewport(p);
       hudRenderer.clear(true, true, false);
       hudRenderer.render(scene, cam);
     }
@@ -277,7 +282,7 @@ export function createRenderSystem(canvas, hudCanvas) {
       const cam = robot.cameras.top;
       cam.aspect = layout.map.w / layout.map.h;
       cam.updateProjectionMatrix();
-      setHudViewport(layout.map, dpr);
+      setHudViewport(layout.map);
       hudRenderer.clear(true, true, false);
       hudRenderer.render(scene, cam);
     }

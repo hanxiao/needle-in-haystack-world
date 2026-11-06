@@ -1,62 +1,60 @@
-# round FINAL (polish) — visual QA — 2026-11-05
+# round 2 FINAL — visual QA — 2026-11-06
 
-**Build:** `qa/frozen/index.html` — sha256 `42401d87a7047d92…`, 5,241,529 B (served `PORT=4182 node tools/serve.mjs qa/frozen`).
-**Method:** puppeteer-core + local Chrome (ANGLE Metal); 1440×900 @DPR1, robot-scale FP 0.35 m + low third-person orbits; 390×844 @DPR1/DPR2; 1920×1080. Spot-check set: `qa/visual/shots/s-*.png` (12); full sets `v-*`, `f-*`, `f-r-*`. Scripts: `qa/visual/{capture,focus,verify,spot}.mjs`.
-**Machine facts (this sha):** ready 861 ms; 60 fps at rest; **236** draw calls / 68.5 k tris at spawn; 0 console errors/warnings; 1 network request; HUD samples litRatio 0.98–1.0, mean 117–133.
-
----
-
-## Polish delta (spot-check on `42401d87a704`)
-
-| item | status | evidence |
-|---|---|---|
-| Night windows: uniform glowing pane | **FIXED** | window crop mean **112.8** vs day **160.3** (−30 %), dark facade with subtle emissive bands, sky/ground read as night — `s-night-spawn.png`, `s-night-living.png`, `s-night-win.png`, `s-win-compare.jpg` |
-| Study too dark | **FIXED** | study FP mean **119.7** (was 84); desk/chair/drawers readable — `s-study-fp.png` |
-| Bathroom lamp down | **PARTIAL** | bathroom mean **171.6** (was 183) — still the brightest room, tub/toilet merge into wall — `s-bath-fp.png` |
-| Camera sphere push-out (wardrobe/bed/desk) | **MOSTLY FIXED** | no more full-screen blurry planes; camera still sits very close to the laundry basket (bed pose) and the door leaf/casing (hall pose) — `s-clip-bed.png`, `s-clip-hall.png` |
-| Minimap dot dark halo | **FIXED** | amber heading arrow with dark halo at map centre — `s-hud-map.png`, `s-map-zoom.png` |
+**Build:** `qa/frozen/index.html` — sha256 `5cf1537d1779991e…`, 5,253,349 B (served `PORT=4182 node tools/serve.mjs qa/frozen`).
+**Method:** puppeteer-core + local Chrome (ANGLE Metal); 1440×900 @DPR1; 390×844 @DPR2; 1920×1080. Round-2 set: `qa/visual/shots/r2-*.png` (18) + `r2-under-reach2.png`; script `qa/visual/round2.mjs`, `under.mjs`. Previous rounds (`f-*`, `v-*`, `s-*`) retained for history.
+**Machine facts (this sha):** ready 1492 ms; 60 fps at rest; 298 draw calls / 69 k tris at spawn; 0 console errors/warnings; 1 network request; HUD samples litRatio 0.98–1.0, mean 116–132; FP camera height 0.312 m (spec 0.30 m).
 
 ---
 
-## PASS / FAIL (final)
+## Round-2 checks
+
+| # | item | result | evidence |
+|---|---|---|---|
+| 1 | Robot v2 reads as a serious sweeper with real limits | **PASS** | round 350 mm disc base + black bumper band, 2 driven wheels + caster, LiDAR mast + status antenna, camera rings, K12 3-DOF arm w/ gripper; total height 0.402 m, fits under the coffee table (underside 0.437 m). Reads as a service robot, not the old toy rover — `r2-spawn-default.png`, `r2-robot-front.png`, `r2-robot-side.png`, `r2-robot-3q.png` |
+| 2 | Control panel bottom-right: all controls, key highlights, mode badges, lean | **PASS** | W/A/S/D MOVE, SHIFT BOOST, MOUSE LOOK, CLICK/SPACE GRAB, V VIEW, C 360, L LIGHT, H/R HINT·RESET, TRAIL legend, ARM 500 g · 0.34 M; keycaps light amber on press (verified W+A, SHIFT, MOUSE+CLICK); badges switch VIEW FIRST/THIRD, 360 ON/OFF, LIGHT DAY/NIGHT — `r2-panels-states.jpg`, `r2-panel.png` |
+| 3 | Minimap trajectory: colour-coded, dark outline, minimap-only, + heading dot | **PASS (thin)** | cyan→amber→pink path with dark outline drawn only in the minimap after driving; heading arrow intact; trail is ~2 px at 180 px map and its legend lives in the bottom-right panel (far from the map) — `r2-map-trail.png`, `r2-map.png` |
+| 4 | Physics realism visible: heavy furniture, 0.5 kg payload, under-table reach | **PASS** | sofa Δ = **0.000 m** after 1.8 s boost-drive into it; laptop 1.6 kg refused (`too_heavy`), mug 0.32 kg + needle grabbed; robot drives under the coffee table and grabs a tabletop mug when positioned near it (`HOLDING · MUG WHITE · 320 g`) — `r2-under-reach2.png`, `r2-push-sofa.png` |
+| 5 | Nothing broken by the new robot size | **PASS** | 0.35 m robot passes the 0.8 m doorways (drove living→hall); 360 feeds live with robot hidden; under-table FP/TP views work; third-person framing intact — `r2-doorway-fp.png`, `r2-doorway-after.png`, `r2-under-table-tp.png`, `r2-under-table-fp.png` |
+
+---
+
+## PASS / FAIL
 
 | gate | result | evidence |
 |---|---|---|
 | 1. No console errors/warnings, no network beyond HTML | **PASS** | logs `[]`, single request |
-| 2. Load ≤8 s, ≥50 fps @1440×900 | **PASS** | ready 861 ms, 60 fps, 236 draw calls spawn |
-| 3. 360 panels + minimap live, robot hidden | **PASS** | sampleHud litRatio 0.980–0.999, mean 117–133 |
-| 4. Objects settle, no floating/clipping | **PASS** | no jitter/z-fight in 96 shots; bed/mug states correct |
-| 5. Real masses visible in HUD | **PASS** | `SOFA · 85 kg · PUSH`, `MUG WHITE · 320 g`, `BED · 75 kg · OUT OF REACH` |
-| 6. Six rooms reachable, furnished, lived-in, no holes/z-fight | **PASS** | all six reachable, doorways readable |
-| 7. Lean monospace UI, no overflow @390×844 | **PASS** | no overflow, hint above panels, no overlap |
-| 8. Exposure balance | **PARTIAL** | bathroom still bright (mean 171.6, p50 184); everything else balanced (spawn 113.5, p99 214, 0 % clip) |
-| 9. Night mode reads as night | **PASS** | interior −27 % vs day (83.0 vs 113.5); windows dark (−30 % vs day crop) |
-| 10. Portrait/phone framing @DPR1+DPR2 | **PASS** | identical 21 % robot framing at both DPRs (`v-mobile-dpr1/dpr2.png`) |
+| 2. Load ≤8 s, ≥50 fps @1440×900 | **PASS** | ready 1492 ms, 60 fps at rest, 298 draw calls spawn |
+| 3. 360 panels + minimap live, robot hidden | **PASS** | sampleHud litRatio 0.98–1.0, mean 116–132 |
+| 4. Objects settle, no floating/clipping | **PASS** | no jitter/z-fight in 100+ shots; robot clears the coffee-table underside by ~3.5 cm |
+| 5. Real masses visible in HUD | **PASS** | `SOFA · 85 kg · OUT OF REACH`, `ARMCHAIR · 21 kg`, `HOLDING · MUG WHITE · 320 g`; arm header `ARM 500 g · 0.34 M` |
+| 6. Six rooms reachable, furnished, lived-in, no holes/z-fight | **PASS** | unchanged from round-1 final |
+| 7. Lean UI, no prose, no overflow @390×844 | **PASS** | mobile: control panel auto-hidden, hint pill above 360 panels, no overlap, scrollW 390 |
+| 8. Exposure balance | **PARTIAL (carried)** | bathroom still the brightest room (round-1 final mean 171.6); everything else balanced |
+| 9. Night mode | **PASS (carried)** | interior −27 % vs day, dark night windows |
+| 10. Portrait framing @DPR1+DPR2 | **PASS** | unchanged 21 % robot framing both DPRs |
 
 ---
 
-## Room ratings (1–5)
+## Ratings
 
-**Living — 4.0.** Soft sofa/armchair cushions + pillows, lived-in clutter, papers, rug, curtains, exterior visible. Docks: blank wall areas.
-**Kitchen / dining — 3.5.** Cabinets/oven/dishwasher/toe kick/sink read as a kitchen; clutter on counter. Docks: large blank walls, oversized white floor tiles, dark table legs dominate low views.
-**Bedroom — 3.0.** Bed reads as a bed (wood frame/headboard/footboard, striped duvet, pillows). Docks: sparse, wardrobe grain stretched, drape barely readable.
-**Hallway — 3.0.** Door frames, front door, shoes, backpack, runner read; flow readable. Docks: shoe cabinet near-black cube, dark thresholds, bare walls, camera clips into door leaf in the back-of-hall pose.
-**Bathroom — 2.5.** Sterile and still overexposed; tub = white box, toilet = white cylinder, mirror blank white panel.
-**Study — 3.0** (up from 2.5). Now properly lit: wood desk with drawers, black chair, monitor, cable on floor. Docks: black chair/monitor still read as slabs, sparse shelving.
-**Overall — 3.8 / 5.** Coherent, plausible lived-in apartment; lean live 360 HUD; correct robot scale.
+**Robot v2 — 4.0 / 5.** Real hardware cues (round bumper base, LiDAR mast + antenna, camera rings, 2 driven wheels + caster, 3-DOF arm with gripper), correct 0.30 m camera height, real payload/reach limits visible in play. Docks: body proportions still a bit "cute" (wide disc + small top cylinder), the mast partially occludes the arm from the front, and the 4 cameras read as 2 visible orange rings.
+**Control panel — 4.0 / 5.** Complete, lean, keycaps highlight correctly, mode badges are accurate and update live. Docks: `H R → HINT · RESET` maps two keys to one label; panel is hidden on mobile (fine) but the mobile hint still says `WASD DRIVE · … V/C/L` (desktop wording on touch).
+**Minimap trajectory — 3.5 / 5.** Colour-coded path + dark outline is legible and stays out of the main view; heading dot kept. Docks: trail is thin at 180 px, legend is in the bottom-right panel rather than beside the map.
+**Physics feel — 4.5 / 5.** Sofa immovable by driving, 1.6 kg laptop refused, mug/needle lift, under-table reach — all consistent with the stated 7 kg / 0.5 kg / 0.34 m specs.
+**Overall — 3.9 / 5.**
 
 ---
 
-## Remaining issues (P2/P3 only, non-blocking)
+## Remaining issues (no P1)
 
-1. **[P2] Bathroom exposure** — mean 171.6, p50 184; tub/toilet/tiles merge. `s-bath-fp.png`. Fix: `src/core/renderer.js` bathroom lamp intensity −20 %, slightly darker `tileWall`/`ceramicWhite` roughness.
-2. **[P2] Third-person camera still hugs dynamic furniture in tight poses** — laundry basket fills ~35 % of frame in the bedroom back pose, door leaf/casing fills ~45 % in the hallway back pose. `s-clip-bed.png`, `s-clip-hall.png`. Fix: extend `camera.js` push-out to dynamic colliders too (or fade meshes within 0.35 m of the camera).
-3. **[P3] Minimap dot contrast** — arrow visible with halo but small on warm wood; `s-map-zoom.png`. Optional: white core + 1 px black ring.
-4. **[P3] Bedroom dressing** — half-off blanket/drape barely readable; add a wall art + bedside clutter in the door view.
-5. **[P3] Kitchen/dining blank walls + oversized floor tiles**; `s-win-day`-adjacent kitchen views.
+1. **[P2] Third-person camera still hugs geometry in tight spots** — driving into the sofa or under the coffee table pushes the camera against the sofa/floor (arm fills the foreground, camera y 0.28 under the table). `r2-trail-main.png`, `r2-under-table-tp.png`. Fix: `src/core/camera.js` — extend push-out to dynamic colliders and raise the minimum camera height under low obstacles.
+2. **[P2] Control panel label ambiguity** — `H R` → `HINT · RESET` (which key does what?). `r2-panel.png`. Fix: split into two rows or label `H HINT` / `R RESET`.
+3. **[P3] Minimap trail legibility** — ~2 px wide at 180 px map; legend in the bottom-right panel. `r2-map-trail.png`. Fix: draw 3–4 px with stronger outline, and/or move the TRAIL legend under the map.
+4. **[P3] Mobile hint wording** — says `WASD DRIVE · … V/C/L` on touch. `r2-mobile-spawn.png`. Fix: swap to `DRAG LOOK · TAP GRAB · V/C/L` on mobile.
+5. **[P3] Bathroom exposure (carried)** — still the brightest room; tub/toilet/tiles merge.
 
 ---
 
 ## Verdict
 
-**SHIP.** Final polish resolves the night-window and study-lighting items; camera push-out removes the full-screen clipping planes; minimap dot + night facade verified. Only P2/P3 polish remains (bathroom exposure, camera hugging dynamic furniture in extreme poses). No P1 found on `42401d87a704`.
+**SHIP.** Robot v2, control panel, minimap trajectory, physics limits and size regressions all check out; no P1 found on `5cf1537d1779`. Remaining items are P2/P3 polish.

@@ -1,8 +1,9 @@
-// Robot: procedural rover + Rapier kinematic character controller + IK arm + 360 cameras.
+// Robot v2 — sweeper-class mobile base + 3-DOF K12-class arm.
 // Conventions:
 //   - group.position is the ground-contact point (feet at y=0 when standing on the floor)
 //   - forward is -Z, yaw 0 faces -Z, yaw = atan2(-dx, -dz) for a world direction (dx, dz)
 //   - getState().pos / setPose() use the same feet convention
+//   - public API is unchanged from round 1 (plus extra getState() fields)
 import * as THREE from 'three';
 import { CONFIG } from '../core/config.js';
 import { buildRobotModel, ROBOT_DIMS } from './model.js';
@@ -13,6 +14,12 @@ import { GROUPS } from './groups.js';
 const UP = { x: 0, y: 1, z: 0 };
 const MAX_FALL = -6;
 const FLOOR_BODY_Y = ROBOT_DIMS.bodyY;
+
+const ACCEL = 0.8; // m/s^2, spec
+const TURN_RATE = CONFIG.robot.turnRate || 2.09; // rad/s (120 deg/s)
+const PUSH_FORCE = 45; // N — traction-limited push of a 7 kg rubber-wheeled base
+const PUSH_MAX_IMPULSE = 0.9; // N.s per body per frame
+const PUSH_MIN_SPEED = 0.04; // m/s
 
 const LED_COLORS = {
   idle: 0xffa22a,
@@ -74,7 +81,7 @@ export function createRobot(ctx, opts = {}) {
   );
   const bodyCollider = world.createCollider(
     RAPIER.ColliderDesc.cylinder(ROBOT_DIMS.colliderHalfHeight, ROBOT_DIMS.colliderRadius)
-      .setFriction(0.26)
+      .setFriction(0.6)
       .setRestitution(0)
       .setCollisionGroups(GROUPS.robot),
     body
@@ -86,24 +93,23 @@ export function createRobot(ctx, opts = {}) {
     ctx,
     model,
     group,
-    reach: CONFIG.robot.reach,
-    maxLiftKg: CONFIG.robot.maxLiftKg,
+    reach: CONFIG.robot.reach ?? ROBOT_DIMS.reach,
+    maxLiftKg: CONFIG.robot.maxLiftKg ?? 0.5,
   });
   arm.reset();
 
   // ---------------------------------------------------------------- character controller
   const controller = world.createCharacterController(0.02);
   controller.setUp(UP);
-  controller.enableAutostep(0.18, 0.1, true);
-  controller.enableSnapToGround(0.12);
-  controller.setApplyImpulsesToDynamicBodies(true);
-  controller.setCharacterMass(CONFIG.robot.mass);
-  controller.setMaxSlopeClimbAngle((52 * Math.PI) / 180);
-  controller.setMinSlopeSlideAngle((38 * Math.PI) / 180);
+  controller.enableAutostep(0.035, 0.05, false);
+  controller.enableSnapToGround(0.05);
+  controller.setApplyImpulsesToDynamicBodies(false);
+  controller.setCharacterMass(CONFIG.robot.mass ?? 7);
+  controller.setMaxSlopeClimbAngle((40 * Math.PI) / 180);
+  controller.setMinSlopeSlideAngle((30 * Math.PI) / 180);
   controller.setSlideEnabled(true);
 
-  // Downward probe used by setPose: if a teleport target is inside furniture,
-  // put the robot on top of that surface instead of letting the controller climb out.
+  // Downward probe used by setPose: keep teleports out of furniture.
   const teleportRay = new RAPIER.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: -1, z: 0 });
   const TELEPORT_DIRS = [
     [1, 0],
@@ -116,16 +122,15 @@ export function createRobot(ctx, opts = {}) {
     [0.7071, -0.7071],
   ];
 
-  // Height of the first surface under (px, pz); null when nothing is hit.
-  function probeFloorY(px, pz) {
+  function probeFloorY(px, pz, fromY = 1.95, maxToi = 2.2) {
     teleportRay.origin.x = px;
-    teleportRay.origin.y = 1.95;
+    teleportRay.origin.y = fromY;
     teleportRay.origin.z = pz;
     try {
-      const hit = world.castRay(teleportRay, 2.2, true, undefined, GROUPS.robotCharacter, undefined, body);
+      const hit = world.castRay(teleportRay, maxToi, true, undefined, GROUPS.robotCharacter, undefined, body);
       if (hit && hit.timeOfImpact > 1e-3) {
-        const y = 1.95 - hit.timeOfImpact;
-        if (Number.isFinite(y) && y < 1.8) return y;
+        const y = fromY - hit.timeOfImpact;
+        if (Number.isFinite(y) && y < fromY + 0.2) return y;
       }
     } catch {
       /* ignore */
@@ -133,22 +138,79 @@ export function createRobot(ctx, opts = {}) {
     return null;
   }
 
-  // Resolve a teleport target: keep it when the robot fits on the floor there,
-  // otherwise nudge to the nearest clear floor spot so it never spawns inside
-  // furniture (the character controller would slowly climb out of it).
+  // Robot needs this much headroom to sit on the floor under furniture:
+  // collider top (0.36 m) + 0.02 margin + 0.01 tolerance.
+  const UNDER_CLEARANCE = ROBOT_DIMS.bodyY + ROBOT_DIMS.colliderHalfHeight + 0.03;
+
+  // Slim collider probe used to reject teleport spots that overlap table legs etc.
+  const teleportShape = new RAPIER.Cylinder(
+    Math.max(0.01, ROBOT_DIMS.colliderHalfHeight - 0.01),
+    Math.max(0.01, ROBOT_DIMS.colliderRadius - 0.01)
+  );
+  const TELEPORT_IDENT = { x: 0, y: 0, z: 0, w: 1 };
+
+  function spotClear(px, pz, feetY) {
+    try {
+      const hit = world.intersectionWithShape(
+        { x: px, y: feetY + FLOOR_BODY_Y, z: pz },
+        TELEPORT_IDENT,
+        teleportShape,
+        undefined,
+        GROUPS.robotCharacter,
+        undefined,
+        body
+      );
+      return !hit;
+    } catch {
+      return true;
+    }
+  }
+
+  // Feet height for a spot: floor level, or the floor under furniture with headroom.
+  function feetYFor(px, pz, requestedY) {
+    const yTop = probeFloorY(px, pz, 1.95, 2.2);
+    if (yTop === null) return null;
+    if (yTop <= 0.08) return { y: Math.max(requestedY, yTop), under: false };
+    if (yTop > 0.06) {
+      const yLow = probeFloorY(px, pz, 0.32, 0.5);
+      if (yLow !== null && yLow <= 0.06 && yTop - yLow >= UNDER_CLEARANCE) {
+        return { y: Math.max(requestedY, yLow), under: true };
+      }
+    }
+    return null;
+  }
+
   function resolveTeleport(px, pz, requestedY) {
     if (requestedY > 0.05) return { x: px, z: pz, y: requestedY };
-    const y0 = probeFloorY(px, pz);
-    if (y0 !== null && y0 <= 0.08) return { x: px, z: pz, y: Math.max(requestedY, y0) };
+    const direct = feetYFor(px, pz, requestedY);
+    if (direct && spotClear(px, pz, direct.y)) return { x: px, z: pz, y: direct.y };
+
+    // Requested spot blocked (table leg, clutter, ...): nudge around it, keeping the
+    // "under furniture" intent when the request was under furniture.
+    const wantUnder = !!(direct && direct.under);
+    for (const r of [0.06, 0.12, 0.18, 0.24, 0.32, 0.44]) {
+      for (const [dx, dz] of TELEPORT_DIRS) {
+        const cx = px + dx * r;
+        const cz = pz + dz * r;
+        const cand = feetYFor(cx, cz, requestedY);
+        if (!cand) continue;
+        if (wantUnder && !cand.under) continue;
+        if (!spotClear(cx, cz, cand.y)) continue;
+        return { x: cx, z: cz, y: cand.y };
+      }
+    }
+    // Last resort: any clear floor spot nearby.
     for (const r of [0.22, 0.36, 0.5, 0.68, 0.86]) {
       for (const [dx, dz] of TELEPORT_DIRS) {
         const cx = px + dx * r;
         const cz = pz + dz * r;
-        const y = probeFloorY(cx, cz);
+        const y = probeFloorY(cx, cz, 1.95, 2.2);
         if (y !== null && y <= 0.08) return { x: cx, z: cz, y: Math.max(requestedY, y) };
       }
     }
-    if (y0 !== null && y0 < 1.8) return { x: px, z: pz, y: y0 };
+    if (direct) return { x: px, z: pz, y: direct.y };
+    const yTop = probeFloorY(px, pz, 1.95, 2.2);
+    if (yTop !== null && yTop < 1.8) return { x: px, z: pz, y: yTop };
     return { x: px, z: pz, y: requestedY };
   }
 
@@ -158,7 +220,6 @@ export function createRobot(ctx, opts = {}) {
   let vy = 0;
   let velX = 0;
   let velZ = 0;
-  let wheelSpin = 0;
   let prevForward = 0;
   let yawRate = 0;
   let leanPitch = 0;
@@ -170,16 +231,105 @@ export function createRobot(ctx, opts = {}) {
   let boosting = false;
   let aiming = false;
   let aimVec = null;
-  let lastInput = null;
   let speed = 0;
+  let wheelSpin = 0;
+  let casterSpin = 0;
+  let pushCount = 0;
 
   const lastGood = new THREE.Vector3(feet.x, feet.y + FLOOR_BODY_Y, feet.z);
 
   function setLed(mode) {
     if (mode !== ledMode) {
       ledMode = mode;
-      const color = LED_COLORS[mode] || LED_COLORS.idle;
-      model.ledMaterial.emissive.setHex(color);
+      model.ledMaterial.emissive.setHex(LED_COLORS[mode] || LED_COLORS.idle);
+    }
+  }
+
+  // ---------------------------------------------------------------- push model
+  // The character controller does not push dynamic bodies; instead we apply capped
+  // impulses at the contact points. 45 N is about the traction limit of a 7 kg
+  // rubber-wheeled base, so heavy furniture (friction > 45 N) stays put while
+  // chairs / boxes / bins slide.
+  const _pushed = new Map();
+
+  function applyPushImpulses(step) {
+    pushCount = 0;
+    const sp = Math.hypot(velX, velZ);
+    if (sp < PUSH_MIN_SPEED) return;
+    const dirX = velX / sp;
+    const dirZ = velZ / sp;
+    let n = 0;
+    try {
+      n = controller.numComputedCollisions();
+    } catch {
+      return;
+    }
+    if (!n) return;
+    _pushed.clear();
+    for (let i = 0; i < n; i++) {
+      let col;
+      try {
+        col = controller.computedCollision(i);
+      } catch {
+        continue;
+      }
+      if (!col || !col.collider) continue;
+      let targetBody;
+      try {
+        targetBody = col.collider.parent();
+      } catch {
+        continue;
+      }
+      if (!targetBody || typeof targetBody.isDynamic !== 'function' || !targetBody.isDynamic()) continue;
+      const nrm = col.normal1;
+      if (nrm && nrm.x * dirX + nrm.z * dirZ > -0.15) continue; // only contacts ahead of the robot
+      let mass = 0;
+      try {
+        mass = targetBody.mass();
+      } catch {
+        mass = 0;
+      }
+      if (!(mass > 0) || mass > 200) continue;
+      let lv;
+      try {
+        lv = targetBody.linvel();
+      } catch {
+        continue;
+      }
+      const vRel = Math.max(0, (velX - lv.x) * dirX + (velZ - lv.z) * dirZ);
+      if (vRel < 0.02) continue;
+      const j = Math.min(mass * vRel, PUSH_FORCE * step, PUSH_MAX_IMPULSE);
+      const handle = targetBody.handle;
+      const rec = _pushed.get(handle);
+      const witness = col.witness1;
+      if (rec) {
+        rec.j = Math.min(rec.j + j, PUSH_MAX_IMPULSE);
+        if (!rec.witness && witness) rec.witness = { x: witness.x, y: witness.y, z: witness.z };
+      } else {
+        _pushed.set(handle, {
+          body: targetBody,
+          j,
+          witness: witness ? { x: witness.x, y: witness.y, z: witness.z } : null,
+        });
+      }
+    }
+    for (const rec of _pushed.values()) {
+      try {
+        const t = rec.body.translation();
+        let py = t.y;
+        if (rec.witness) {
+          // Clamp the contact height near the body centre to avoid tipping tall objects.
+          py = clamp(rec.witness.y, t.y - 0.1, t.y + 0.1);
+        }
+        rec.body.applyImpulseAtPoint(
+          { x: dirX * rec.j, y: 0, z: dirZ * rec.j },
+          { x: rec.witness ? rec.witness.x : t.x, y: py, z: rec.witness ? rec.witness.z : t.z },
+          true
+        );
+        pushCount++;
+      } catch {
+        /* ignore */
+      }
     }
   }
 
@@ -187,10 +337,10 @@ export function createRobot(ctx, opts = {}) {
   function update(dt, input) {
     const step = clamp(Number.isFinite(dt) && dt > 0 ? dt : CONFIG.fixedStep, 1e-4, 0.1);
     time += step;
-    lastInput = input || {};
+    const inp = input || {};
 
     // ---- desired planar velocity (world space)
-    const move = lastInput.move;
+    const move = inp.move;
     let mx = 0;
     let mz = 0;
     if (Array.isArray(move)) {
@@ -212,46 +362,52 @@ export function createRobot(ctx, opts = {}) {
       mag = 1;
     }
     moving = mag > 0.03;
-    boosting = !!lastInput.boost;
+    boosting = !!inp.boost;
     const maxSpeed = boosting ? CONFIG.robot.boost : CONFIG.robot.speed;
     const targetVx = mx * maxSpeed;
     const targetVz = mz * maxSpeed;
-    const accelK = moving ? 10 : 12;
-    const alpha = 1 - Math.exp(-accelK * step);
-    velX += (targetVx - velX) * alpha;
-    velZ += (targetVz - velZ) * alpha;
+
+    // Linear acceleration / deceleration (0.8 m/s^2).
+    const dvx = targetVx - velX;
+    const dvz = targetVz - velZ;
+    const dv = Math.hypot(dvx, dvz);
+    const maxDv = ACCEL * step;
+    if (dv > maxDv && dv > 1e-6) {
+      velX += (dvx / dv) * maxDv;
+      velZ += (dvz / dv) * maxDv;
+    } else {
+      velX = targetVx;
+      velZ = targetVz;
+    }
     if (!moving && Math.hypot(velX, velZ) < 0.004) {
       velX = 0;
       velZ = 0;
     }
 
     // ---- aim / yaw
-    const aimIn = lastInput.aim;
+    const aimIn = inp.aim;
     if (aimIn && Number.isFinite(aimIn.x) && Number.isFinite(aimIn.y) && Number.isFinite(aimIn.z)) {
       _aim.set(aimIn.x, aimIn.y, aimIn.z);
       aimVec = _aim;
     } else {
       aimVec = null;
     }
-    aiming = !!aimVec || lastInput.firstPerson === true || lastInput.aiming === true;
+    aiming = !!aimVec || inp.firstPerson === true || inp.aiming === true;
 
     const cur = body.translation();
     let targetYaw = yaw;
-    if (Number.isFinite(lastInput.lookYaw) && (aiming || lastInput.firstPerson === true)) {
-      // First person / explicit look yaw: face the camera direction.
-      targetYaw = lastInput.lookYaw;
+    if (Number.isFinite(inp.lookYaw) && (aiming || inp.firstPerson === true)) {
+      targetYaw = inp.lookYaw;
     } else if (moving) {
-      // Driving: face the movement direction (camera-relative input, no crabbing).
       targetYaw = Math.atan2(-mx, -mz);
     } else if (aimVec) {
-      // Standing still: face the aim point (crosshair) so the arm points forward.
       const aimDx = aimVec.x - cur.x;
       const aimDz = aimVec.z - cur.z;
       if (Math.hypot(aimDx, aimDz) > 0.3) targetYaw = Math.atan2(-aimDx, -aimDz);
     }
     const dyaw = wrapAngle(targetYaw - yaw);
-    const maxTurn = (aiming ? 6.5 : 8.5) * step;
-    const applied = clamp(dyaw * (1 - Math.exp(-14 * step)), -maxTurn, maxTurn);
+    const maxTurn = TURN_RATE * step;
+    const applied = clamp(dyaw, -maxTurn, maxTurn);
     yaw = wrapAngle(yaw + applied);
     yawRate = applied / step;
 
@@ -264,6 +420,9 @@ export function createRobot(ctx, opts = {}) {
     grounded = controller.computedGrounded();
     if (grounded) vy = 0;
 
+    // ---- custom push model (controller impulses are disabled)
+    applyPushImpulses(step);
+
     let nx = cur.x + mv.x;
     let ny = cur.y + mv.y;
     let nz = cur.z + mv.z;
@@ -274,7 +433,6 @@ export function createRobot(ctx, opts = {}) {
       vy = 0;
     }
     if (ny < FLOOR_BODY_Y - 0.25) {
-      // Fell out of the world; recover instead of falling forever.
       ny = FLOOR_BODY_Y;
       vy = 0;
     }
@@ -284,35 +442,37 @@ export function createRobot(ctx, opts = {}) {
 
     group.position.set(nx, ny - FLOOR_BODY_Y, nz);
     group.rotation.set(0, yaw, 0);
-    // Keep the top-down camera under the ceiling even if the robot climbs furniture.
     const topCam = cameras.top;
     topCam.position.y = Math.max(1.2, Math.min(topCam.userData.baseY, TOP_CAM_MAX_WORLD_Y - group.position.y));
     group.updateMatrixWorld(true);
 
-    // ---- wheels + body lean
+    // ---- wheels (differential) + caster + LiDAR
     const fx = -Math.sin(yaw);
     const fz = -Math.cos(yaw);
     const forwardSpeed = velX * fx + velZ * fz;
     speed = Math.hypot(velX, velZ);
-    // Skid steer: left/right wheels spin at different rates while turning.
     const halfTrack = ROBOT_DIMS.wheelX;
     for (const w of model.wheels) {
       const side = w.userData.side || 1;
       const rate = (forwardSpeed + side * yawRate * halfTrack) / ROBOT_DIMS.wheelRadius;
       w.userData.spin = (w.userData.spin || 0) - rate * step;
       w.rotation.x = w.userData.spin;
+      wheelSpin = w.userData.spin;
     }
-    wheelSpin = model.wheels[0] ? model.wheels[0].userData.spin : 0;
+    casterSpin -= (speed / ROBOT_DIMS.casterRadius) * step;
+    model.caster.rotation.z = casterSpin;
+    if (model.lidarTop) model.lidarTop.rotation.y += step * 6.0;
 
+    // ---- body lean (small: rigid sweeper)
     const forwardAccel = (forwardSpeed - prevForward) / step;
     prevForward = forwardSpeed;
-    const pitchTarget = clamp(forwardAccel * 0.02, -0.09, 0.09);
-    const rollTarget = clamp(-yawRate * forwardSpeed * 0.05, -0.11, 0.11);
+    const pitchTarget = clamp(forwardAccel * 0.012, -0.03, 0.03);
+    const rollTarget = clamp(-yawRate * forwardSpeed * 0.03, -0.05, 0.05);
     const leanAlpha = 1 - Math.exp(-8 * step);
     leanPitch += (pitchTarget - leanPitch) * leanAlpha;
     leanRoll += (rollTarget - leanRoll) * leanAlpha;
-    model.tilt.rotation.x = leanPitch;
-    model.tilt.rotation.z = leanRoll;
+    model.visual.rotation.x = leanPitch;
+    model.visual.rotation.z = leanRoll;
 
     // ---- arm IK + gripper body
     arm.update(step, aimVec);
@@ -336,10 +496,18 @@ export function createRobot(ctx, opts = {}) {
       heldName: arm.held ? arm.held.name : null,
       grounded,
       speed,
+      mass: CONFIG.robot.mass ?? ROBOT_DIMS.mass,
+      baseMass: CONFIG.robot.baseMass ?? 3.6,
+      armMass: CONFIG.robot.armMass ?? 3.4,
+      payload: arm.maxLiftKg,
+      maxLiftKg: arm.maxLiftKg,
+      reach: arm.reach,
+      dof: arm.dof,
       aiming,
       boost: boosting,
-      reach: arm.reach,
-      maxLiftKg: arm.maxLiftKg,
+      moving,
+      wheels: [wheelSpin, wheelSpin],
+      pushes: pushCount,
     };
   }
 
@@ -379,11 +547,10 @@ export function createRobot(ctx, opts = {}) {
     group.rotation.set(0, yaw, 0);
     group.updateMatrixWorld(true);
 
-    // Re-pose the arm/gripper for the new body pose, then drag the held object along.
     arm.sync();
     if (arm.held) arm.snapHeldToGripper();
 
-    model.tilt.rotation.set(0, 0, 0);
+    model.visual.rotation.set(0, 0, 0);
     lastGood.set(tx, ty, tz);
     return getState();
   }
@@ -391,14 +558,15 @@ export function createRobot(ctx, opts = {}) {
   function reset() {
     arm.reset();
     setPose([feet.x, feet.y, feet.z], spawnYaw);
-    wheelSpin = 0;
     for (const w of model.wheels) {
       w.userData.spin = 0;
       w.rotation.x = 0;
     }
+    wheelSpin = 0;
+    casterSpin = 0;
     leanPitch = 0;
     leanRoll = 0;
-    model.tilt.rotation.set(0, 0, 0);
+    model.visual.rotation.set(0, 0, 0);
     setLed('idle');
     model.ledMaterial.emissiveIntensity = 1.8;
     aimVec = null;
@@ -416,7 +584,7 @@ export function createRobot(ctx, opts = {}) {
 
   function getHeadPosition(out = new THREE.Vector3()) {
     group.updateMatrixWorld(true);
-    return out.copy(ROBOT_DIMS.head).applyMatrix4(group.matrixWorld);
+    return out.set(0, ROBOT_DIMS.cameraY, ROBOT_DIMS.headZ).applyMatrix4(group.matrixWorld);
   }
 
   function canReach(point) {
@@ -431,7 +599,6 @@ export function createRobot(ctx, opts = {}) {
     return arm.release();
   }
 
-  // Start on the ground, arm parked, camera matrices ready.
   setPose([feet.x, feet.y, feet.z], spawnYaw);
 
   const robot = {

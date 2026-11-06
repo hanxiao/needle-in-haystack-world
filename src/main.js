@@ -5,6 +5,7 @@ import { createMaterials } from './core/materials.js';
 import { createRenderSystem } from './core/renderer.js';
 import { createCameraRig } from './core/camera.js';
 import { createHud, prettyName, formatMass } from './ui/hud.js';
+import { createTrail } from './ui/trail.js';
 import { buildWorld } from './world/index.js';
 import { createRobot } from './robot/robot.js';
 
@@ -68,6 +69,11 @@ async function init() {
 
   const hud = createHud(document.getElementById('hud'));
   hud.setSurround(state.surround);
+
+  // trajectory line: layer 2 so it is rendered only by the minimap camera
+  if (robot.cameras && robot.cameras.top) robot.cameras.top.layers.enable(2);
+  const trail = createTrail(scene);
+  let lastTrailAt = 0;
 
   const marker = new THREE.Mesh(
     new THREE.RingGeometry(0.022, 0.032, 32),
@@ -152,7 +158,7 @@ async function init() {
       pushObject(obj);
       return;
     }
-    if (!robot.canReach(objectCenter(obj))) {
+    if (!robot.canReach(objectCenter(obj)) && !(state.hit && robot.canReach(state.hit.point))) {
       hud.showToast('OUT OF REACH', 'heavy');
       return;
     }
@@ -179,6 +185,7 @@ async function init() {
     state.hover = null;
     state.hit = null;
     state.forcedAim = null;
+    trail.clear();
     hud.showToast('RESET');
   }
 
@@ -196,10 +203,10 @@ async function init() {
   function findFreeSpot(obj, preferred = 0.45) {
     const c = objectCenter(obj);
     const RAPIER = physics.RAPIER;
-    const shape = new RAPIER.Cylinder(0.19, 0.16);
+    const shape = new RAPIER.Cylinder(0.06, 0.19);
     const rot = { x: 0, y: 0, z: 0, w: 1 };
     const candidates = [];
-    for (let ring = 0; ring < 4; ring++) {
+    for (let ring = 0; ring < 6; ring++) {
       const radius = preferred + ring * 0.12;
       for (let i = 0; i < 20; i++) {
         const a = (i / 20) * Math.PI * 2 + ring * 0.16;
@@ -207,9 +214,17 @@ async function init() {
         const z = c.z + Math.sin(a) * radius;
         if (x < -5.35 || x > 5.35 || z < -3.55 || z > 3.55) continue;
         const down = physics.castRay([x, 2.2, z], [0, -1, 0], 2.3);
-        if (!down || down.point.y > 0.06) continue;
+        if (!down) continue;
+        let floorY = down.point.y;
+        if (floorY > 0.06) {
+          // candidate is under furniture: require enough headroom (robot is 0.38 m) and a floor below
+          if (floorY < 0.39) continue;
+          const under = physics.castRay([x, 0.3, z], [0, -1, 0], 0.32);
+          if (!under || under.point.y > 0.06) continue;
+          floorY = under.point.y;
+        }
         const overlap = physics.world.intersectionWithShape(
-          { x, y: 0.23, z },
+          { x, y: 0.09, z },
           rot,
           shape,
           undefined,
@@ -226,14 +241,16 @@ async function init() {
         if (overlap) continue;
         const shoulderY = 0.26;
         const d = Math.hypot(c.x - x, c.y - shoulderY, c.z - z);
-        candidates.push({ x, z, d, floorY: down.point.y });
+        candidates.push({ x, z, d, floorY });
       }
-      if (candidates.some((s) => s.d <= 0.6)) break;
+      const reachLimit = (robot.arm.reach ?? 0.34) - 0.01;
+      if (candidates.some((s) => s.d <= reachLimit)) break;
     }
     if (!candidates.length) return null;
-    const reachable = candidates.filter((s) => s.d <= 0.6);
+    const reachLimit = (robot.arm.reach ?? 0.34) - 0.01;
+    const reachable = candidates.filter((s) => s.d <= reachLimit);
     const pool = reachable.length ? reachable : candidates;
-    pool.sort((a, b) => Math.abs(a.d - 0.5) - Math.abs(b.d - 0.5));
+    pool.sort((a, b) => Math.abs(a.d - 0.30) - Math.abs(b.d - 0.30));
     return pool[0];
   }
 
@@ -306,13 +323,23 @@ async function init() {
         name: state.hover.name,
         mass: state.hover.mass,
         heavy: state.hover.mass > robot.arm.maxLiftKg,
-        reachable: robot.canReach(objectCenter(state.hover)),
+        reachable:
+          robot.canReach(objectCenter(state.hover)) ||
+          (state.hit ? robot.canReach(state.hit.point) : false),
       };
     }
     hud.update({
       mode: rig.mode,
       pointer: state.pointer,
       robotYaw: robot.yaw,
+      surround: state.surround,
+      night: state.night,
+      controls: {
+        keys,
+        pointerDown: pointer.down,
+        dragging: pointer.down && pointer.moved > 2,
+        arm: { maxLiftKg: robot.arm.maxLiftKg, reach: robot.arm.reach },
+      },
       roomLabel: room?.label || 'APARTMENT',
       target,
       held,
@@ -383,6 +410,14 @@ async function init() {
     physics.sync(clock.acc / CONFIG.fixedStep);
 
     rig.update(dt, robot);
+
+    const rs = robot.getState ? robot.getState() : null;
+    if (now - lastTrailAt > 110) {
+      const p = robot.group.position;
+      trail.add(p.x, p.z, rs ? rs.speed || 0 : 0);
+      lastTrailAt = now;
+    }
+    trail.update();
 
     state.hover = hover;
     state.hit = rayHit;
@@ -541,6 +576,9 @@ async function init() {
     },
     get hudRenderer() {
       return renderSystem.hudRenderer;
+    },
+    get trail() {
+      return trail;
     },
     state() {
       const rp = robot.group.position;

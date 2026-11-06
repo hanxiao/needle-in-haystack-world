@@ -1,18 +1,25 @@
-// Two-link arm with telescoping wrist, driven by analytic IK.
-// The gripper is a kinematic-position Rapier body that follows the IK solution;
-// grabbing creates a fixed joint between it and the object's dynamic body.
+// 3-DOF arm (Dobot Magician class): base yaw ±120°, shoulder −5..90°, elbow −15..90°,
+// 150 mm upper + 150 mm forearm + 45 mm gripper, 0.5 kg payload, 0.34 m reach.
+// The gripper is a kinematic-position Rapier body driven to the IK solution; grabbing
+// creates a fixed joint between it and the object's dynamic body.
 import * as THREE from 'three';
 import { GROUPS } from './groups.js';
 import { ROBOT_DIMS } from './model.js';
 
-const L1 = ROBOT_DIMS.armL1; // upper arm
-const L2 = ROBOT_DIMS.armL2; // forearm (visual)
-const GRIP_OFFSET = 0.04; // pinch point beyond the wrist
-const L2_EFF = L2 + GRIP_OFFSET; // second IK bone, wrist + pinch point
-const FULL_REACH = L1 + L2_EFF;
-const MAX_EXT = ROBOT_DIMS.maxExtension;
-const MIN_TARGET = 0.09;
-const MAX_POS_ERR = 0.18; // joint drift correction threshold (m)
+const L1 = ROBOT_DIMS.armL1;
+const L2 = ROBOT_DIMS.armL2;
+const GRIP_LEN = ROBOT_DIMS.gripperLen;
+const L2E = L2 + GRIP_LEN; // second IK bone reaches the pinch point
+const DEG = Math.PI / 180;
+const BASE_LIMIT = ROBOT_DIMS.baseYawLimit;
+const Q2_MIN = ROBOT_DIMS.shoulderMin;
+const Q2_MAX = ROBOT_DIMS.shoulderMax;
+const Q3_MIN = ROBOT_DIMS.elbowMin;
+const Q3_MAX = ROBOT_DIMS.elbowMax;
+const JOINT_SPEED = ROBOT_DIMS.jointSpeed; // rad/s
+const MAX_POS_ERR = 0.16; // joint drift correction threshold (m)
+const CARRY_LIFT = 0.055; // m — visible pick-up lift after the joint is created
+const REACH_TOLERANCE = 0.02; // m — canReach/grab slack on top of the 0.34 m spec
 
 const _a = new THREE.Vector3();
 const _b = new THREE.Vector3();
@@ -21,7 +28,18 @@ const _q1 = new THREE.Quaternion();
 const _q2 = new THREE.Quaternion();
 const _q3 = new THREE.Quaternion();
 
-export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) {
+function clamp(v, a, b) {
+  return Math.min(b, Math.max(a, v));
+}
+
+function wrapAngle(a) {
+  let x = a;
+  while (x > Math.PI) x -= Math.PI * 2;
+  while (x < -Math.PI) x += Math.PI * 2;
+  return x;
+}
+
+export function createArm({ ctx, model, group, reach = ROBOT_DIMS.reach, maxLiftKg = 0.5 }) {
   const physics = ctx.physics;
   const world = physics.world;
   const RAPIER = physics.RAPIER;
@@ -29,15 +47,13 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
 
   const parts = model.arm;
   const shoulderLocal = ROBOT_DIMS.shoulder.clone();
-  const parkLocal = ROBOT_DIMS.park.clone();
 
   // Hidden anchor at the pinch point; the physics gripper body tracks it.
   const anchor = new THREE.Object3D();
   anchor.name = 'robot_gripper_anchor';
-  anchor.position.set(0, 0, GRIP_OFFSET);
+  anchor.position.set(0, 0, GRIP_LEN);
   parts.gripper.add(anchor);
 
-  group.add(parts.root);
   group.updateMatrixWorld(true);
 
   const gw = new THREE.Vector3();
@@ -51,7 +67,7 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
       .setRotation({ x: gq.x, y: gq.y, z: gq.z, w: gq.w })
   );
   const gripperCollider = world.createCollider(
-    RAPIER.ColliderDesc.ball(0.032).setSensor(true).setCollisionGroups(GROUPS.gripper),
+    RAPIER.ColliderDesc.ball(0.028).setSensor(true).setCollisionGroups(GROUPS.gripper),
     gripperBody
   );
 
@@ -62,99 +78,122 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
     relPos: new THREE.Vector3(),
     relQuat: new THREE.Quaternion(),
     frozenLocal: new THREE.Vector3(),
-    gripX: 0.038,
     targetLocal: new THREE.Vector3(),
     targetWorld: new THREE.Vector3(),
-    yawBase: 0,
-    t1: 0,
-    t2: 0,
-    ext: 0,
-    lastAim: new THREE.Vector3(),
-    lastAimValid: false,
+    // current (rate-limited) joint angles
+    baseYaw: Math.PI,
+    q2: ROBOT_DIMS.park.shoulder,
+    q3: ROBOT_DIMS.park.elbow,
+    target: { baseYaw: Math.PI, q2: ROBOT_DIMS.park.shoulder, q3: ROBOT_DIMS.park.elbow },
+    gripX: ROBOT_DIMS.gripOpen,
   };
 
   // ---------------------------------------------------------------- IK
 
-  // Solve IK in robot-local space. Mutates nothing; returns joint angles.
-  function solve(localTarget) {
-    const dx0 = localTarget.x - shoulderLocal.x;
-    const dy0 = localTarget.y - shoulderLocal.y;
-    const dz0 = localTarget.z - shoulderLocal.z;
-    let d = Math.hypot(dx0, dy0, dz0);
-    let dx = dx0;
-    let dy = dy0;
-    let dz = dz0;
+  // End-effector position (in the arm plane) for a pair of joint angles.
+  function endPos(q2, q3, out) {
+    out.u = L1 * Math.cos(q2) + L2E * Math.cos(q2 + q3);
+    out.v = L1 * Math.sin(q2) + L2E * Math.sin(q2 + q3);
+    return out;
+  }
+
+  const _e = { u: 0, v: 0 };
+
+  // Solve IK for a robot-local point. Returns target joint angles.
+  function solve(local) {
+    const dx = local.x - shoulderLocal.x;
+    const dy = local.y - shoulderLocal.y;
+    const dz = local.z - shoulderLocal.z;
+
+    // Base yaw: 0 rad points the arm along +Z (robot backwards), PI = forward (-Z).
+    const az = Math.atan2(dx, dz);
+    const rel = clamp(wrapAngle(az - Math.PI), -BASE_LIMIT, BASE_LIMIT);
+    const baseYaw = Math.PI + rel;
+
+    // Project the target into the arm plane.
+    let u = dx * Math.sin(baseYaw) + dz * Math.cos(baseYaw);
+    let v = dy;
+    let d = Math.hypot(u, v);
     if (!Number.isFinite(d) || d < 1e-4) {
-      // Degenerate: target sits on the shoulder. Point the arm forward/down.
-      dx = 0;
-      dy = -0.08;
-      dz = -0.24;
-      d = Math.hypot(dx, dy, dz);
+      u = 0.12;
+      v = -0.02;
+      d = Math.hypot(u, v);
     }
-    const clamped = Math.min(Math.max(d, MIN_TARGET), reach);
+    const clamped = Math.min(d, reach);
     const scale = clamped / d;
-    dx *= scale;
-    dy *= scale;
-    dz *= scale;
-    d = clamped;
+    u *= scale;
+    v *= scale;
 
-    const h = Math.hypot(dx, dz);
-    const yawBase = h > 1e-5 ? Math.atan2(dx, dz) : 0;
-    const phi = Math.atan2(dy, h);
+    const phi = Math.atan2(v, u);
+    const cosq3 = clamp((clamped * clamped - L1 * L1 - L2E * L2E) / (2 * L1 * L2E), -1, 1);
+    const ac = Math.acos(cosq3);
 
-    let t1;
-    let t2;
-    let ext = 0;
-    if (d <= FULL_REACH - 1e-4) {
-      const cosA = (L1 * L1 + d * d - L2_EFF * L2_EFF) / (2 * L1 * d);
-      const A = Math.acos(Math.min(1, Math.max(-1, cosA)));
-      t1 = phi + A; // elbow-up
-      const eu = L1 * Math.cos(t1);
-      const ev = L1 * Math.sin(t1);
-      t2 = Math.atan2(dy - ev, h - eu);
-    } else {
-      t1 = phi;
-      t2 = phi;
-      ext = Math.min(d - FULL_REACH, MAX_EXT);
-    }
-    if (!Number.isFinite(t1)) t1 = phi;
-    if (!Number.isFinite(t2)) t2 = phi;
-
-    return {
-      yawBase,
-      t1,
-      t2,
-      ext,
-      // Clamped target back in robot-local space.
-      clampedLocal: new THREE.Vector3(
-        shoulderLocal.x + dx,
-        shoulderLocal.y + dy,
-        shoulderLocal.z + dz
-      ),
-      distance: d,
+    const candidates = [];
+    const push = (q2, q3) => {
+      const c2 = clamp(q2, Q2_MIN, Q2_MAX);
+      const c3 = clamp(q3, Q3_MIN, Q3_MAX);
+      endPos(c2, c3, _e);
+      const err = Math.hypot(_e.u - u, _e.v - v);
+      candidates.push({ q2: c2, q3: c3, err, elbowUp: c3 >= 0 });
     };
+    for (const q3 of [ac, -ac]) {
+      const q2 = phi - Math.atan2(L2E * Math.sin(q3), L1 + L2E * Math.cos(q3));
+      push(q2, q3);
+    }
+    // Straight-arm solution and workspace-edge fallbacks.
+    push(phi, 0);
+    push(Q2_MIN, Q3_MIN);
+    push(Q2_MIN, Q3_MAX);
+    push(Q2_MAX, Q3_MIN);
+    push(Q2_MAX, Q3_MAX);
+
+    candidates.sort((a, b) => a.err - b.err || b.elbowUp - a.elbowUp || b.q2 - a.q2);
+    let best = candidates[0];
+
+    // Target outside the joint-limited workspace: coarse grid search, then refine.
+    if (best.err > 0.005) {
+      let bestQ2 = best.q2;
+      let bestQ3 = best.q3;
+      let bestErr = best.err;
+      const scan = (q2a, q2b, q3a, q3b, step) => {
+        for (let a2 = q2a; a2 <= q2b + 1e-6; a2 += step) {
+          for (let a3 = q3a; a3 <= q3b + 1e-6; a3 += step) {
+            endPos(a2, a3, _e);
+            const err = Math.hypot(_e.u - u, _e.v - v);
+            if (err < bestErr) {
+              bestErr = err;
+              bestQ2 = a2;
+              bestQ3 = a3;
+            }
+          }
+        }
+      };
+      const STEP = 7.5 * DEG;
+      scan(Q2_MIN, Q2_MAX, Q3_MIN, Q3_MAX, STEP);
+      scan(Math.max(Q2_MIN, bestQ2 - STEP), Math.min(Q2_MAX, bestQ2 + STEP), Math.max(Q3_MIN, bestQ3 - STEP), Math.min(Q3_MAX, bestQ3 + STEP), 1.5 * DEG);
+      best = { q2: bestQ2, q3: bestQ3, err: bestErr };
+    }
+    return { baseYaw, q2: best.q2, q3: best.q3, distance: clamped };
   }
 
-  function applyPose(sol) {
-    state.yawBase = sol.yawBase;
-    state.t1 = sol.t1;
-    state.t2 = sol.t2;
-    state.ext = sol.ext;
-    state.targetLocal.copy(sol.clampedLocal);
-    parts.root.rotation.y = sol.yawBase;
-    parts.upper.rotation.x = -sol.t1;
-    parts.forearm.rotation.x = -(sol.t2 - sol.t1);
-    parts.setExtension(sol.ext);
+  function applyPose() {
+    parts.root.rotation.y = state.baseYaw;
+    parts.upper.rotation.x = -state.q2;
+    parts.forearm.rotation.x = -state.q3;
   }
 
-  // Solve for a world-space point and apply the pose.
-  function solveWorld(pointWorld) {
-    const local = _a.copy(pointWorld);
-    group.worldToLocal(local);
-    const sol = solve(local);
-    applyPose(sol);
-    state.targetWorld.copy(sol.clampedLocal).applyMatrix4(group.matrixWorld);
-    return sol;
+  function advanceTo(target, dt, instant) {
+    if (instant) {
+      state.baseYaw = target.baseYaw;
+      state.q2 = target.q2;
+      state.q3 = target.q3;
+      return;
+    }
+    const maxStep = JOINT_SPEED * Math.max(dt, 1e-4);
+    const dyaw = wrapAngle(target.baseYaw - state.baseYaw);
+    state.baseYaw = wrapAngle(state.baseYaw + clamp(dyaw, -maxStep, maxStep));
+    state.q2 += clamp(target.q2 - state.q2, -maxStep, maxStep);
+    state.q3 += clamp(target.q3 - state.q3, -maxStep, maxStep);
   }
 
   function readGripperPose() {
@@ -179,18 +218,22 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
   // ---------------------------------------------------------------- update
 
   function update(dt, aim) {
-    // Choose target: frozen carry pose > aim point > parked pose.
+    let sol;
     if (state.held) {
-      _b.copy(state.frozenLocal).applyMatrix4(group.matrixWorld);
-      solveWorld(_b);
+      const worldTarget = _c.copy(state.frozenLocal).applyMatrix4(group.matrixWorld);
+      sol = solve(group.worldToLocal(worldTarget));
+      state.targetLocal.copy(sol.localPoint || state.frozenLocal);
     } else if (aim && Number.isFinite(aim.x) && Number.isFinite(aim.y) && Number.isFinite(aim.z)) {
-      state.lastAim.copy(aim);
-      state.lastAimValid = true;
-      solveWorld(aim);
+      sol = solve(group.worldToLocal(_c.copy(aim)));
     } else {
-      _b.copy(parkLocal).applyMatrix4(group.matrixWorld);
-      solveWorld(_b);
+      sol = { baseYaw: Math.PI, q2: ROBOT_DIMS.park.shoulder, q3: ROBOT_DIMS.park.elbow };
     }
+
+    state.target.baseYaw = sol.baseYaw;
+    state.target.q2 = sol.q2;
+    state.target.q3 = sol.q3;
+    advanceTo(state.target, dt, false);
+    applyPose();
 
     if (state.held) parts.setGripX(state.gripX);
     else parts.setGrip(1);
@@ -198,8 +241,7 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
     guardHeldObject();
   }
 
-  // If the solver ever loses the held object (e.g. it was blocked by geometry),
-  // snap it back to the joint frame instead of letting it drift away.
+  // If the solver ever loses the held object (blocked by geometry), snap it back.
   function guardHeldObject() {
     const obj = state.held;
     if (!obj) return;
@@ -210,7 +252,6 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
       valid = false;
     }
     if (!valid) {
-      // The object was removed from the physics world behind our back.
       state.held = null;
       state.joint = null;
       state.savedGroups = [];
@@ -242,6 +283,24 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
 
   // ---------------------------------------------------------------- grasp
 
+  // Distance from a point to the nearest point of the object's world bounding box.
+  function surfaceDistance(obj, point) {
+    let box = null;
+    try {
+      if (obj.mesh) box = new THREE.Box3().setFromObject(obj.mesh);
+    } catch {
+      box = null;
+    }
+    if (!box || !Number.isFinite(box.min.x)) {
+      const t = obj.body.translation();
+      return Math.hypot(point.x - t.x, point.y - t.y, point.z - t.z);
+    }
+    const cx = clamp(point.x, box.min.x, box.max.x);
+    const cy = clamp(point.y, box.min.y, box.max.y);
+    const cz = clamp(point.z, box.min.z, box.max.z);
+    return Math.hypot(point.x - cx, point.y - cy, point.z - cz);
+  }
+
   function grab(obj) {
     if (!obj || !obj.body) return { ok: false, reason: 'invalid' };
     if (state.held) return { ok: false, reason: 'busy' };
@@ -263,17 +322,50 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
     const t = body.translation();
     const objPos = _c.set(t.x, t.y, t.z);
     const shoulder = shoulderWorld(_a);
-    const distance = shoulder.distanceTo(objPos);
-    if (!Number.isFinite(distance) || distance > reach + 0.05) {
+    // Measure to the object's nearest surface, not its centre: the gripper only has
+    // to touch the object, and reach is specified from the shoulder to the fingers.
+    const distance = surfaceDistance(obj, shoulder);
+    if (!Number.isFinite(distance) || distance > reach + REACH_TOLERANCE) {
       return { ok: false, reason: 'out_of_reach' };
     }
 
     // Snap the arm onto the object so the gripper physically reaches it.
-    const sol = solveWorld(objPos);
+    const local = group.worldToLocal(_b.copy(objPos));
+    const sol = solve(local);
+    state.target.baseYaw = sol.baseYaw;
+    state.target.q2 = sol.q2;
+    state.target.q3 = sol.q3;
+    advanceTo(state.target, 0, true);
+    applyPose();
     writeGripperBody(true);
 
-    // Freeze the carry target in robot-local space.
-    state.frozenLocal.copy(sol.clampedLocal);
+    // Freeze the carry target in robot-local space. A pick-up should be visible:
+    // pull the object slightly toward the body (so the arm is no longer at full
+    // extension) and raise it clear of the surface it was resting on.
+    const clampedLocal = _a.copy(objPos);
+    group.worldToLocal(clampedLocal);
+    let dxL = clampedLocal.x - shoulderLocal.x;
+    let dyL = clampedLocal.y - shoulderLocal.y;
+    let dzL = clampedLocal.z - shoulderLocal.z;
+    const h = Math.hypot(dxL, dzL);
+    const pull = Math.min(0.1, Math.max(0, h - 0.06));
+    const hs = h > 1e-5 ? (h - pull) / h : 0;
+    dxL *= hs;
+    dzL *= hs;
+    let fx = shoulderLocal.x + dxL;
+    let fy = shoulderLocal.y + dyL + CARRY_LIFT;
+    let fz = shoulderLocal.z + dzL;
+    const ddx = fx - shoulderLocal.x;
+    const ddy = fy - shoulderLocal.y;
+    const ddz = fz - shoulderLocal.z;
+    const dd = Math.hypot(ddx, ddy, ddz);
+    if (dd > reach * 0.995) {
+      const sc = (reach * 0.995) / dd;
+      fx = shoulderLocal.x + ddx * sc;
+      fy = shoulderLocal.y + ddy * sc;
+      fz = shoulderLocal.z + ddz * sc;
+    }
+    state.frozenLocal.set(fx, fy, fz);
 
     // Anchor the fixed joint at the current relative pose.
     const gt = gripperBody.translation();
@@ -319,13 +411,13 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
 
     state.held = obj;
     state.joint = joint;
-    state.gripX = measureGripWidth(obj);
+    state.gripX = measureGripX(obj);
     parts.setGripX(state.gripX);
     return { ok: true };
   }
 
-  // Finger opening just wide enough to straddle the held object.
-  function measureGripWidth(obj) {
+  // Finger opening just wide enough to straddle the held object (50-90 mm class).
+  function measureGripX(obj) {
     let half = 0.03;
     try {
       if (obj.mesh) {
@@ -334,12 +426,11 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
         half = Math.max(size.x, size.z) * 0.5;
       }
     } catch {
-      /* fall back to default */
+      /* fall back */
     }
-    return Math.max(0.024, Math.min(0.05, half + 0.009));
+    return clamp(half + 0.006, ROBOT_DIMS.gripClosed, ROBOT_DIMS.gripOpen);
   }
 
-  // Hard-place the held object at the joint frame (used after teleports).
   function snapHeldToGripper() {
     const obj = state.held;
     if (!obj || !obj.body) return;
@@ -354,7 +445,6 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
     obj.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
   }
 
-  // Forget the held object (e.g. it was removed from the physics world).
   function clearHeld() {
     for (const rec of state.savedGroups) {
       try {
@@ -390,6 +480,9 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
     state.savedGroups = [];
     try {
       obj.body.wakeUp();
+      // place, don't throw: drop with no residual gripper momentum
+      obj.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      obj.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
     } catch {
       /* ignore */
     }
@@ -408,7 +501,7 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
     if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y) || !Number.isFinite(point.z)) return false;
     const s = shoulderWorld(_a);
     const d = Math.hypot(point.x - s.x, point.y - s.y, point.z - s.z);
-    return Number.isFinite(d) && d <= reach + 0.05 && d >= 0.04;
+    return Number.isFinite(d) && d <= reach + REACH_TOLERANCE && d >= 0.04;
   }
 
   function getGripperPose(pos = new THREE.Vector3(), quat = new THREE.Quaternion()) {
@@ -419,21 +512,33 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
   }
 
   function sync() {
-    // Used after teleports: park or freeze the arm, then hard-set the body pose.
-    const target = state.held ? state.frozenLocal : parkLocal;
-    const worldPoint = _b.copy(target).applyMatrix4(group.matrixWorld);
-    solveWorld(worldPoint);
+    if (state.held) {
+      const worldTarget = _c.copy(state.frozenLocal).applyMatrix4(group.matrixWorld);
+      const sol = solve(group.worldToLocal(worldTarget));
+      state.target.baseYaw = sol.baseYaw;
+      state.target.q2 = sol.q2;
+      state.target.q3 = sol.q3;
+      advanceTo(state.target, 0, true);
+    } else {
+      state.target.baseYaw = Math.PI;
+      state.target.q2 = ROBOT_DIMS.park.shoulder;
+      state.target.q3 = ROBOT_DIMS.park.elbow;
+      advanceTo(state.target, 0, true);
+    }
+    applyPose();
     writeGripperBody(true);
   }
 
   function reset() {
     release();
-    state.frozenLocal.copy(parkLocal);
+    state.baseYaw = Math.PI;
+    state.q2 = ROBOT_DIMS.park.shoulder;
+    state.q3 = ROBOT_DIMS.park.elbow;
     sync();
     parts.setGrip(1);
   }
 
-  // Keep the gripper body parked at the initial pose until the first update.
+  applyPose();
   writeGripperBody(true);
 
   return {
@@ -445,11 +550,11 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
     get joint() {
       return state.joint;
     },
-    get extension() {
-      return state.ext;
-    },
     get angles() {
-      return { yawBase: state.yawBase, t1: state.t1, t2: state.t2 };
+      return { baseYaw: state.baseYaw, q2: state.q2, q3: state.q3 };
+    },
+    get dof() {
+      return 3;
     },
     get gripperBody() {
       return gripperBody;

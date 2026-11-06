@@ -54,6 +54,14 @@ The app is a single HTML with inline JS/WASM: it must also work from `file://`.
 
 `window.__APP__.errors` accumulates runtime errors.
 
+## Robot spec (round 2)
+
+7 kg sweeper base (350 mm dia, 120 mm tall, 2 driven 70 mm wheels + caster, 0.40 m/s, 0.55 boost) +
+K12-class 3-DOF arm (Dobot Magician class): 0.5 kg payload, 0.34 m reach, joint speed ≤320°/s,
+shoulder at 0.26 m. Coffee-table objects are reachable by driving under the table; dining-table/kitchen-counter
+objects are intentionally out of reach. Heavy furniture must move <0.01 m under a 2 s boost push; walls never move.
+See `docs/ROBOT_SPEC.md` and `docs/MASS_TABLE.md`.
+
 ## Targeting model (v3)
 
 Third person is pointer-based: the mouse cursor aims, the highlight ring/target label follows the pointer, and the
@@ -74,13 +82,14 @@ what is under the pointer. `qa.aimAt(name)` also sets the pointer after the came
 
 1. No console errors/warnings; no failed requests; no network beyond the HTML itself.
 2. Single-file build 3–9 MB; loads in ≤ 8 s; ≥ 50 fps at 1440×900 on M2.
-3. WASD + boost drive; mouse orbit/zoom; click grabs a liftable object, click places it; heavy objects refuse with mass shown.
-4. 360 panels + minimap show live scene (not black/white); robot hidden from feeds.
-5. Objects settle without jitter; stacked items stay stacked; no floating/clipping.
-6. Masses are realistic and visible: sofa 85 kg / fridge 95 / bed 75 / wardrobe 120 immovable by arm; mug 0.32 / laptop 1.6 / needle 1.2 g liftable.
+3. WASD + boost drive at 0.40/0.55 m/s; mouse orbit/zoom; click grabs a liftable object (≤0.5 kg), click places it; heavy objects refuse with mass shown.
+4. 360 panels + minimap show live scene (not black/white); robot hidden from feeds; colour-coded trajectory visible in minimap only.
+5. Objects settle without jitter; stacked items stay stacked; no floating/clipping; spawn interpenetration ≤2 mm.
+6. Masses are realistic and visible: sofa 85 / fridge 95 / bed 75 / wardrobe 120 move <0.01 m under boost; chair 5.5 slides; mug 0.32 liftable, laptop 1.6 refused; needle 1.2 g liftable.
 7. All six rooms reachable, furnished, plausible lived-in mess; no visible holes/z-fighting.
-8. UI is lean, monospace, no prose paragraphs; no layout overflow at 390×844.
+8. UI is lean, monospace, no prose paragraphs; no layout overflow at 390×844; control panel highlights active keys and modes.
 9. Live URL serves the same build marker.
+10. Walls/floors/ceiling are static and bit-identical after driving into them; gravity −9.81; fixed 60 Hz; 171/171 masses audited.
 
 ## Report format
 

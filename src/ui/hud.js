@@ -32,6 +32,18 @@ export function createHud(root) {
     <div class="hud-cursor" id="hud-cursor"></div>
     <div class="hud-target" id="hud-target" hidden></div>
     <div class="hud-held" id="hud-held" hidden></div>
+    <div class="hud-controls" id="hud-controls">
+      <div class="hud-controls-head"><span>CONTROL</span><span class="hud-arm" id="hud-arm">ARM 0.5 KG · 0.34 M</span></div>
+      <div class="hud-row"><span class="hud-keys"><kbd data-key="KeyW">W</kbd><kbd data-key="KeyA">A</kbd><kbd data-key="KeyS">S</kbd><kbd data-key="KeyD">D</kbd></span><span class="hud-act">MOVE</span></div>
+      <div class="hud-row"><span class="hud-keys"><kbd data-key="ShiftLeft">SHIFT</kbd></span><span class="hud-act">BOOST</span></div>
+      <div class="hud-row"><span class="hud-keys"><kbd data-key="Mouse">MOUSE</kbd></span><span class="hud-act">LOOK</span></div>
+      <div class="hud-row"><span class="hud-keys"><kbd data-key="Mouse">CLICK</kbd><kbd data-key="Space">SPACE</kbd></span><span class="hud-act">GRAB</span></div>
+      <div class="hud-row"><span class="hud-keys"><kbd data-key="KeyV">V</kbd></span><span class="hud-act">VIEW <b id="hud-view">THIRD</b></span></div>
+      <div class="hud-row"><span class="hud-keys"><kbd data-key="KeyC">C</kbd></span><span class="hud-act">360 <b id="hud-360">ON</b></span></div>
+      <div class="hud-row"><span class="hud-keys"><kbd data-key="KeyL">L</kbd></span><span class="hud-act">LIGHT <b id="hud-light">DAY</b></span></div>
+      <div class="hud-row"><span class="hud-keys"><kbd data-key="KeyH">H</kbd><kbd data-key="KeyR">R</kbd></span><span class="hud-act">HINT · RESET</span></div>
+      <div class="hud-trail"><span>TRAIL</span><i></i><span>SLOW · FAST</span></div>
+    </div>
     <div class="hud-hint" id="hud-hint">WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L</div>
     <div class="hud-toast" id="hud-toast" hidden></div>
     <div class="hud-fps" id="hud-fps" hidden></div>
@@ -48,6 +60,11 @@ export function createHud(root) {
     target: root.querySelector('#hud-target'),
     held: root.querySelector('#hud-held'),
     hint: root.querySelector('#hud-hint'),
+    controls: root.querySelector('#hud-controls'),
+    arm: root.querySelector('#hud-arm'),
+    viewBadge: root.querySelector('#hud-view'),
+    surroundBadge: root.querySelector('#hud-360'),
+    lightBadge: root.querySelector('#hud-light'),
     toast: root.querySelector('#hud-toast'),
     fps: root.querySelector('#hud-fps'),
   };
@@ -134,7 +151,54 @@ export function createHud(root) {
     }, 1900);
   }
 
+  const keyEls = [...root.querySelectorAll('kbd[data-key]')];
+  let lastMode = '';
+  let lastSurround = null;
+  let lastNight = null;
+  let lastArm = '';
+
+  function setBadge(el, text, on) {
+    setText(el, text);
+    el.classList.toggle('is-on', !!on);
+  }
+
+  function updateControls(s) {
+    const c = s.controls;
+    if (!c) return;
+    const keys = c.keys || new Set();
+    for (const el of keyEls) {
+      const key = el.dataset.key;
+      let on = false;
+      if (key === 'ShiftLeft') on = keys.has('ShiftLeft') || keys.has('ShiftRight');
+      else if (key === 'Mouse') on = key === 'Mouse' ? !!c.pointerDown || !!c.dragging : false;
+      else if (key === 'Space') on = keys.has('Space');
+      else on = keys.has(key);
+      if (key === 'Mouse') on = !!c.pointerDown || !!c.dragging;
+      el.classList.toggle('is-on', on);
+    }
+    if (s.mode !== lastMode) {
+      lastMode = s.mode;
+      setBadge(els.viewBadge, s.mode === 'first' ? 'FIRST' : 'THIRD', s.mode === 'first');
+    }
+    if (s.surround !== lastSurround) {
+      lastSurround = s.surround;
+      setBadge(els.surroundBadge, s.surround ? 'ON' : 'OFF', s.surround);
+    }
+    if (s.night !== lastNight) {
+      lastNight = s.night;
+      setBadge(els.lightBadge, s.night ? 'NIGHT' : 'DAY', s.night);
+    }
+    if (c.arm) {
+      const txt = `ARM ${formatMass(c.arm.maxLiftKg)} · ${c.arm.reach.toFixed(2)} M`;
+      if (txt !== lastArm) {
+        lastArm = txt;
+        setText(els.arm, txt);
+      }
+    }
+  }
+
   function update(s) {
+    updateControls(s);
     setText(els.room, s.roomLabel || '');
     setText(els.needle, 'NEEDLE FOUND');
     els.needle.hidden = !s.needleFound;

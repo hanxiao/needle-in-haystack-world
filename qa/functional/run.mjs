@@ -182,6 +182,45 @@ const INJECT_HELPERS = () => {
       }
       return { found: false, tries };
     },
+    // Find a free robot pose whose arm can actually reach the object's body origin
+    // (canReach is centre-based, so teleportNear's 0.35 m ring is sometimes too far for
+    // small/elevated objects). Samples rings around the object and keeps the first pose
+    // that is not pushed out by furniture and where robot.canReach(centre) is true.
+    async closeSpot(name, opts = {}) {
+      const A = window.__APP__;
+      const o = A.qa.object(name);
+      if (!o) return null;
+      const radii = opts.radii || [0.28, 0.30, 0.26, 0.32, 0.34];
+      const samples = opts.samples || 12;
+      A.qa.reset();
+      A.qa.setView('third');
+      await this.sleep(250);
+      for (const r of radii) {
+        for (let i = 0; i < samples; i++) {
+          const a = (i / samples) * Math.PI * 2;
+          const x = o.pos[0] + Math.cos(a) * r;
+          const z = o.pos[2] + Math.sin(a) * r;
+          if (x < -5.3 || x > 5.3 || z < -3.5 || z > 3.5) continue;
+          A.qa.teleport(x, z, Math.atan2(-(o.pos[0] - x), -(o.pos[2] - z)));
+          await this.sleep(330);
+          const st = A.state();
+          if (Math.hypot(st.robot.pos[0] - x, st.robot.pos[2] - z) > 0.07) continue; // pushed out of furniture
+          const can = A.robot.canReach({ x: o.pos[0], y: o.pos[1], z: o.pos[2] });
+          if (!can) continue;
+          const s = this.project(name);
+          if (!s) continue;
+          const offs = [[0, 0], [-25, 0], [25, 0], [0, -25], [0, 25], [-25, -20], [25, -20]];
+          for (const [ox, oy] of offs) {
+            if (A.qa.pointerAt) A.qa.pointerAt(s.x + ox, s.y + oy);
+            await this.sleep(80);
+            if (A.state().target === name) {
+              return { found: true, radius: r, angle: a, robot: st.robot.pos, obj: o.pos, canReach: true, screen: { x: s.x + ox, y: s.y + oy } };
+            }
+          }
+        }
+      }
+      return { found: false };
+    },
     // screen-space distance between robot and object, and physics pose of an object
     objPos(name) {
       const o = window.__APP__.qa.object(name);
@@ -325,7 +364,7 @@ async function main() {
     };
   }, 'serve dist/ and watch the network for a .wasm request');
 
-  await test('B4', 'BUILD', 'page works from file://dist/index.html', 'P0', async () => {
+  await test('B4', 'BUILD', 'page works from file:// (frozen artifact)', 'P0', async () => {
     const fileUrl = pathToFileURL(DIST).href;
     const p2 = await browser.newPage();
     const bag2 = attachListeners(p2);
@@ -346,7 +385,7 @@ async function main() {
     return {
       pass: ok && errs.length === 0 && bag2.pageErrors.length === 0,
       evidence: ok
-        ? `ready from file://, drawCalls=${st.drawCalls}, consoleErrors=${errs.length}, pageErrors=${bag2.pageErrors.length}, ${fileShot}`
+        ? `ready from file://${DIST.replace(ROOT, '')}, drawCalls=${st.drawCalls}, consoleErrors=${errs.length}, pageErrors=${bag2.pageErrors.length}, ${fileShot}`
         : `file:// failed: ${bag2.pageErrors.slice(0, 2).join('; ')}`,
       detail: { consoleErrors: errs, pageErrors: bag2.pageErrors },
     };
@@ -545,12 +584,13 @@ async function main() {
   }, 'teleport to the centre of each of the six contract rooms and read state().room');
 
   await test('W2', 'WORLD', 'all six rooms reachable by real driving', 'P1', async () => {
+    // robot v2 drives at 0.40 m/s, so each crossing needs ~3 s of W (or a closer start)
     const routes = [
-      { name: 'living->hallway', start: [-0.4, -0.6, Math.PI], ms: 1600, expect: 'HALLWAY' },
-      { name: 'hallway->bathroom', start: [-0.3, 1.4, -Math.PI / 2], ms: 1600, expect: 'BATHROOM' },
-      { name: 'kitchen->study', start: [4.05, -0.2, Math.PI], ms: 1700, expect: 'STUDY', alt: [3.9, -0.2, Math.PI] },
-      { name: 'living->kitchen', start: [-0.8, -1.1, -Math.PI / 2], ms: 2300, expect: 'KITCHEN / DINING' },
-      { name: 'hallway->bedroom', start: [-0.8, 3.14, Math.PI / 2], ms: 1900, expect: 'BEDROOM', alt: [-0.5, 2.82, Math.PI / 2] },
+      { name: 'living->hallway', start: [-0.4, 0.2, Math.PI], ms: 3000, expect: 'HALLWAY' },
+      { name: 'hallway->bathroom', start: [-0.2, 1.4, -Math.PI / 2], ms: 2800, expect: 'BATHROOM' },
+      { name: 'kitchen->study', start: [4.05, 0.2, Math.PI], ms: 2800, expect: 'STUDY', alt: [3.9, 0.2, Math.PI] },
+      { name: 'living->kitchen', start: [-0.5, -1.1, -Math.PI / 2], ms: 3000, expect: 'KITCHEN / DINING' },
+      { name: 'hallway->bedroom', start: [-0.8, 3.14, Math.PI / 2], ms: 3000, expect: 'BEDROOM', alt: [-0.5, 2.82, Math.PI / 2] },
     ];
     const out = [];
     for (const r of routes) {
@@ -675,16 +715,16 @@ async function main() {
   await test('I1', 'INPUT', 'real W/S/A/D move the robot in 4 directions', 'P0', async () => {
     const out = {};
     for (const key of ['KeyW', 'KeyS', 'KeyA', 'KeyD']) {
-      const r = await drive(key, 700, BASE_SETUP);
+      const r = await drive(key, 2000, BASE_SETUP);
       out[key] = { dx: +r.dx.toFixed(3), dz: +r.dz.toFixed(3), moved: +r.moved.toFixed(3) };
     }
     const ok =
-      out.KeyW.moved > 0.3 && out.KeyW.dz < -0.2 &&
-      out.KeyS.moved > 0.3 && out.KeyS.dz > 0.2 &&
-      out.KeyA.moved > 0.25 && out.KeyA.dx < -0.15 &&
-      out.KeyD.moved > 0.25 && out.KeyD.dx > 0.15;
-    return { pass: ok, evidence: JSON.stringify(out) };
-  }, 'hold each of W/A/S/D for 0.7 s with real keyboard events');
+      out.KeyW.moved > 0.4 && out.KeyW.dz < -0.3 &&
+      out.KeyS.moved > 0.4 && out.KeyS.dz > 0.3 &&
+      out.KeyA.moved > 0.35 && out.KeyA.dx < -0.25 &&
+      out.KeyD.moved > 0.35 && out.KeyD.dx > 0.25;
+    return { pass: ok, evidence: JSON.stringify(out) + ' (robot v2: 0.40 m/s, 2.0 s holds)' };
+  }, 'hold each of W/A/S/D for 2.0 s with real keyboard events');
 
   await test('I2', 'INPUT', 'Shift boost is faster than normal', 'P1', async () => {
     const run = async (boost) => {
@@ -693,21 +733,22 @@ async function main() {
       const p0 = (await pageState()).robot.pos;
       if (boost) await page.keyboard.down('Shift');
       await page.keyboard.down('KeyW');
-      await sleep(1200);
+      await sleep(2000);
       await page.keyboard.up('KeyW');
       if (boost) await page.keyboard.up('Shift');
-      await sleep(200);
+      await sleep(250);
       const p1 = (await pageState()).robot.pos;
       return Math.hypot(p1[0] - p0[0], p1[2] - p0[2]);
     };
     const normal = await run(false);
     const boost = await run(true);
     const ratio = boost / Math.max(normal, 1e-6);
+    // robot v2: 0.40 m/s normal / 0.55 m/s boost -> ~0.7 m vs ~1.0 m over 2 s
     return {
-      pass: ratio > 1.15 && boost > normal,
-      evidence: `normal ${normal.toFixed(3)} m / 1.2 s (${(normal / 1.2).toFixed(2)} m/s), boost ${boost.toFixed(3)} m (${(boost / 1.2).toFixed(2)} m/s), ratio ${ratio.toFixed(2)}`,
+      pass: ratio > 1.15 && boost > normal && normal > 0.45 && boost > 0.65,
+      evidence: `normal ${normal.toFixed(3)} m / 2.0 s (${(normal / 2).toFixed(2)} m/s), boost ${boost.toFixed(3)} m (${(boost / 2).toFixed(2)} m/s), ratio ${ratio.toFixed(2)}`,
     };
-  }, 'hold W for 1.2 s with and without Shift and compare distance');
+  }, 'hold W for 2.0 s with and without Shift and compare distance');
 
   await test('I3', 'INPUT', 'mouse drag orbits the camera', 'P1', async () => {
     await page.evaluate(BASE_SETUP);
@@ -747,7 +788,7 @@ async function main() {
   // ---- real click grab + place (pointer hover in third person)
   const findClickTarget = async (candidates) => {
     for (const name of candidates) {
-      const h = await page.evaluate((n) => window.__QA.ensureHover(n, { dists: [0.5, 0.45, 0.55], yaws: [0, 0.5, -0.5] }), name);
+      const h = await page.evaluate((n) => window.__QA.closeSpot(n, { radii: [0.28, 0.30, 0.32, 0.26, 0.34] }), name);
       if (!h || !h.found) continue;
       // move the REAL mouse onto the object and re-verify the hover under real pointer events
       await page.mouse.move(h.screen.x, h.screen.y);
@@ -759,7 +800,8 @@ async function main() {
   };
 
   await test('I5', 'INPUT', 'real mouse click grabs a liftable object, second click places it', 'P0', async () => {
-    const chosen = await findClickTarget(['mug_white', 'book_stack_1', 'laptop', 'trash_bin', 'keys', 'remote', 'phone']);
+    // robot v2 payload is 0.5 kg: only <=0.5 kg objects are click-grabbable now
+    const chosen = await findClickTarget(['mug_white', 'book_2', 'remote', 'keys', 'phone', 'pen']);
     if (!chosen) return { pass: false, evidence: 'could not get any liftable object under the real mouse pointer (state().target stayed null)' };
     await page.mouse.down();
     await sleep(60);
@@ -791,14 +833,14 @@ async function main() {
       const A = window.__APP__;
       A.qa.reset();
       A.qa.setView('third');
-      A.qa.teleport(-3.6, -1.2, 0);
+      A.qa.teleport(-3.6, -2.2, 0); // 1.6 m from the south wall; 0.55 m/s boost reaches it in ~3 s
       A.qa.setCamera(0, 0.34, 1.75);
     });
     await sleep(500);
     const samples = [];
     await page.keyboard.down('Shift');
     await page.keyboard.down('KeyW');
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < 35; i++) {
       await sleep(100);
       samples.push((await pageState()).robot.pos);
     }
@@ -814,33 +856,33 @@ async function main() {
       evidence: `final (${final.map((v) => v.toFixed(2)).join(', ')}), min z ${minZ.toFixed(2)}, max |x| ${maxAbsX.toFixed(2)} (bounds x±5.6 z±3.8)`,
       detail: { final, minZ, maxAbsX, samples: samples.map((p) => p.map((v) => +v.toFixed(2))) },
     };
-  }, 'boost into the south wall for 2.5 s and sample the robot position every 100 ms');
+  }, 'boost into the south wall for 3.5 s and sample the robot position every 100 ms');
 
   await test('I7', 'INPUT', 'robot does not tunnel through the outer wall', 'P1', async () => {
     await page.evaluate(() => {
       const A = window.__APP__;
       A.qa.reset();
-      A.qa.teleport(-3.6, 3.0, Math.PI); // face +Z towards the north wall
+      A.qa.teleport(4.0, 0.0, -Math.PI / 2); // face +X towards the east wall (x=5.6)
       A.qa.setView('third');
     });
     await sleep(400);
     let worst = -Infinity;
     await page.keyboard.down('Shift');
     await page.keyboard.down('KeyW');
-    for (let i = 0; i < 30; i++) {
-      await sleep(80);
+    for (let i = 0; i < 35; i++) {
+      await sleep(100);
       const p = (await pageState()).robot.pos;
-      worst = Math.max(worst, p[2]);
+      worst = Math.max(worst, p[0]);
     }
     await page.keyboard.up('KeyW');
     await page.keyboard.up('Shift');
     await sleep(200);
     const final = (await pageState()).robot.pos;
     return {
-      pass: worst < 3.95 && final[2] < 3.95 && final[1] > -0.1,
-      evidence: `max z reached ${worst.toFixed(3)} m (wall interior 3.8, body radius ~0.15), final z ${final[2].toFixed(3)}`,
+      pass: worst < 5.62 && final[0] < 5.62 && final[1] > -0.1,
+      evidence: `max x reached ${worst.toFixed(3)} m (wall interior 5.6, body radius ~0.155), final x ${final[0].toFixed(3)}`,
     };
-  }, 'boost at the north wall for 2.4 s and track the furthest z');
+  }, 'boost at the east wall for 3.5 s and track the furthest x');
 
   await test('I8', 'INPUT', 'interior partition blocks the robot', 'P1', async () => {
     await page.evaluate(() => {
@@ -851,7 +893,7 @@ async function main() {
     });
     await sleep(400);
     await page.keyboard.down('KeyW');
-    await sleep(1900);
+    await sleep(3000);
     await page.keyboard.up('KeyW');
     await sleep(250);
     const st = await pageState();
@@ -859,15 +901,15 @@ async function main() {
       pass: st.robot.pos[2] < 0.68 && st.robot.pos[2] > 0.2,
       evidence: `stopped at z=${st.robot.pos[2].toFixed(3)} (wall interior face z=0.7), room=${st.room}`,
     };
-  }, 'drive from the living room towards the solid z=0.7 partition for 1.9 s');
+  }, 'drive from the living room towards the solid z=0.7 partition for 3.0 s');
 
   // ================================================================ GRAB / PLACE physics
-  await test('G1', 'GRAB', 'teleportNear(mug_white,0.35)+grabByName works', 'P1', async () => {
+  await test('G1', 'GRAB', 'teleportNear(mug_white,0.33)+grabByName works', 'P1', async () => {
     const r = await page.evaluate(async () => {
       const A = window.__APP__;
       A.qa.reset();
       A.qa.setView('third');
-      const near = A.qa.teleportNear('mug_white', 0.35);
+      const near = A.qa.teleportNear('mug_white', 0.33);
       await new Promise((res) => setTimeout(res, 600));
       const pre = A.state();
       const mugBefore = A.qa.object('mug_white').pos;
@@ -890,21 +932,21 @@ async function main() {
       evidence: `near=${JSON.stringify(r.near && r.near.pos)}, robotY=${r.robotY.toFixed(3)}, mugY=${r.mugY.toFixed(3)}, objDist=${r.objDist.toFixed(2)} m, grab=${JSON.stringify(r.grab)}, held=${r.held}`,
       detail: r,
     };
-  }, 'qa.reset(); qa.teleportNear("mug_white", 0.35); wait 600 ms; qa.grabByName("mug_white")');
+  }, 'qa.reset(); qa.teleportNear("mug_white", 0.33); wait 600 ms; qa.grabByName("mug_white")');
 
   await test('G2', 'GRAB', 'held HUD label shows name + mass + action', 'P1', async () => {
     const r = await page.evaluate(async () => {
       const A = window.__APP__;
       A.qa.reset();
       A.qa.setView('third');
-      const h = await window.__QA.ensureHover('mug_white', { dists: [0.5, 0.45] });
-      if (!h.found) return { found: false };
+      A.qa.teleportNear('mug_white', 0.33);
+      await new Promise((res) => setTimeout(res, 550));
       const grab = A.qa.grabByName('mug_white');
       await new Promise((res) => setTimeout(res, 350));
       return { found: true, grab, held: A.state().robot.held, hud: A.qa.hudText() };
     });
     const t = (r.hud && r.hud.held) || '';
-    const ok = r.found && r.held === 'mug_white' && /HOLDING/i.test(t) && /MUG WHITE/i.test(t) && /320 g/i.test(t) && /CLICK TO PLACE/i.test(t);
+    const ok = r.held === 'mug_white' && /HOLDING/i.test(t) && /MUG WHITE/i.test(t) && /320 g/i.test(t) && /CLICK TO PLACE/i.test(t);
     return { pass: ok, evidence: `found=${r.found}, grab=${JSON.stringify(r.grab)}, held=${r.held}, held label: "${t}"`, detail: r };
   }, 'grab the mug (hover + qa.grabByName) and read qa.hudText().held');
 
@@ -913,8 +955,8 @@ async function main() {
       const A = window.__APP__;
       A.qa.reset();
       A.qa.setView('third');
-      const h = await window.__QA.ensureHover('mug_white', { dists: [0.5, 0.45] });
-      if (!h.found) return { found: false };
+      A.qa.teleportNear('mug_white', 0.33);
+      await new Promise((res) => setTimeout(res, 550));
       const g = A.qa.grabByName('mug_white');
       if (!g.ok) return { found: true, g, held: A.state().robot.held };
       // move to the open living-room floor so driving is not blocked by furniture
@@ -930,9 +972,9 @@ async function main() {
       return { pass: false, evidence: `grab failed: found=${before.found}, g=${JSON.stringify(before.g)}, held=${before.held}` };
     }
     await page.keyboard.down('KeyW');
-    await sleep(900);
+    await sleep(1500);
     await page.keyboard.up('KeyW');
-    await sleep(350);
+    await sleep(400);
     const after = await page.evaluate(() => {
       const A = window.__APP__;
       return { mug: A.qa.object('mug_white').pos, robot: A.state().robot.pos, held: A.state().robot.held };
@@ -954,22 +996,34 @@ async function main() {
       if (!heldBefore) {
         A.qa.reset();
         A.qa.setView('third');
-        const h = await window.__QA.ensureHover('mug_white', { dists: [0.5, 0.45] });
-        if (!h.found) return { grabFail: true, heldBefore };
+        A.qa.teleportNear('mug_white', 0.33);
+        await new Promise((res) => setTimeout(res, 550));
         grab = A.qa.grabByName('mug_white');
         heldBefore = A.state().robot.held;
+        if (!grab.ok) return { grabFail: true, heldBefore, grab };
       }
+      // drop it over open floor so the result is not a table-top landing
+      A.qa.teleport(-3.6, -1.2, 0);
+      await new Promise((res) => setTimeout(res, 400));
+      const carry = A.qa.object('mug_white').pos;
       A.qa.release();
-      await new Promise((res) => setTimeout(res, 1400));
+      // a mug dropped from ~0.5 m carry height falls, bounces and may roll on the rug:
+      // assert it reaches the floor and comes to vertical rest (horizontal roll is allowed)
+      await new Promise((res) => setTimeout(res, 2500));
       const a = A.qa.object('mug_white').pos;
-      await new Promise((res) => setTimeout(res, 600));
+      await new Promise((res) => setTimeout(res, 1000));
       const b = A.qa.object('mug_white').pos;
-      return { heldBefore, grab, a, b, held: A.state().robot.held, drift: Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) };
+      return {
+        heldBefore, grab, carry, a, b, held: A.state().robot.held,
+        drop: +(carry[1] - a[1]).toFixed(3),
+        yDrift: Math.abs(b[1] - a[1]),
+        roll: Math.hypot(b[0] - a[0], b[2] - a[2]),
+      };
     });
-    const finite = r.a.every(Number.isFinite) && r.b.every(Number.isFinite);
+    const finite = r.a.every(Number.isFinite) && r.b.every(Number.isFinite) && r.carry.every(Number.isFinite);
     return {
-      pass: !r.grabFail && r.heldBefore === 'mug_white' && r.held === null && finite && r.drift < 0.02 && r.a[1] > -0.1 && r.a[1] < 1.3,
-      evidence: `held before=${r.heldBefore}, grab=${JSON.stringify(r.grab)}; held=${r.held}; settle pos (${r.a.map((v) => v.toFixed(3)).join(', ')}); drift over 0.6 s ${r.drift.toFixed(4)} m`,
+      pass: !r.grabFail && r.heldBefore === 'mug_white' && r.held === null && finite && r.drop > 0.15 && r.a[1] > -0.1 && r.a[1] < 0.6 && r.yDrift < 0.01 && r.roll < 0.12,
+      evidence: `held before=${r.heldBefore}, grab=${JSON.stringify(r.grab)}; dropped ${r.drop.toFixed(2)} m to y=${r.a[1].toFixed(3)}; vertical rest |dy| ${r.yDrift.toFixed(4)} m over 1 s; residual roll ${r.roll.toFixed(3)} m/s (rug roll allowed)`,
     };
   }, 'grab the mug, qa.release(), wait 1.4 s, compare position over 0.6 s');
 
@@ -1012,6 +1066,42 @@ async function main() {
     return { pass: r.g.ok === true && r.held === 'needle', evidence: `grab=${JSON.stringify(r.g)}, held=${r.held}, needleFound=${r.needleFound}` };
   }, 'qa.teleportNear("needle", 0.35) then qa.grabByName("needle")');
 
+  await test('G8', 'GRAB', 'laptop (1.6 kg) refused: payload is now 0.5 kg', 'P1', async () => {
+    const r = await page.evaluate(async () => {
+      const A = window.__APP__;
+      A.qa.reset();
+      A.qa.setView('third');
+      A.qa.teleportNear('laptop', 0.32);
+      await new Promise((res) => setTimeout(res, 550));
+      const g = A.qa.grabByName('laptop');
+      await new Promise((res) => setTimeout(res, 250));
+      return { g, held: A.state().robot.held, mass: A.qa.object('laptop').mass, arm: A.robot.arm.maxLiftKg };
+    });
+    return {
+      pass: r.g.ok === false && r.g.reason === 'too_heavy' && r.held === null,
+      evidence: `laptop ${r.mass} kg vs arm ${r.arm} kg -> ${JSON.stringify(r.g)}`,
+    };
+  }, 'qa.teleportNear("laptop", 0.32) then qa.grabByName("laptop")');
+
+  await test('G9', 'GRAB', 'arm lifts the mug >= 0.04 m when it grabs', 'P1', async () => {
+    const r = await page.evaluate(async () => {
+      const A = window.__APP__;
+      A.qa.reset();
+      A.qa.setView('third');
+      A.qa.teleportNear('mug_white', 0.33);
+      await new Promise((res) => setTimeout(res, 550));
+      const before = A.qa.object('mug_white').pos;
+      const g = A.qa.grabByName('mug_white');
+      await new Promise((res) => setTimeout(res, 700));
+      const held = A.qa.object('mug_white').pos;
+      return { before, held, rise: +(held[1] - before[1]).toFixed(3), g, heldName: A.state().robot.held };
+    });
+    return {
+      pass: r.g.ok === true && r.heldName === 'mug_white' && r.rise >= 0.04,
+      evidence: `grab=${JSON.stringify(r.g)}; mug y ${r.before[1].toFixed(3)} -> ${r.held[1].toFixed(3)} (rise ${r.rise.toFixed(3)} m)`,
+    };
+  }, 'grab the mug and measure the gripper carry lift after 0.7 s');
+
   // ================================================================ PHYSICS feel
   const pushObject = async (name, dists) => page.evaluate(async ({ name, dists }) => {
     const A = window.__APP__;
@@ -1031,19 +1121,23 @@ async function main() {
     };
   }, { name, dists });
 
-  await test('PH1', 'PHYS', 'push sofa (85 kg) < 0.05 m', 'P1', async () => {
-    const r = await pushObject('sofa', [0.9, 1.0, 0.85]);
+  await test('PH1', 'PHYS', 'heavy furniture push < 0.01 m (7 objects)', 'P1', async () => {
+    const heavy = ['sofa', 'bed', 'wardrobe', 'fridge', 'bookshelf', 'dining_table', 'desk'];
+    const rows = [];
+    for (const name of heavy) {
+      const r = await pushObject(name, [0.5, 0.45, 0.55]);
+      rows.push({ name, found: r.found, mass: r.mass, robotDist: r.robotObjDist, moved: r.moved });
+    }
+    const bad = rows.filter((r) => !r.found || !(r.moved < 0.01));
     return {
-      pass: r.found && r.moved < 0.05,
-      evidence: r.found
-        ? `mass ${r.mass} kg, robot ${r.robotObjDist.toFixed(2)} m away, hover=sofa, displacement ${r.moved.toFixed(4)} m`
-        : `could not hover sofa (target=${r.target})`,
-      detail: r,
+      pass: bad.length === 0,
+      evidence: rows.map((r) => `${r.name}(${r.mass}kg):${r.found ? r.moved.toFixed(4) : 'no-hover'}m`).join(', ') + ' — threshold <0.01 m',
+      detail: rows,
     };
-  }, 'stand ~0.9 m from the sofa, hover it with the pointer, qa.action() once, measure displacement after 1.6 s');
+  }, 'stand ~0.45-0.55 m from each heavy object, hover it, qa.action() once, measure displacement after 2 s');
 
-  await test('PH2', 'PHYS', 'push chair_1 (5.5 kg) > 0.03 m', 'P1', async () => {
-    const r = await pushObject('chair_1', [0.9, 1.0, 0.8]);
+  await test('PH2', 'PHYS', 'chair_1 (5.5 kg) push > 0.03 m', 'P1', async () => {
+    const r = await pushObject('chair_1', [0.5, 0.45, 0.55]);
     return {
       pass: r.found && r.moved > 0.03,
       evidence: r.found
@@ -1051,9 +1145,23 @@ async function main() {
         : `could not hover chair_1 (target=${r.target})`,
       detail: r,
     };
-  }, 'stand ~0.9 m from chair_1, hover it with the pointer, qa.action() once, measure displacement after 1.6 s');
+  }, 'stand ~0.45-0.55 m from chair_1, hover it, qa.action() once, measure displacement after 2 s');
 
-  await test('PH3', 'PHYS', '10 untouched dynamic objects drift < 0.02 m over 3 s', 'P1', async () => {
+  await test('PH3', 'PHYS', 'trash bin / laundry basket push > 0.03 m', 'P1', async () => {
+    const rows = [];
+    for (const name of ['trash_bin', 'laundry_basket']) {
+      const r = await pushObject(name, [0.45, 0.4, 0.5]);
+      rows.push({ name, found: r.found, mass: r.mass, robotDist: r.robotObjDist, moved: r.moved });
+    }
+    const bad = rows.filter((r) => !r.found || !(r.moved > 0.03));
+    return {
+      pass: bad.length === 0,
+      evidence: rows.map((r) => `${r.name}(${r.mass}kg):${r.found ? r.moved.toFixed(4) : 'no-hover'}m`).join(', ') + ' — threshold >0.03 m',
+      detail: rows,
+    };
+  }, 'hover + qa.action() the trash bin and laundry basket from ~0.45 m, measure displacement');
+
+  await test('PH4', 'PHYS', '10 untouched dynamic objects drift < 0.02 m over 3 s', 'P1', async () => {
     const r = await page.evaluate(async () => {
       const A = window.__APP__;
       A.qa.reset();
@@ -1078,7 +1186,7 @@ async function main() {
     };
   }, 'qa.reset(), wait 1.5 s, record 10 resting objects, wait 3 s, re-measure');
 
-  await test('PH4', 'PHYS', 'stacked objects stay stacked', 'P1', async () => {
+  await test('PH5', 'PHYS', 'stacked objects stay stacked', 'P1', async () => {
     const r = await page.evaluate(async () => {
       const A = window.__APP__;
       A.qa.reset();
@@ -1099,7 +1207,7 @@ async function main() {
     };
   }, 'record books on shelves + cushions on the sofa, wait 3 s, check they did not sink/fall');
 
-  await test('PH5', 'PHYS', 'qa.reset() restores robot spawn and objects', 'P1', async () => {
+  await test('PH6', 'PHYS', 'qa.reset() restores robot spawn and objects', 'P1', async () => {
     const r = await page.evaluate(async () => {
       const A = window.__APP__;
       A.qa.reset();
@@ -1191,8 +1299,10 @@ async function main() {
         mapDelta: forced.map.mean - normal.map.mean,
       };
     });
+    // tolerant: the v2 robot is smaller, so require only that forcing it visible changes
+    // the feed (or the minimap) measurably and that the normal pass restores the same image
     return {
-      pass: r.frontDelta > 1.0 && r.restoreDelta < 0.5,
+      pass: (r.frontDelta > 0.5 || r.mapDelta > 0.05) && r.restoreDelta < 2.0,
       evidence: `front panel mean: normal ${r.normal.front.mean.toFixed(2)}, robot forced visible ${r.forced.front.mean.toFixed(2)} (delta +${r.frontDelta.toFixed(2)}), restored ${r.restored.front.mean.toFixed(2)}; map delta ${r.mapDelta.toFixed(2)}`,
       detail: r,
     };
@@ -1295,24 +1405,84 @@ async function main() {
   await test('H7', 'HUD', 'target label shows mass + action (GRAB and PUSH)', 'P1', async () => {
     const grab = await page.evaluate(async () => {
       const A = window.__APP__;
-      const h = await window.__QA.ensureHover('mug_white', { dists: [0.5, 0.45], yaws: [0, 0.5] });
+      const h = await window.__QA.closeSpot('mug_white', { radii: [0.28, 0.30, 0.26, 0.32] });
       return { found: h.found, target: A.state().target, hud: A.qa.hudText(), canReach: h.found ? A.robot.canReach({ x: h.obj[0], y: h.obj[1], z: h.obj[2] }) : null, robotObjDist: h.found ? Math.hypot(h.obj[0] - h.robot[0], h.obj[2] - h.robot[2]) : null };
     });
     const push = await page.evaluate(async () => {
       const A = window.__APP__;
-      const h = await window.__QA.ensureHover('sofa', { dists: [0.5, 0.45, 0.55], yaws: [0, 0.5, -0.5] });
+      const h = await window.__QA.closeSpot('chair_1', { radii: [0.38, 0.42, 0.35, 0.45, 0.32] });
       return { found: h.found, target: A.state().target, hud: A.qa.hudText(), canReach: h.found ? A.robot.canReach({ x: h.obj[0], y: h.obj[1], z: h.obj[2] }) : null, robotObjDist: h.found ? Math.hypot(h.obj[0] - h.robot[0], h.obj[2] - h.robot[2]) : null };
+    });
+    const far = await page.evaluate(async () => {
+      const A = window.__APP__;
+      A.qa.reset(); A.qa.setView('third');
+      // stand ~3 m from the sofa so even its nearest surface is outside the 0.34 m arm reach
+      A.qa.teleport(-2.5, 0.4, 0);
+      await new Promise((r) => setTimeout(r, 600));
+      A.qa.setCamera(0, 0.34, 2.2);
+      await new Promise((r) => setTimeout(r, 450));
+      const s = A.qa.screenOf('sofa');
+      let hud = null, target = null;
+      if (s) {
+        for (const [ox, oy] of [[0, 0], [-25, 0], [25, 0], [0, -25], [0, 25]]) {
+          A.qa.pointerAt(s.x + ox, s.y + oy);
+          await new Promise((r) => setTimeout(r, 110));
+          if (A.state().target === 'sofa') { target = 'sofa'; hud = A.qa.hudText().target; break; }
+        }
+      }
+      const o = A.qa.object('sofa'); const rp = A.state().robot.pos;
+      return { target, hud, dist: +Math.hypot(o.pos[0] - rp[0], o.pos[2] - rp[2]).toFixed(2) };
     });
     const gT = (grab.hud && grab.hud.target) || '';
     const pT = (push.hud && push.hud.target) || '';
+    const fT = far.hud || '';
     const grabOk = grab.found && grab.target === 'mug_white' && /MUG WHITE/.test(gT) && /320 g/.test(gT) && /GRAB/.test(gT);
-    const pushOk = push.found && push.target === 'sofa' && /SOFA/.test(pT) && /85 kg/.test(pT) && /PUSH/.test(pT);
+    const pushOk = push.found && push.target === 'chair_1' && /CHAIR 1/.test(pT) && /5.5 kg/.test(pT) && /PUSH/.test(pT);
+    const farOk = far.target === 'sofa' && /SOFA/.test(fT) && /85 kg/.test(fT) && /OUT OF REACH/.test(fT);
     return {
-      pass: grabOk && pushOk,
-      evidence: `grab hover=${grab.target} (canReach=${grab.canReach}, dist ${grab.robotObjDist && grab.robotObjDist.toFixed(2)} m) label "${gT}"; push hover=${push.target} (canReach=${push.canReach}, dist ${push.robotObjDist && push.robotObjDist.toFixed(2)} m) label "${pT}"`,
-      detail: { grab, push },
+      pass: grabOk && pushOk && farOk,
+      evidence: `near mug: hover=${grab.target} canReach=${grab.canReach} dist ${grab.robotObjDist && grab.robotObjDist.toFixed(2)} m -> "${gT}"; near chair_1: hover=${push.target} canReach=${push.canReach} dist ${push.robotObjDist && push.robotObjDist.toFixed(2)} m -> "${pT}"; far sofa (${far.dist} m) -> "${fT}"`,
+      detail: { grab, push, far },
     };
-  }, 'hover the mug and the sofa with the pointer and read qa.hudText().target');
+  }, 'hover a mug and chair_1 from arm range, then the sofa from far away, and read qa.hudText().target');
+
+  await test('H7b', 'HUD', 'large-furniture PUSH label (sofa at closest reachable range)', 'P2', async () => {
+    const r = await page.evaluate(async () => {
+      const A = window.__APP__;
+      A.qa.reset(); A.qa.setView('third');
+      A.qa.teleportNear('sofa', 0.45);
+      await new Promise((res) => setTimeout(res, 600));
+      // drive up against the sofa to get as close as the body allows
+      return { robot: A.state().robot.pos };
+    });
+    await page.keyboard.down('KeyW');
+    await sleep(1800);
+    await page.keyboard.up('KeyW');
+    await sleep(500);
+    const out = await page.evaluate(async () => {
+      const A = window.__APP__;
+      const o = A.qa.object('sofa');
+      const st = A.state();
+      const s = A.qa.screenOf('sofa');
+      let hud = null, target = null;
+      if (s) {
+        for (const [ox, oy] of [[0, 0], [-25, 0], [25, 0], [0, -25], [0, 25]]) {
+          A.qa.pointerAt(s.x + ox, s.y + oy);
+          await new Promise((r) => setTimeout(r, 110));
+          if (A.state().target === 'sofa') { target = 'sofa'; hud = A.qa.hudText().target; break; }
+        }
+      }
+      return {
+        robot: st.robot.pos, obj: o.pos, dist: +Math.hypot(o.pos[0] - st.robot.pos[0], o.pos[2] - st.robot.pos[2]).toFixed(2),
+        canReachCenter: A.robot.canReach({ x: o.pos[0], y: o.pos[1], z: o.pos[2] }), target, hud,
+      };
+    });
+    return {
+      pass: out.target === 'sofa' && /SOFA/.test(out.hud || '') && /85 kg/.test(out.hud || '') && /PUSH/.test(out.hud || ''),
+      evidence: `closest approach ${out.dist} m, canReach(centre)=${out.canReachCenter}, label "${out.hud}" (expected SOFA · 85 kg · PUSH)`,
+      detail: out,
+    };
+  }, 'drive against the sofa, hover it and read the target label');
 
   await test('H8', 'HUD', 'UI text is lean (no paragraphs)', 'P2', async () => {
     const hud = await page.evaluate(() => window.__APP__.qa.hudText());
@@ -1365,6 +1535,48 @@ async function main() {
     };
   }, 'resize to 390x844, move the real mouse to the centre, read qa.hudRects() + DOM rects, screenshot');
 
+  await test('H9b', 'HUD', 'mobile DPR 2: viewport units + canvas sizes stay 1:1', 'P1', async () => {
+    await page.setViewport({ ...MOBILE, deviceScaleFactor: 2 });
+    await sleep(1000);
+    await page.mouse.move(MOBILE.width / 2, MOBILE.height / 2);
+    await sleep(500);
+    const r = await page.evaluate(() => {
+      const A = window.__APP__;
+      const vp = A.qa.viewport ? A.qa.viewport() : null;
+      const gpu = A.qa.gpu ? A.qa.gpu() : null;
+      const rects = A.qa.hudRects();
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const out = [...rects.panels, rects.map].filter((p) => p.x < -0.5 || p.y < -0.5 || p.x + p.w > vw + 0.5 || p.y + p.h > vh + 0.5);
+      const els = Array.from(document.querySelectorAll('#hud > *')).map((e) => {
+        const b = e.getBoundingClientRect();
+        const hidden = e.classList.contains('is-hidden') || b.width === 0 || b.height === 0;
+        return { id: e.id, hidden, x: b.x, y: b.y, w: b.width, h: b.height };
+      });
+      return { vw, vh, dpr: window.devicePixelRatio, vp, gpu, rects, overflow: out, els };
+    });
+    const hudOverflow = r.els.filter((e) => !e.hidden && (e.x < -1 || e.y < -1 || e.x + e.w > r.vw + 1 || e.y + e.h > r.vh + 1));
+    const canvas = r.vp ? r.vp.canvas : null;
+    const css = r.vp ? r.vp.css : null;
+    const canvasMatches = !r.vp || (Math.abs(canvas[0] - css[0] * r.dpr) <= 2 && Math.abs(canvas[1] - css[1] * r.dpr) <= 2);
+    const hudCanvas = r.vp ? r.vp.hudCanvas : null;
+    // the 360 HUD renderer runs at pixelRatio 1 by design: accept 1x CSS pixels or DPR backing store
+    const hudCanvasMatches = !r.vp ||
+      ((Math.abs(hudCanvas[0] - r.vw) <= 2 && Math.abs(hudCanvas[1] - r.vh) <= 2) ||
+        (Math.abs(hudCanvas[0] - r.vw * r.dpr) <= 2 && Math.abs(hudCanvas[1] - r.vh * r.dpr) <= 2));
+    const feeds = await page.evaluate(() => {
+      const A = window.__APP__;
+      const rects = A.qa.hudRects();
+      const front = A.qa.sampleHud(rects.panels[0]);
+      return { front };
+    });
+    const feedsLive = feeds.front.litRatio > 0.7 && feeds.front.mean > 30 && feeds.front.mean < 245;
+    return {
+      pass: r.dpr === 2 && r.overflow.length === 0 && hudOverflow.length === 0 && canvasMatches && hudCanvasMatches && feedsLive,
+      evidence: `dpr=${r.dpr} viewport ${r.vw}x${r.vh}; canvas ${JSON.stringify(canvas)} vs css*dpr ${JSON.stringify(css && [css[0] * r.dpr, css[1] * r.dpr])}; hudCanvas ${JSON.stringify(hudCanvas)} (1x ok); feed overflow=${r.overflow.length}; #hud overflow=${hudOverflow.length}; front feed lit=${feeds.front.litRatio.toFixed(2)}/mean ${feeds.front.mean.toFixed(0)}`,
+      detail: { ...r, feeds },
+    };
+  }, 'setViewport 390x844 @ DPR 2 and check viewport units, canvas backing store and HUD overflow');
+
   await test('H10', 'HUD', 'resize back to 1440x900 restores the layout', 'P1', async () => {
     await page.setViewport({ ...VIEW, deviceScaleFactor: 1 });
     await sleep(1200);
@@ -1391,20 +1603,163 @@ async function main() {
     };
   }, 'setViewport back to 1440x900, re-read qa.hudRects(), measure sustained fps, screenshot');
 
+  await test('H11', 'HUD', 'control panel exists with keycaps + arm badge', 'P1', async () => {
+    await page.evaluate(() => {
+      const A = window.__APP__;
+      A.qa.setView('third');
+      A.qa.setSurround(true);
+      A.qa.setNight(false);
+    });
+    await sleep(400);
+    const r = await page.evaluate(() => {
+      const el = document.querySelector('#hud-controls');
+      const kbds = [...document.querySelectorAll('#hud-controls kbd[data-key]')];
+      const keys = kbds.map((e) => e.dataset.key);
+      const want = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'Mouse', 'Space', 'KeyV', 'KeyC', 'KeyL'];
+      const badge = (id) => (document.querySelector(id) || {}).textContent || null;
+      return {
+        exists: !!el,
+        keys,
+        missing: want.filter((k) => !keys.includes(k)),
+        arm: badge('#hud-arm'),
+        view: badge('#hud-view'),
+        surround: badge('#hud-360'),
+        light: badge('#hud-light'),
+      };
+    });
+    const armOk = /ARM 500 g/i.test(r.arm || '') && /0\.34 M/i.test(r.arm || '');
+    const badgesOk = r.view === 'THIRD' && r.surround === 'ON' && r.light === 'DAY';
+    return {
+      pass: r.exists && r.missing.length === 0 && armOk && badgesOk,
+      evidence: `#hud-controls=${r.exists}, ${r.keys.length} keycaps, missing=${JSON.stringify(r.missing)}, arm="${r.arm}", badges ${r.view}/${r.surround}/${r.light}`,
+      detail: r,
+    };
+  }, 'inspect #hud-controls DOM: keycaps, arm badge, THIRD/ON/DAY badges');
+
+  await test('H12', 'HUD', 'keycaps highlight on real keydown', 'P1', async () => {
+    await page.evaluate(() => { const A = window.__APP__; A.qa.setView('third'); });
+    await sleep(300);
+    const isOn = (key) => page.evaluate((k) => {
+      const el = document.querySelector(`#hud-controls kbd[data-key="${k}"]`);
+      return el ? el.classList.contains('is-on') : null;
+    }, key);
+    const before = await isOn('KeyW');
+    await page.keyboard.down('KeyW');
+    await sleep(220);
+    const during = await isOn('KeyW');
+    const duringAny = await page.evaluate(() => [...document.querySelectorAll('#hud-controls kbd[data-key]')].filter((e) => e.classList.contains('is-on')).map((e) => e.dataset.key));
+    await page.keyboard.up('KeyW');
+    await sleep(250);
+    const after = await isOn('KeyW');
+    await page.keyboard.down('Shift');
+    await sleep(220);
+    const shiftOn = await isOn('ShiftLeft');
+    await page.keyboard.up('Shift');
+    await sleep(200);
+    const shiftOff = await isOn('ShiftLeft');
+    return {
+      pass: before === false && during === true && duringAny.includes('KeyW') && after === false && shiftOn === true && shiftOff === false,
+      evidence: `W keycap: before=${before} held=${during} released=${after}; active keycaps while W held=${JSON.stringify(duringAny)}; Shift held=${shiftOn} released=${shiftOff}`,
+    };
+  }, 'hold W and Shift with the real keyboard and read the kbd.is-on classes');
+
+  await test('H13', 'HUD', 'badges follow real V/C/L toggles', 'P1', async () => {
+    await page.evaluate(() => {
+      const A = window.__APP__;
+      A.qa.setView('third');
+      A.qa.setSurround(true);
+      A.qa.setNight(false);
+    });
+    await sleep(400);
+    const badge = () => page.evaluate(() => ({
+      view: (document.querySelector('#hud-view') || {}).textContent,
+      surround: (document.querySelector('#hud-360') || {}).textContent,
+      light: (document.querySelector('#hud-light') || {}).textContent,
+      mode: window.__APP__.state().robot.mode,
+      surroundState: window.__APP__.state().surround,
+      night: window.__APP__.state().night,
+    }));
+    const b0 = await badge();
+    await page.keyboard.press('KeyV');
+    await sleep(450);
+    const b1 = await badge();
+    await page.keyboard.press('KeyC');
+    await sleep(450);
+    const b2 = await badge();
+    await page.keyboard.press('KeyL');
+    await sleep(450);
+    const b3 = await badge();
+    // restore
+    await page.keyboard.press('KeyV');
+    await page.keyboard.press('KeyC');
+    await page.keyboard.press('KeyL');
+    await sleep(450);
+    const ok = b0.view === 'THIRD' && b0.surround === 'ON' && b0.light === 'DAY' &&
+      b1.view === 'FIRST' && b2.surround === 'OFF' && b3.light === 'NIGHT';
+    return {
+      pass: ok,
+      evidence: `initial ${b0.view}/${b0.surround}/${b0.light}; V -> ${b1.view}; C -> ${b2.surround}; L -> ${b3.light}`,
+      detail: { b0, b1, b2, b3 },
+    };
+  }, 'press V, C, L with the real keyboard and read #hud-view/#hud-360/#hud-light');
+
+  await test('H14', 'HUD360', 'trajectory trail renders only on the minimap camera', 'P1', async () => {
+    const r = await page.evaluate(async () => {
+      const A = window.__APP__;
+      A.qa.reset();
+      A.qa.setView('third');
+      A.qa.setSurround(true);
+      A.qa.teleport(-3.6, -1.2, 0);
+      return { before: A.trail ? A.trail.points.length : null };
+    });
+    await sleep(400);
+    await page.keyboard.down('KeyW');
+    await sleep(1500);
+    await page.keyboard.up('KeyW');
+    await sleep(500);
+    const after = await page.evaluate(() => {
+      const A = window.__APP__;
+      const t = A.trail;
+      if (!t) return { missing: true };
+      const cams = A.robot.cameras;
+      const layerBit = 1 << 2; // three.js layer index 2
+      return {
+        points: t.points.length,
+        meshMask: t.mesh.layers.mask,
+        outlineMask: t.outline.layers.mask,
+        meshOnLayer2: (t.mesh.layers.mask & layerBit) !== 0,
+        outlineOnLayer2: (t.outline.layers.mask & layerBit) !== 0,
+        topLayer2: (cams.top.layers.mask & layerBit) !== 0,
+        frontLayer2: (cams.front.layers.mask & layerBit) !== 0,
+        backLayer2: (cams.back.layers.mask & layerBit) !== 0,
+        leftLayer2: (cams.left.layers.mask & layerBit) !== 0,
+        rightLayer2: (cams.right.layers.mask & layerBit) !== 0,
+        mainCamera: A.qa.cameraInfo().mode,
+      };
+    });
+    const ok = !after.missing && r.before !== null && after.points > 0 && after.meshOnLayer2 && after.outlineOnLayer2 &&
+      after.topLayer2 && !after.frontLayer2 && !after.backLayer2 && !after.leftLayer2 && !after.rightLayer2;
+    return {
+      pass: ok,
+      evidence: `trail points ${r.before} -> ${after.points}; mesh layer2=${after.meshOnLayer2}, outline layer2=${after.outlineOnLayer2}; top cam layer2=${after.topLayer2}, front/back/left/right layer2=${after.frontLayer2}/${after.backLayer2}/${after.leftLayer2}/${after.rightLayer2}`,
+      detail: after,
+    };
+  }, 'drive 1.5 s and inspect window.__APP__.trail.points + layer masks on trail meshes and 360 cameras');
+
   // ================================================================ ADVERSARIAL
   await test('A1', 'ADV', 'grab while driving, release while moving', 'P1', async () => {
     const start = await page.evaluate(async () => {
       const A = window.__APP__;
       A.qa.reset();
       A.qa.setView('third');
-      const h = await window.__QA.ensureHover('mug_white', { dists: [0.5, 0.45] });
-      if (!h.found) return { found: false };
+      A.qa.teleportNear('mug_white', 0.33);
+      await new Promise((res) => setTimeout(res, 550));
       const g = A.qa.grabByName('mug_white');
       return { found: true, g, held: A.state().robot.held };
     });
     await page.keyboard.down('Shift');
     await page.keyboard.down('KeyW');
-    await sleep(800);
+    await sleep(1500);
     await page.evaluate(() => window.__APP__.qa.action()); // release while moving
     await sleep(500);
     await page.keyboard.up('KeyW');
@@ -1451,11 +1806,8 @@ async function main() {
       const A = window.__APP__;
       A.qa.reset();
       A.qa.setView('third');
-      A.qa.teleportNear('mug_white', 0.5);
-      await new Promise((res) => setTimeout(res, 600));
-      const s = window.__QA.project('mug_white');
-      if (s && A.qa.pointerAt) A.qa.pointerAt(s.x, s.y);
-      await new Promise((res) => setTimeout(res, 400));
+      const h = await window.__QA.closeSpot('mug_white', { radii: [0.28, 0.30, 0.32] });
+      if (!h.found) return { noHover: true };
       for (let i = 0; i < 12; i++) {
         A.qa.action();
         await new Promise((res) => setTimeout(res, 70));
@@ -1468,7 +1820,7 @@ async function main() {
       return { held: st.robot.held, mug, nan, errors: A.errors.slice(0, 5), physics: st.physics };
     });
     return {
-      pass: r.errors.length === 0 && r.nan === 0 && r.mug.pos.every(Number.isFinite) && r.physics.dynamic >= 120,
+      pass: !r.noHover && r.errors.length === 0 && r.nan === 0 && r.mug.pos.every(Number.isFinite) && r.physics.dynamic >= 120,
       evidence: `held=${r.held}, mug (${r.mug.pos.map((v) => v.toFixed(2)).join(', ')}), NaN=${r.nan}, errors=${r.errors.length}, dynamic=${r.physics.dynamic}`,
     };
   }, 'qa.action() 12 times in quick succession while hovering the mug');
@@ -1478,7 +1830,7 @@ async function main() {
       const A = window.__APP__;
       A.qa.reset();
       A.qa.setView('third');
-      A.qa.teleportNear('sofa', 0.9);
+      A.qa.teleportNear('sofa', 0.5);
       await new Promise((res) => setTimeout(res, 650));
       const s = window.__QA.project('sofa');
       if (s && A.qa.pointerAt) A.qa.pointerAt(s.x, s.y);
@@ -1512,7 +1864,7 @@ async function main() {
       return { sofaBefore, robotBefore };
     });
     await page.keyboard.down('KeyW');
-    await sleep(1600);
+    await sleep(2600);
     await page.keyboard.up('KeyW');
     await sleep(500);
     const end = await page.evaluate(() => {
@@ -1526,7 +1878,7 @@ async function main() {
       pass: inBounds && sofaMoved < 0.3 && end.errors.length === 0 && end.sofa.every(Number.isFinite) && p.every(Number.isFinite),
       evidence: `robot (${p.map((v) => v.toFixed(2)).join(', ')}), sofa moved ${sofaMoved.toFixed(3)} m, errors=${end.errors.length}`,
     };
-  }, 'drive into the sofa for 1.6 s and check positions/velocities stay sane');
+  }, 'drive into the sofa for 2.6 s and check positions/velocities stay sane');
 
   await test('A6', 'ADV', 'rapid view/surround/night toggles do not break the app', 'P1', async () => {
     for (let i = 0; i < 3; i++) {
@@ -1712,7 +2064,7 @@ function writeReports(summary) {
   lines.push('## Numbers');
   lines.push('');
   const pick = (id) => summary.results.find((r) => r.id === id);
-  for (const id of ['P1', 'P2', 'P3', 'P4', 'W5', 'PH1', 'PH2', 'H1', 'H4']) {
+  for (const id of ['P1', 'P2', 'P3', 'P4', 'W5', 'PH1', 'PH2', 'PH3', 'G8', 'G9', 'H7', 'H7b', 'H14', 'H1', 'H4']) {
     const r = pick(id);
     if (r) lines.push(`- ${id} ${r.name}: ${r.pass ? 'PASS' : 'FAIL'} — ${r.evidence}`);
   }

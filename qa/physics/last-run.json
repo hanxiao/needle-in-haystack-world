@@ -1,0 +1,3140 @@
+{
+ "label": "final-round2",
+ "url": "http://127.0.0.1:4183/",
+ "elapsed": "102.0",
+ "verdict": "SHIP",
+ "counts": {
+  "PASS": 55,
+  "FAIL": 0,
+  "INFO": 4
+ },
+ "build": {
+  "dir": "qa/frozen",
+  "url": "http://127.0.0.1:4183/",
+  "bytes": 5253349,
+  "sha256": "5cf1537d1779991e8d6a79fa9a984dfc6437297531b4c9104149f8370101d6b0",
+  "gitHead": "385abaa",
+  "gitDirty": [
+   "M docs/QA.md",
+   " M src/core/camera.js",
+   " M src/core/config.js",
+   " M src/core/physics.js",
+   " M src/main.js",
+   " M src/robot/arm.js",
+   " M src/robot/cameras.js",
+   " M src/robot/model.js",
+   " M src/robot/robot.js",
+   " M src/styles.css",
+   " M src/ui/hud.js",
+   " M src/world/apartment.js",
+   " M src/world/clutter.js",
+   " M src/world/furniture.js",
+   " M src/world/helpers.js",
+   "?? docs/MASS_TABLE.md",
+   "?? docs/ROBOT_SPEC.md",
+   "?? src/ui/trail.js"
+  ],
+  "label": "final-round2"
+ },
+ "rows": [
+  {
+   "gate": "A1 app boots, ready flag set",
+   "status": "PASS",
+   "evidence": "ready=true after 7.3s; room=LIVING ROOM",
+   "sev": "P0",
+   "detail": null
+  },
+  {
+   "gate": "A2 no console errors / page errors",
+   "status": "PASS",
+   "evidence": "0 errors",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "A3 no console warnings",
+   "status": "PASS",
+   "evidence": "0 warnings",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "A4 no failed network requests",
+   "status": "PASS",
+   "evidence": "0 failed",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "A5 runtime errors array empty",
+   "status": "PASS",
+   "evidence": "__APP__.errors = []",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "A6 steady fps >= 50 @1440x900",
+   "status": "PASS",
+   "evidence": "60.0 fps over 2 s (reported 60.0); drawCalls=298",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "A7 draw calls <= 450",
+   "status": "PASS",
+   "evidence": "drawCalls=298 triangles=61916",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "B1 gravity is -9.81 m/s2 on Y",
+   "status": "PASS",
+   "evidence": "gravity = [0, -9.81, 0]",
+   "sev": "P0",
+   "detail": null
+  },
+  {
+   "gate": "B2 fixed timestep is 1/60 s",
+   "status": "PASS",
+   "evidence": "world.timestep = 0.016666668 s (1/60 = 0.016666667)",
+   "sev": "P0",
+   "detail": null
+  },
+  {
+   "gate": "B3 simulation runs at fixed 60 Hz",
+   "status": "PASS",
+   "evidence": "59.91 physics steps/s over 2003 ms (120 steps, 57.4 fps)",
+   "sev": "P0",
+   "detail": null
+  },
+  {
+   "gate": "B4 solver iterations >= 8",
+   "status": "PASS",
+   "evidence": "world.numSolverIterations = 8",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "B5 empirical free-fall g ~= 9.81 m/s2",
+   "status": "PASS",
+   "evidence": "measured g=9.810 m/s2 from dv/dt over 31 steps (v: 0.00 -> -5.07 m/s)",
+   "sev": "P0",
+   "detail": null
+  },
+  {
+   "gate": "B6 max drive speed 0.40 m/s (boost 0.55)",
+   "status": "PASS",
+   "evidence": "normal=0.400 m/s, boost=0.550 m/s",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "B7 heavy furniture (>=20 kg) damping >= 0.25/0.5",
+   "status": "PASS",
+   "evidence": "all 8 heavy bodies >= 0.25/0.5",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "B8 friction in (0,1.2] and restitution in [0,1]",
+   "status": "PASS",
+   "evidence": "228 dynamic colliders; badFriction=0, badRestitution=0",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "B9 heavy furniture colliders friction >= 0.8",
+   "status": "PASS",
+   "evidence": "all 33 heavy colliders >= 0.8",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "B10 every dynamic body has damping > 0",
+   "status": "PASS",
+   "evidence": "171/171 bodies have lin+ang damping > 0",
+   "sev": "P3",
+   "detail": null
+  },
+  {
+   "gate": "B11 objects settle to sleep (>=90%)",
+   "status": "PASS",
+   "evidence": "171/171 dynamic bodies asleep after settle (100%)",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "B12 all body transforms/velocities finite (no NaN)",
+   "status": "PASS",
+   "evidence": "193/193 bodies finite",
+   "sev": "P0",
+   "detail": null
+  },
+  {
+   "gate": "B13 positive finite principal inertia on all dynamic bodies",
+   "status": "PASS",
+   "evidence": "171/171 dynamic bodies have positive finite inertia",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "B14 CCD coverage reported",
+   "status": "INFO",
+   "evidence": "1/171 dynamic bodies have CCD enabled (tunneling checked in G4)",
+   "sev": "P3",
+   "detail": null
+  },
+  {
+   "gate": "B15 joint count sane at rest",
+   "status": "PASS",
+   "evidence": "world.impulseJoints = 0 at rest (expected 0)",
+   "sev": "P3",
+   "detail": null
+  },
+  {
+   "gate": "C1 every dynamic body has mass > 0 and finite",
+   "status": "PASS",
+   "evidence": "171/171 dynamic bodies have positive finite mass",
+   "sev": "P0",
+   "detail": null
+  },
+  {
+   "gate": "C2 declared mass == Rapier body mass (compound distribution)",
+   "status": "PASS",
+   "evidence": "171/171 exact within 1%",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "C3 collider mass sum == body mass",
+   "status": "PASS",
+   "evidence": "171/171 colliders sum to body mass",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "C4 every dynamic object classified against a realistic range",
+   "status": "PASS",
+   "evidence": "171/171 objects classified",
+   "sev": "P3",
+   "detail": null
+  },
+  {
+   "gate": "C5 masses realistic (no outliers)",
+   "status": "PASS",
+   "evidence": "all 171 dynamic masses within realistic ranges",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "C6 gravityScale == 1 for dynamic bodies",
+   "status": "PASS",
+   "evidence": "171/171 at 1.0",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "C7 grabbable == (mass <= 0.5 kg)",
+   "status": "PASS",
+   "evidence": "171/171 consistent with 0.5 kg payload",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "C8 every dynamic body has >= 1 collider",
+   "status": "PASS",
+   "evidence": "171/171 bodies have colliders",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "D1 all architecture objects are static (fixed)",
+   "status": "PASS",
+   "evidence": "21 architecture objects static, bodyType=fixed",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "D2 doors are static (no dynamic door leaf)",
+   "status": "PASS",
+   "evidence": "no separate door objects; door leaves merged into static `walls` body (src/world/apartment.js addDoorLeaf -> walls batch)",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "D3 robot cannot drive through walls (4 sides, 2 s boost)",
+   "status": "PASS",
+   "evidence": "north (z-): end (-3, -3.565) moved 0.125 m; south (z+): end (-3, 3.094) moved 0.094 m; west (x-): end (-5.04, -1) moved 0.14 m; east (x+): end (5.365, -1) moved 0.465 m",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "D4 walls/static bodies do not move at all",
+   "status": "PASS",
+   "evidence": "22 static bodies bit-identical after 4 wall impacts",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "D5 no dynamic object reads as wall/door",
+   "status": "INFO",
+   "evidence": "large dynamic slabs: bookshelf (42 kg, 0.32x1.86x1.00 m), wardrobe (120 kg, 1.12x2.02x0.60 m), study_shelves (18 kg, 0.30x1.80x0.90 m) — immovable per spec but visually architecture-scale",
+   "sev": "P3",
+   "detail": null
+  },
+  {
+   "gate": "E1 heavy furniture displacement < 0.01 m (2 s boost)",
+   "status": "PASS",
+   "evidence": "sofa 0.0000m, bed 0.0000m, wardrobe 0.0000m, fridge 0.0001m, bookshelf 0.0001m, dining_table 0.0003m, desk 0.0002m",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "E1b armchair 21 kg (ROBOT_SPEC lists < 0.01 m)",
+   "status": "PASS",
+   "evidence": "armchair 0.0013m — mission push list excludes armchair; ROBOT_SPEC line 39 includes it",
+   "sev": "P3",
+   "detail": null
+  },
+  {
+   "gate": "E2 light objects pushable > 0.03 m (2 s boost)",
+   "status": "PASS",
+   "evidence": "chair_1 0.935m, study_box_1 0.089m, study_box_2 0.120m, trash_bin 0.293m, laundry_basket 0.697m",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "E3 push tests made real contact",
+   "status": "PASS",
+   "evidence": "14/14 pushes validated by robot-object contact",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "F1 arm limits are 0.5 kg payload / 0.34 m reach",
+   "status": "PASS",
+   "evidence": "arm.maxLiftKg=0.5, arm.reach=0.34",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "F2 laptop 1.6 kg refused (too_heavy)",
+   "status": "PASS",
+   "evidence": "laptop mass=1.6; grab={\"ok\":false,\"reason\":\"too_heavy\",\"held\":null}",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "F3 kettle 1.0 kg / book stack 1.4 kg refused",
+   "status": "PASS",
+   "evidence": "kettle={\"ok\":false,\"reason\":\"too_heavy\",\"held\":null}, book_stack_1={\"ok\":false,\"reason\":\"too_heavy\",\"held\":null}",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "F4 mug 0.32 kg on coffee table accepted from floor",
+   "status": "PASS",
+   "evidence": "mug y=0.5153842568397522, robot drove 0.456 m to table, shoulder→mug=0.261 m, canReach=true, grab={\"ok\":true,\"reason\":null,\"held\":\"mug_white\"}",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "F5 reach boundary ~0.34 m (0.30 in, 0.45 out)",
+   "status": "PASS",
+   "evidence": "canReach(0.30m)=true, canReach(0.32m)=true, canReach(0.45m)=false",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "F6 dining table (0.76 m) out of reach",
+   "status": "PASS",
+   "evidence": "canReach(table top)=false; plate on table: mass=0.45, grab={\"ok\":false,\"reason\":\"out_of_reach\",\"held\":null}",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "F7 grab creates fixed joint; held object follows the robot",
+   "status": "PASS",
+   "evidence": "joints held=1, after release=0; carried: robot moved 0.344 m, mug moved 0.376 m, still held=mug_white",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "F7b arm raises held mug when aiming up",
+   "status": "INFO",
+   "evidence": "aimed +0.18 m above mug: mug y 0.569 -> 0.569 (lift 0 m)",
+   "sev": "P3",
+   "detail": null
+  },
+  {
+   "gate": "F8 released mug lands on surface, no fall-through",
+   "status": "PASS",
+   "evidence": "released at y=0.569 m, final y=0.515 m, held cleared=true",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "B16 robot collision footprint (collider inset vs 350 mm visual base)",
+   "status": "PASS",
+   "evidence": "collider cylinder Ø310 mm x 340 mm tall, 2 robot colliders (base + gripper); collider is inset from the 350 mm visual base by design",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "B16b robot visual base/height ~350 x 380 mm",
+   "status": "PASS",
+   "evidence": "visual bbox 354 mm wide x 404 mm tall (spec base Ø350 / total 380); bbox includes arm + mast",
+   "sev": "P3",
+   "detail": null
+  },
+  {
+   "gate": "F9 robot total mass 7.0 kg (3.6 base + 3.4 arm)",
+   "status": "PASS",
+   "evidence": "getState: mass=7 kg (base 3.6, arm 3.4), payload=0.5 kg, reach=0.34 m, DOF=3",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "G1 spawn interpenetration <= 2 mm (QA gate 5)",
+   "status": "PASS",
+   "evidence": "deepest contact -2.2 mm (coffee_table↔pen) across 239 contact pairs",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "G2 no dynamic body below floor (collider minY >= -5 mm)",
+   "status": "PASS",
+   "evidence": "lowest dynamic collider minY=-0.0001 m",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "G2b static ground/exterior colliders below y=0 (expected)",
+   "status": "INFO",
+   "evidence": "4 static bodies: floor_wood, floor_tile, exterior, city_view",
+   "sev": "P3",
+   "detail": null
+  },
+  {
+   "gate": "G3 stacks stay put over 3 s (rel drift < 5 mm)",
+   "status": "PASS",
+   "evidence": "11 dynamic-on-dynamic resting pairs; max relative drift 0.00 mm",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "G4 no passive drift / jitter (max drift < 2 mm, all asleep)",
+   "status": "PASS",
+   "evidence": "max drift 0.00 mm; 171/171 asleep; max |v| 0.0000 m/s",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "G5 nudged stacks re-settle (< 50 mm, < 5 deg, asleep)",
+   "status": "PASS",
+   "evidence": "8 stacks nudged: max shift 0.0 mm (cereal_box), max tilt 0.01 deg, 8/8 asleep",
+   "sev": "P2",
+   "detail": null
+  },
+  {
+   "gate": "G6 no tunneling (needle drop + 6 m/s 3 cm ball)",
+   "status": "PASS",
+   "evidence": "needle drop from 0.9 m -> y=0.0124; 3 cm ball @6 m/s -> y=0.03 (no CCD)",
+   "sev": "P1",
+   "detail": null
+  },
+  {
+   "gate": "G7 all bodies finite and inside the apartment after all tests",
+   "status": "PASS",
+   "evidence": "171 dynamic bodies finite, inside shell, 171/171 asleep",
+   "sev": "P0",
+   "detail": null
+  }
+ ],
+ "findings": [],
+ "engine": {
+  "timestep": 0.01666666753590107,
+  "gravity": [
+   0,
+   -9.81,
+   0
+  ],
+  "numSolverIterations": 8,
+  "dt": 0.01666666753590107,
+  "stats": {
+   "bodies": 195,
+   "colliders": 333,
+   "dynamic": 171,
+   "objects": 193,
+   "steps": 419
+  },
+  "impulseJoints": 0,
+  "rapierVersion": "0.21.0",
+  "bodies": 195,
+  "colliders": 333
+ },
+ "massTable": [
+  {
+   "name": "wardrobe",
+   "mass": 120,
+   "cat": "wardrobe",
+   "lo": 80,
+   "hi": 140,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "fridge",
+   "mass": 95,
+   "cat": "fridge",
+   "lo": 60,
+   "hi": 110,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "sofa",
+   "mass": 85,
+   "cat": "sofa",
+   "lo": 65,
+   "hi": 100,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "bed",
+   "mass": 75,
+   "cat": "bed",
+   "lo": 60,
+   "hi": 90,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "bookshelf",
+   "mass": 42,
+   "cat": "bookshelf",
+   "lo": 25,
+   "hi": 50,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "dining_table",
+   "mass": 34,
+   "cat": "dining table",
+   "lo": 25,
+   "hi": 45,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "desk",
+   "mass": 26,
+   "cat": "desk",
+   "lo": 20,
+   "hi": 35,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "armchair",
+   "mass": 21,
+   "cat": "armchair",
+   "lo": 18,
+   "hi": 30,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_shelves",
+   "mass": 18,
+   "cat": "open shelving",
+   "lo": 15,
+   "hi": 40,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "coffee_table",
+   "mass": 13,
+   "cat": "coffee table",
+   "lo": 10,
+   "hi": 20,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "tv",
+   "mass": 11,
+   "cat": "TV",
+   "lo": 8,
+   "hi": 15,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "plant_monstera",
+   "mass": 8,
+   "cat": "large plant",
+   "lo": 5,
+   "hi": 12,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "nightstand",
+   "mass": 7,
+   "cat": "nightstand",
+   "lo": 5,
+   "hi": 15,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "desk_chair",
+   "mass": 7,
+   "cat": "chair",
+   "lo": 4,
+   "hi": 8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "coat_rack",
+   "mass": 6,
+   "cat": "coat rack",
+   "lo": 2,
+   "hi": 8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "chair_1",
+   "mass": 5.5,
+   "cat": "chair",
+   "lo": 4,
+   "hi": 8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "chair_2",
+   "mass": 5.5,
+   "cat": "chair",
+   "lo": 4,
+   "hi": 8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "chair_3",
+   "mass": 5.5,
+   "cat": "chair",
+   "lo": 4,
+   "hi": 8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "chair_4",
+   "mass": 5.5,
+   "cat": "chair",
+   "lo": 4,
+   "hi": 8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "monitor",
+   "mass": 4.5,
+   "cat": "monitor",
+   "lo": 3,
+   "hi": 6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "floor_lamp",
+   "mass": 4.2,
+   "cat": "floor lamp",
+   "lo": 3,
+   "hi": 6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "bedside_lamp",
+   "mass": 1.8,
+   "cat": "bedside lamp",
+   "lo": 0.8,
+   "hi": 2.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_box_1",
+   "mass": 1.8,
+   "cat": "storage box",
+   "lo": 0.5,
+   "hi": 3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "bathroom_scale",
+   "mass": 1.8,
+   "cat": "bathroom scale",
+   "lo": 1.5,
+   "hi": 2.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "backpack",
+   "mass": 1.8,
+   "cat": "bag",
+   "lo": 0.2,
+   "hi": 2.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "trash_bin",
+   "mass": 1.6,
+   "cat": "trash bin",
+   "lo": 0.7,
+   "hi": 2,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "laptop",
+   "mass": 1.6,
+   "cat": "laptop",
+   "lo": 1.2,
+   "hi": 2,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "desk_lamp",
+   "mass": 1.5,
+   "cat": "desk lamp",
+   "lo": 0.8,
+   "hi": 3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_box_3",
+   "mass": 1.4,
+   "cat": "storage box",
+   "lo": 0.5,
+   "hi": 3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "book_stack_1",
+   "mass": 1.4,
+   "cat": "book stack",
+   "lo": 0.8,
+   "hi": 3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "blanket_bed",
+   "mass": 1.4,
+   "cat": "blanket/throw",
+   "lo": 0.5,
+   "hi": 2.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_box_2",
+   "mass": 1.2,
+   "cat": "storage box",
+   "lo": 0.5,
+   "hi": 3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "pan_stove",
+   "mass": 1.2,
+   "cat": "pan",
+   "lo": 0.6,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "wine_bottle",
+   "mass": 1.1,
+   "cat": "bottle",
+   "lo": 0.25,
+   "hi": 1.6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "laundry_basket",
+   "mass": 1,
+   "cat": "basket",
+   "lo": 0.6,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "kettle",
+   "mass": 1,
+   "cat": "kettle",
+   "lo": 0.8,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "sofa_throw",
+   "mass": 0.9,
+   "cat": "blanket/throw",
+   "lo": 0.5,
+   "hi": 2.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "book_stack_2",
+   "mass": 0.9,
+   "cat": "book stack",
+   "lo": 0.8,
+   "hi": 3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "cutting_board",
+   "mass": 0.8,
+   "cat": "cutting board",
+   "lo": 0.3,
+   "hi": 1.2,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "vase",
+   "mass": 0.7,
+   "cat": "vase",
+   "lo": 0.3,
+   "hi": 2.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "dish_rack",
+   "mass": 0.7,
+   "cat": "rack",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "pillow_1",
+   "mass": 0.7,
+   "cat": "cushion/pillow",
+   "lo": 0.2,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "pillow_2",
+   "mass": 0.7,
+   "cat": "cushion/pillow",
+   "lo": 0.2,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "keyboard",
+   "mass": 0.7,
+   "cat": "keyboard",
+   "lo": 0.4,
+   "hi": 1.2,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_12",
+   "mass": 0.6,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_13",
+   "mass": 0.6,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_14",
+   "mass": 0.6,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_15",
+   "mass": 0.6,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_16",
+   "mass": 0.6,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_17",
+   "mass": 0.6,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_18",
+   "mass": 0.6,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "plant_small",
+   "mass": 0.6,
+   "cat": "small plant",
+   "lo": 0.5,
+   "hi": 3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "herb_pot",
+   "mass": 0.6,
+   "cat": "small plant",
+   "lo": 0.5,
+   "hi": 3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "hoodie_chair_4",
+   "mass": 0.6,
+   "cat": "clothing",
+   "lo": 0.15,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "jeans_floor",
+   "mass": 0.6,
+   "cat": "clothing",
+   "lo": 0.15,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "basket_clothes",
+   "mass": 0.6,
+   "cat": "clothing",
+   "lo": 0.15,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_book_1",
+   "mass": 0.6,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_book_2",
+   "mass": 0.6,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_book_3",
+   "mass": 0.6,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_book_4",
+   "mass": 0.6,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_plant",
+   "mass": 0.6,
+   "cat": "small plant",
+   "lo": 0.5,
+   "hi": 3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_1",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_2",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_3",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_4",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_5",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_6",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_19",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_20",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_21",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_22",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_7",
+   "mass": 0.5,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_8",
+   "mass": 0.5,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_9",
+   "mass": 0.5,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_10",
+   "mass": 0.5,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_11",
+   "mass": 0.5,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "jar_1",
+   "mass": 0.5,
+   "cat": "jar",
+   "lo": 0.2,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "jar_2",
+   "mass": 0.5,
+   "cat": "jar",
+   "lo": 0.2,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "jar_3",
+   "mass": 0.5,
+   "cat": "jar",
+   "lo": 0.2,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "grocery_bag",
+   "mass": 0.5,
+   "cat": "bag",
+   "lo": 0.2,
+   "hi": 2.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "bottle_desk",
+   "mass": 0.5,
+   "cat": "bottle",
+   "lo": 0.25,
+   "hi": 1.6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_book_5",
+   "mass": 0.5,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_book_6",
+   "mass": 0.5,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_book_7",
+   "mass": 0.5,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_book_8",
+   "mass": 0.5,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "cushion_1",
+   "mass": 0.45,
+   "cat": "cushion/pillow",
+   "lo": 0.2,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "cushion_2",
+   "mass": 0.45,
+   "cat": "cushion/pillow",
+   "lo": 0.2,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "cushion_3",
+   "mass": 0.45,
+   "cat": "cushion/pillow",
+   "lo": 0.2,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "plate_1",
+   "mass": 0.45,
+   "cat": "plate",
+   "lo": 0.4,
+   "hi": 0.8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "plate_2",
+   "mass": 0.45,
+   "cat": "plate",
+   "lo": 0.4,
+   "hi": 0.8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "fruit_bowl",
+   "mass": 0.45,
+   "cat": "plate",
+   "lo": 0.4,
+   "hi": 0.8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "plate_dining",
+   "mass": 0.45,
+   "cat": "plate",
+   "lo": 0.4,
+   "hi": 0.8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "book_bed",
+   "mass": 0.45,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shoe_1",
+   "mass": 0.45,
+   "cat": "shoe",
+   "lo": 0.25,
+   "hi": 1.2,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shoe_2",
+   "mass": 0.45,
+   "cat": "shoe",
+   "lo": 0.25,
+   "hi": 1.2,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shoe_3",
+   "mass": 0.45,
+   "cat": "shoe",
+   "lo": 0.25,
+   "hi": 1.2,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shoe_4",
+   "mass": 0.45,
+   "cat": "shoe",
+   "lo": 0.25,
+   "hi": 1.2,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "book_2",
+   "mass": 0.42,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "book_dining",
+   "mass": 0.4,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "cereal_box",
+   "mass": 0.4,
+   "cat": "box",
+   "lo": 0.1,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "towel_floor",
+   "mass": 0.4,
+   "cat": "bath towel",
+   "lo": 0.3,
+   "hi": 0.9,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "bath_mat",
+   "mass": 0.35,
+   "cat": "bath mat",
+   "lo": 0.2,
+   "hi": 1.2,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "dish_soap",
+   "mass": 0.35,
+   "cat": "bottle",
+   "lo": 0.25,
+   "hi": 1.6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shampoo",
+   "mass": 0.35,
+   "cat": "bottle",
+   "lo": 0.25,
+   "hi": 1.6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "conditioner",
+   "mass": 0.35,
+   "cat": "bottle",
+   "lo": 0.25,
+   "hi": 1.6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "lotion",
+   "mass": 0.35,
+   "cat": "bottle",
+   "lo": 0.25,
+   "hi": 1.6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "mug_white",
+   "mass": 0.32,
+   "cat": "mug",
+   "lo": 0.25,
+   "hi": 0.45,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "mug_blue",
+   "mass": 0.32,
+   "cat": "mug",
+   "lo": 0.25,
+   "hi": 0.45,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "mug_tipped",
+   "mass": 0.32,
+   "cat": "mug",
+   "lo": 0.25,
+   "hi": 0.45,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "mug_kitchen",
+   "mass": 0.32,
+   "cat": "mug",
+   "lo": 0.25,
+   "hi": 0.45,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "mug_sink",
+   "mass": 0.32,
+   "cat": "mug",
+   "lo": 0.25,
+   "hi": 0.45,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "mug_dining",
+   "mass": 0.32,
+   "cat": "mug",
+   "lo": 0.25,
+   "hi": 0.45,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "mug_bedside",
+   "mass": 0.32,
+   "cat": "mug",
+   "lo": 0.25,
+   "hi": 0.45,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "mug_desk",
+   "mass": 0.32,
+   "cat": "mug",
+   "lo": 0.25,
+   "hi": 0.45,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "magazine",
+   "mass": 0.3,
+   "cat": "magazine",
+   "lo": 0.15,
+   "hi": 0.6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "bowl_1",
+   "mass": 0.3,
+   "cat": "bowl",
+   "lo": 0.2,
+   "hi": 0.8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "bowl_2",
+   "mass": 0.3,
+   "cat": "bowl",
+   "lo": 0.2,
+   "hi": 0.8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "pen_holder",
+   "mass": 0.3,
+   "cat": "pen holder",
+   "lo": 0.1,
+   "hi": 0.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "study_bowl",
+   "mass": 0.3,
+   "cat": "bowl",
+   "lo": 0.2,
+   "hi": 0.8,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "notebook_shelf",
+   "mass": 0.28,
+   "cat": "notebook",
+   "lo": 0.15,
+   "hi": 0.6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "notebook",
+   "mass": 0.28,
+   "cat": "notebook",
+   "lo": 0.15,
+   "hi": 0.6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "candle",
+   "mass": 0.25,
+   "cat": "candle",
+   "lo": 0.1,
+   "hi": 0.6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "slipper_1",
+   "mass": 0.25,
+   "cat": "slipper",
+   "lo": 0.1,
+   "hi": 0.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "slipper_2",
+   "mass": 0.25,
+   "cat": "slipper",
+   "lo": 0.1,
+   "hi": 0.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "headphones",
+   "mass": 0.25,
+   "cat": "headphones",
+   "lo": 0.1,
+   "hi": 0.45,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "tissue_box",
+   "mass": 0.22,
+   "cat": "box",
+   "lo": 0.1,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "phone",
+   "mass": 0.2,
+   "cat": "phone",
+   "lo": 0.12,
+   "hi": 0.25,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "phone_bed",
+   "mass": 0.2,
+   "cat": "phone",
+   "lo": 0.12,
+   "hi": 0.25,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "apple_1",
+   "mass": 0.18,
+   "cat": "fruit",
+   "lo": 0.12,
+   "hi": 0.25,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "apple_2",
+   "mass": 0.18,
+   "cat": "fruit",
+   "lo": 0.12,
+   "hi": 0.25,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "apple_3",
+   "mass": 0.18,
+   "cat": "fruit",
+   "lo": 0.12,
+   "hi": 0.25,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shirt_chair_2",
+   "mass": 0.18,
+   "cat": "clothing",
+   "lo": 0.15,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shirt_floor",
+   "mass": 0.18,
+   "cat": "clothing",
+   "lo": 0.15,
+   "hi": 1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "remote",
+   "mass": 0.15,
+   "cat": "remote",
+   "lo": 0.08,
+   "hi": 0.3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "onion",
+   "mass": 0.15,
+   "cat": "onion",
+   "lo": 0.1,
+   "hi": 0.3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "toilet_roll",
+   "mass": 0.15,
+   "cat": "toilet roll",
+   "lo": 0.1,
+   "hi": 0.3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "cable_tv",
+   "mass": 0.14,
+   "cat": "cable",
+   "lo": 0.02,
+   "hi": 0.3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "cable_kitchen",
+   "mass": 0.14,
+   "cat": "cable",
+   "lo": 0.02,
+   "hi": 0.3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "charger_cable",
+   "mass": 0.14,
+   "cat": "cable",
+   "lo": 0.02,
+   "hi": 0.3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "cable_floor_study",
+   "mass": 0.14,
+   "cat": "cable",
+   "lo": 0.02,
+   "hi": 0.3,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "dish_towel",
+   "mass": 0.12,
+   "cat": "towel",
+   "lo": 0.05,
+   "hi": 0.6,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "toothpaste",
+   "mass": 0.12,
+   "cat": "toothpaste tube",
+   "lo": 0.05,
+   "hi": 0.25,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "soap",
+   "mass": 0.1,
+   "cat": "soap",
+   "lo": 0.05,
+   "hi": 0.2,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "mouse",
+   "mass": 0.1,
+   "cat": "mouse",
+   "lo": 0.06,
+   "hi": 0.15,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "hairbrush",
+   "mass": 0.08,
+   "cat": "hairbrush",
+   "lo": 0.05,
+   "hi": 0.2,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "sock_1",
+   "mass": 0.06,
+   "cat": "sock",
+   "lo": 0.03,
+   "hi": 0.15,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "sock_2",
+   "mass": 0.06,
+   "cat": "sock",
+   "lo": 0.03,
+   "hi": 0.15,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "sock_floor",
+   "mass": 0.06,
+   "cat": "sock",
+   "lo": 0.03,
+   "hi": 0.15,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "keys",
+   "mass": 0.05,
+   "cat": "keys",
+   "lo": 0.02,
+   "hi": 0.15,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "keys_floor",
+   "mass": 0.05,
+   "cat": "keys",
+   "lo": 0.02,
+   "hi": 0.15,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "sponge_sink",
+   "mass": 0.04,
+   "cat": "sponge",
+   "lo": 0.005,
+   "hi": 0.1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "sponge_bath",
+   "mass": 0.04,
+   "cat": "sponge",
+   "lo": 0.005,
+   "hi": 0.1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "glasses",
+   "mass": 0.03,
+   "cat": "glasses",
+   "lo": 0.02,
+   "hi": 0.06,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "paper_ball",
+   "mass": 0.02,
+   "cat": "paper ball",
+   "lo": 0.005,
+   "hi": 0.05,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "mail_counter",
+   "mass": 0.02,
+   "cat": "mail",
+   "lo": 0.005,
+   "hi": 0.1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "toothbrush",
+   "mass": 0.02,
+   "cat": "toothbrush",
+   "lo": 0.01,
+   "hi": 0.05,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "toothbrush_2",
+   "mass": 0.02,
+   "cat": "toothbrush",
+   "lo": 0.01,
+   "hi": 0.05,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "mail_1",
+   "mass": 0.02,
+   "cat": "mail",
+   "lo": 0.005,
+   "hi": 0.1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "mail_2",
+   "mass": 0.02,
+   "cat": "mail",
+   "lo": 0.005,
+   "hi": 0.1,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "pen",
+   "mass": 0.012,
+   "cat": "pen",
+   "lo": 0.005,
+   "hi": 0.03,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "paper_floor_1",
+   "mass": 0.012,
+   "cat": "paper sheet",
+   "lo": 0.002,
+   "hi": 0.03,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "paper_floor_2",
+   "mass": 0.012,
+   "cat": "paper sheet",
+   "lo": 0.002,
+   "hi": 0.03,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "paper_floor_3",
+   "mass": 0.012,
+   "cat": "paper sheet",
+   "lo": 0.002,
+   "hi": 0.03,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "paper_dining_1",
+   "mass": 0.012,
+   "cat": "paper sheet",
+   "lo": 0.002,
+   "hi": 0.03,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "paper_dining_2",
+   "mass": 0.012,
+   "cat": "paper sheet",
+   "lo": 0.002,
+   "hi": 0.03,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "paper_kitchen_1",
+   "mass": 0.012,
+   "cat": "paper sheet",
+   "lo": 0.002,
+   "hi": 0.03,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "paper_kitchen_2",
+   "mass": 0.012,
+   "cat": "paper sheet",
+   "lo": 0.002,
+   "hi": 0.03,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "paper_desk_1",
+   "mass": 0.012,
+   "cat": "paper sheet",
+   "lo": 0.002,
+   "hi": 0.03,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "paper_desk_2",
+   "mass": 0.012,
+   "cat": "paper sheet",
+   "lo": 0.002,
+   "hi": 0.03,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "sticky_notes",
+   "mass": 0.01,
+   "cat": "paper sheet",
+   "lo": 0.002,
+   "hi": 0.03,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "needle",
+   "mass": 0.0012,
+   "cat": "needle",
+   "lo": 0.0005,
+   "hi": 0.01,
+   "verdict": "PASS",
+   "suggested": null
+  }
+ ],
+ "outliers": [],
+ "penetration": [
+  {
+   "a": "coffee_table",
+   "b": "pen",
+   "d": -0.002202223986387253,
+   "dyn": true,
+   "normal": [
+    0.0000014357841564560658,
+    1,
+    -0.000001993404339373228
+   ]
+  },
+  {
+   "a": "nightstand",
+   "b": "bedside_lamp",
+   "d": -0.001999974250793457,
+   "dyn": true,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "desk_lamp",
+   "b": "mug_desk",
+   "d": -0.0010001510381698608,
+   "dyn": true,
+   "normal": [
+    0,
+    0,
+    -1
+   ]
+  },
+  {
+   "a": "nightstand",
+   "b": "glasses",
+   "d": -0.0009999871253967285,
+   "dyn": true,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "study_box_1",
+   "b": "study_box_2",
+   "d": -0.000454634428024292,
+   "dyn": true,
+   "normal": [
+    0.00024952052626758814,
+    0.9999999403953552,
+    -0.00005562732258113101
+   ]
+  },
+  {
+   "a": "laundry_basket",
+   "b": "basket_clothes",
+   "d": -0.0003406617615837604,
+   "dyn": true,
+   "normal": [
+    -0.00008449933375231922,
+    1,
+    -0.0002138757990906015
+   ]
+  },
+  {
+   "a": "coffee_table",
+   "b": "mug_tipped",
+   "d": -0.00023607909679412842,
+   "dyn": true,
+   "normal": [
+    0.0000033587718917260645,
+    1,
+    -0.000011349203305144329
+   ]
+  },
+  {
+   "a": "coffee_table",
+   "b": "mug_white",
+   "d": -0.0001998692750930786,
+   "dyn": true,
+   "normal": [
+    -0.0000034735328426904744,
+    1,
+    -0.00001004574187390972
+   ]
+  },
+  {
+   "a": "coffee_table",
+   "b": "mug_blue",
+   "d": -0.00019751116633415222,
+   "dyn": true,
+   "normal": [
+    -0.0000023885663722467143,
+    1,
+    -0.000010397001460660249
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "study_box_1",
+   "d": -0.00012304633855819702,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "charger_cable",
+   "d": -0.00011879950761795044,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "laundry_basket",
+   "d": -0.00007440895569743589,
+   "dyn": false,
+   "normal": [
+    -2.43694671553385e-7,
+    0.9999999403953552,
+    -4.935868105349073e-7
+   ]
+  },
+  {
+   "a": "floor_tile",
+   "b": "paper_ball",
+   "d": -0.00003446638584136963,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "paper_ball",
+   "d": -0.000034458935260772705,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_tile",
+   "b": "chair_4",
+   "d": -0.000023975966541911475,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "chair_4",
+   "d": -0.000023968517780303955,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_tile",
+   "b": "chair_1",
+   "d": -0.000022009015083312988,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "chair_1",
+   "d": -0.000022001564502716064,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "trash_bin",
+   "d": -0.000016920268535614014,
+   "dyn": false,
+   "normal": [
+    -8.989473165854633e-9,
+    1,
+    -3.9269600904390245e-9
+   ]
+  },
+  {
+   "a": "floor_tile",
+   "b": "trash_bin",
+   "d": -0.000016897916793823242,
+   "dyn": false,
+   "normal": [
+    -1.6311769712729074e-8,
+    1,
+    -7.11988645818451e-9
+   ]
+  },
+  {
+   "a": "thresholds",
+   "b": "wardrobe",
+   "d": -1.341104507446289e-7,
+   "dyn": false,
+   "normal": [
+    -1,
+    0,
+    0
+   ]
+  },
+  {
+   "a": "sofa",
+   "b": "drapes",
+   "d": -1.1920928955078125e-7,
+   "dyn": false,
+   "normal": [
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "a": "walls",
+   "b": "wardrobe",
+   "d": -5.587935447692871e-8,
+   "dyn": false,
+   "normal": [
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "a": "chair_2",
+   "b": "shirt_chair_2",
+   "d": -3.725290298461914e-8,
+   "dyn": true,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "desk_chair",
+   "b": "drapes",
+   "d": -2.9802322387695312e-8,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "coat_rack",
+   "d": -2.2351741790771484e-8,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "paper_dining_1",
+   "b": "paper_dining_2",
+   "d": -1.7695128917694092e-8,
+   "dyn": true,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "study_shelves",
+   "d": -7.450581485102248e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    0.9999999403953552,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "study_box_3",
+   "d": -7.450580152834618e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1.0000001192092896,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "plant_monstera",
+   "d": 0,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  }
+ ],
+ "below": [],
+ "push": [
+  {
+   "name": "sofa",
+   "kind": "heavy",
+   "mass": 85,
+   "start": [
+    -2.5,
+    0.426,
+    -2.755
+   ],
+   "end": [
+    -2.5,
+    0.426,
+    -2.755
+   ],
+   "moved": 0,
+   "robotMoved": 0.0959,
+   "rotDeg": 0,
+   "maxRobotY": 0,
+   "minContact": 0.149,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": false,
+   "placement": {
+    "px": -2.5,
+    "pz": -3.5,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "bed",
+   "kind": "heavy",
+   "mass": 75,
+   "start": [
+    -4.15,
+    0.5,
+    2.571
+   ],
+   "end": [
+    -4.15,
+    0.5,
+    2.571
+   ],
+   "moved": 0,
+   "robotMoved": 0.214,
+   "rotDeg": 0,
+   "maxRobotY": 0,
+   "minContact": 0.095,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": false,
+   "placement": {
+    "px": -5.23,
+    "pz": 2.38,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "wardrobe",
+   "kind": "heavy",
+   "mass": 120,
+   "start": [
+    -2.04,
+    1.01,
+    1.081
+   ],
+   "end": [
+    -2.04,
+    1.01,
+    1.081
+   ],
+   "moved": 0,
+   "robotMoved": 0.1314,
+   "rotDeg": 0,
+   "maxRobotY": 0,
+   "minContact": 0.175,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": false,
+   "placement": {
+    "px": -1.89,
+    "pz": 1.56,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "fridge",
+   "kind": "heavy",
+   "mass": 95,
+   "start": [
+    5.145,
+    0.93,
+    -3.2
+   ],
+   "end": [
+    5.145,
+    0.93,
+    -3.2
+   ],
+   "moved": 0.0001,
+   "robotMoved": 0.1809,
+   "rotDeg": 0,
+   "maxRobotY": 0,
+   "minContact": 0.175,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": false,
+   "placement": {
+    "px": 5.24,
+    "pz": -2.59,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "bookshelf",
+   "kind": "heavy",
+   "mass": 42,
+   "start": [
+    -5.375,
+    0.93,
+    -0.6
+   ],
+   "end": [
+    -5.375,
+    0.93,
+    -0.6
+   ],
+   "moved": 0.0001,
+   "robotMoved": 0.6616,
+   "rotDeg": 0,
+   "maxRobotY": 0,
+   "minContact": 0.175,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": false,
+   "placement": {
+    "px": -4.97,
+    "pz": -0.31,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "dining_table",
+   "kind": "heavy",
+   "mass": 34,
+   "start": [
+    2.2,
+    0.375,
+    -0.8
+   ],
+   "end": [
+    2.2,
+    0.375,
+    -0.8
+   ],
+   "moved": 0.0003,
+   "robotMoved": 1.1169,
+   "rotDeg": 0,
+   "maxRobotY": 0,
+   "minContact": 0,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": true,
+   "placement": {
+    "px": 1.8,
+    "pz": -1.09,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "desk",
+   "kind": "heavy",
+   "mass": 26,
+   "start": [
+    4.15,
+    0.375,
+    3.317
+   ],
+   "end": [
+    4.15,
+    0.375,
+    3.318
+   ],
+   "moved": 0.0002,
+   "robotMoved": 0.71,
+   "rotDeg": 0,
+   "maxRobotY": 0,
+   "minContact": 0,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": true,
+   "placement": {
+    "px": 4.55,
+    "pz": 3.02,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "armchair",
+   "kind": "heavy-spec",
+   "mass": 21,
+   "start": [
+    -4.55,
+    0.405,
+    -1.75
+   ],
+   "end": [
+    -4.551,
+    0.405,
+    -1.75
+   ],
+   "moved": 0.0013,
+   "robotMoved": 0.3627,
+   "rotDeg": 0,
+   "maxRobotY": 0,
+   "minContact": 0.175,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": false,
+   "placement": {
+    "px": -5.25,
+    "pz": -1.98,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "chair_1",
+   "kind": "light",
+   "mass": 5.5,
+   "start": [
+    1.72,
+    0.442,
+    -1.55
+   ],
+   "end": [
+    0.786,
+    0.35,
+    -1.52
+   ],
+   "moved": 0.9347,
+   "robotMoved": 0.7763,
+   "rotDeg": 68.27,
+   "maxRobotY": 0,
+   "minContact": 0,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": false,
+   "placement": {
+    "px": 2.22,
+    "pz": -1.55,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "study_box_1",
+   "kind": "light",
+   "mass": 1.8,
+   "start": [
+    5.1,
+    0.181,
+    1.05
+   ],
+   "end": [
+    5.15,
+    0.181,
+    0.976
+   ],
+   "moved": 0.0891,
+   "robotMoved": 0.4783,
+   "rotDeg": 0.61,
+   "maxRobotY": 0,
+   "minContact": 0.032,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": true,
+   "placement": {
+    "px": 4.95,
+    "pz": 1.53,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "study_box_2",
+   "kind": "light",
+   "mass": 1.2,
+   "start": [
+    5.1,
+    0.511,
+    1.05
+   ],
+   "end": [
+    5.158,
+    0.511,
+    0.945
+   ],
+   "moved": 0.1199,
+   "robotMoved": 0.4781,
+   "rotDeg": 11.31,
+   "maxRobotY": 0,
+   "minContact": 0.071,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": false,
+   "placement": {
+    "px": 4.95,
+    "pz": 1.53,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "trash_bin",
+   "kind": "light",
+   "mass": 1.6,
+   "start": [
+    1.55,
+    0.252,
+    -3.3
+   ],
+   "end": [
+    1.435,
+    0.252,
+    -3.57
+   ],
+   "moved": 0.2935,
+   "robotMoved": 0.4635,
+   "rotDeg": 6.16,
+   "maxRobotY": 0,
+   "minContact": 0,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": true,
+   "placement": {
+    "px": 1.7,
+    "pz": -2.82,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "laundry_basket",
+   "kind": "light",
+   "mass": 1,
+   "start": [
+    -2.2,
+    0.235,
+    1.85
+   ],
+   "end": [
+    -2.897,
+    0.235,
+    1.843
+   ],
+   "moved": 0.6972,
+   "robotMoved": 0.8322,
+   "rotDeg": 0.54,
+   "maxRobotY": 0,
+   "minContact": 0,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": false,
+   "placement": {
+    "px": -1.7,
+    "pz": 1.85,
+    "how": "teleportNear"
+   }
+  },
+  {
+   "name": "coffee_table",
+   "kind": "medium",
+   "mass": 13,
+   "start": [
+    -2.5,
+    0.24,
+    -1.55
+   ],
+   "end": [
+    -2.5,
+    0.24,
+    -1.55
+   ],
+   "moved": 0,
+   "robotMoved": 1.1269,
+   "rotDeg": 0,
+   "maxRobotY": 0.012,
+   "minContact": 0,
+   "maxSpeed": 0.55,
+   "contact": true,
+   "finalInside": true,
+   "placement": {
+    "px": -2,
+    "pz": -1.55,
+    "how": "teleportNear"
+   }
+  }
+ ],
+ "arm": {
+  "reach": 0.34,
+  "maxLiftKg": 0.5,
+  "state": {
+   "pos": [
+    -3.5999999046325684,
+    0.00009999930858611839,
+    -1.2000000476837158
+   ],
+   "yaw": -0.26057041693685434,
+   "held": null,
+   "heldName": null,
+   "grounded": true,
+   "speed": 0,
+   "mass": 7,
+   "baseMass": 3.6,
+   "armMass": 3.4,
+   "payload": 0.5,
+   "maxLiftKg": 0.5,
+   "reach": 0.34,
+   "dof": 3,
+   "aiming": true,
+   "boost": false,
+   "moving": false,
+   "wheels": [
+    -579.0318116871264,
+    -579.0318116871264
+   ],
+   "pushes": 0
+  },
+  "jointsAtRest": 0,
+  "canReach": {
+   "d030": true,
+   "d032": true,
+   "d045": false
+  },
+  "refused": {
+   "laptop": {
+    "mass": 1.6,
+    "grab": {
+     "ok": false,
+     "reason": "too_heavy",
+     "held": null
+    },
+    "near": true
+   },
+   "kettle": {
+    "mass": 1,
+    "grab": {
+     "ok": false,
+     "reason": "too_heavy",
+     "held": null
+    },
+    "near": true
+   },
+   "book_stack_1": {
+    "mass": 1.4,
+    "grab": {
+     "ok": false,
+     "reason": "too_heavy",
+     "held": null
+    },
+    "near": true
+   }
+  },
+  "mug": {
+   "near": true,
+   "pos": [
+    -2.878488540649414,
+    0.5153842568397522,
+    -1.7066890001296997
+   ],
+   "mass": 0.32,
+   "robot": [
+    -2.8362762928009033,
+    0.011999738150334449,
+    -1.692082166671753
+   ],
+   "shoulder": [
+    -2.927,
+    0.26,
+    -1.734
+   ],
+   "approach": {
+    "from": [
+     -2.403,
+     0.012,
+     -1.552
+    ],
+    "to": [
+     -2.836,
+     0.012,
+     -1.692
+    ],
+    "moved": 0.456
+   },
+   "distance": 0.2613863083896087,
+   "canReach": true,
+   "grab": {
+    "ok": true,
+    "reason": null,
+    "held": "mug_white"
+   }
+  },
+  "jointsWhileHeld": 1,
+  "lift": {
+   "before": 0.569,
+   "after": 0.569,
+   "lifted": 0,
+   "carry": {
+    "robotMoved": 0.344,
+    "mugMoved": 0.376,
+    "stillHeld": "mug_white",
+    "heldName": "mug_white"
+   },
+   "landedY": 0.515,
+   "landedFinite": true,
+   "heldAfterRelease": null
+  },
+  "dining": {
+   "tableTopY": 0.3749909996986389,
+   "canReachTop": false,
+   "robot": [
+    2.7499992847442627,
+    -0.000020938515663149193,
+    -0.7999935746192932
+   ]
+  },
+  "plateDining": {
+   "pos": [
+    1.7199949026107788,
+    0.7592386603355408,
+    -0.6599627137184143
+   ],
+   "mass": 0.45,
+   "canReach": false,
+   "grab": {
+    "ok": false,
+    "reason": "out_of_reach",
+    "held": null
+   }
+  },
+  "jointsAfterRelease": 0
+ },
+ "stability": {
+  "n": 171,
+  "stacks": 11,
+  "maxDrift": 0,
+  "driftName": null,
+  "maxRelDrift": 0,
+  "relPair": null,
+  "asleep": 171,
+  "maxVel": 0,
+  "finiteAll": true
+ },
+ "perturb": {
+  "n": 8,
+  "maxShift": 0.00004800272565553517,
+  "worst": "cereal_box",
+  "maxTilt": 0.00023160808082597534,
+  "asleep": 8,
+  "picked": [
+   "study_box_2 on study_box_1",
+   "basket_clothes on laundry_basket",
+   "shirt_chair_2 on chair_2",
+   "cereal_box on fridge",
+   "notebook on desk",
+   "sofa_throw on sofa",
+   "book_dining on dining_table",
+   "blanket_bed on bed"
+  ]
+ },
+ "tunnel": {
+  "needle": {
+   "endY": 0.0124,
+   "finite": true,
+   "fellThrough": false
+  },
+  "fast": {
+   "endY": 0.03,
+   "finite": true,
+   "fellThrough": false
+  }
+ },
+ "wallTest": {
+  "cases": [
+   {
+    "side": "north (z-)",
+    "r0": [
+     -3,
+     -0.00000322103500366433,
+     -3.440000057220459
+    ],
+    "r1": [
+     -3.0000970477632425,
+     0.00009757049363606773,
+     -3.5649492767697666
+    ],
+    "moved": 0.12494925723768599,
+    "walls": [
+     2.384185791015625e-7,
+     1.350000023841858,
+     0.0012500286102294922
+    ],
+    "finite": true
+   },
+   {
+    "side": "south (z+)",
+    "r0": [
+     -3,
+     -0.000006111860275270775,
+     3
+    ],
+    "r1": [
+     -3.0000197929570334,
+     0.00007493642730466155,
+     3.094482185173547
+    ],
+    "moved": 0.094482187246748,
+    "walls": [
+     2.384185791015625e-7,
+     1.350000023841858,
+     0.0012500286102294922
+    ],
+    "finite": true
+   },
+   {
+    "side": "west (x-)",
+    "r0": [
+     -4.900000095367432,
+     -0.0000018352270126364978,
+     -1
+    ],
+    "r1": [
+     -5.039718160609482,
+     0.000004361845353739735,
+     -1.000001915188352
+    ],
+    "moved": 0.13971806525517644,
+    "walls": [
+     2.384185791015625e-7,
+     1.350000023841858,
+     0.0012500286102294922
+    ],
+    "finite": true
+   },
+   {
+    "side": "east (x+)",
+    "r0": [
+     4.900000095367432,
+     -0.00001982092857361062,
+     -1
+    ],
+    "r1": [
+     5.364900367167138,
+     -6.815884262545424e-8,
+     -1.00008225440979
+    ],
+    "moved": 0.46490027907630777,
+    "walls": [
+     2.384185791015625e-7,
+     1.350000023841858,
+     0.0012500286102294922
+    ],
+    "finite": true
+   }
+  ],
+  "movedStatic": []
+ },
+ "wallLike": [
+  "bookshelf (42 kg, 0.32x1.86x1.00 m)",
+  "wardrobe (120 kg, 1.12x2.02x0.60 m)",
+  "study_shelves (18 kg, 0.30x1.80x0.90 m)"
+ ],
+ "robot": {
+  "geom": {
+   "state": {
+    "pos": [
+     -3.6000001430511475,
+     0.00009999930858611839,
+     -1.1999998092651367
+    ],
+    "yaw": -0.10451045000000972,
+    "held": null,
+    "heldName": null,
+    "grounded": true,
+    "speed": 0,
+    "mass": 7,
+    "baseMass": 3.6,
+    "armMass": 3.4,
+    "payload": 0.5,
+    "maxLiftKg": 0.5,
+    "reach": 0.34,
+    "dof": 3,
+    "aiming": true,
+    "boost": false,
+    "moving": false,
+    "wheels": [
+     -573.0016692563719,
+     -573.0016692563719
+    ],
+    "pushes": 0
+   },
+   "colliders": [
+    {
+     "dims": {
+      "type": "cylinder",
+      "radius": 0.155,
+      "halfHeight": 0.17
+     }
+    },
+    {
+     "dims": {
+      "type": "ball",
+      "radius": 0.028
+     }
+    }
+   ]
+  },
+  "bbox": {
+   "min": [
+    -3.7773,
+    -0.0139,
+    -1.635
+   ],
+   "max": [
+    -3.4229,
+    0.39,
+    -1.0229
+   ],
+   "size": [
+    0.3544,
+    0.4039,
+    0.6121
+   ]
+  },
+  "baseDia": 0.31,
+  "baseTall": 0.34,
+  "speed": {
+   "normal": 0.4,
+   "boost": 0.55
+  },
+  "state": {
+   "pos": [
+    -3.5999999046325684,
+    0.00009999930858611839,
+    -1.2000000476837158
+   ],
+   "yaw": -0.26057041693685434,
+   "held": null,
+   "heldName": null,
+   "grounded": true,
+   "speed": 0,
+   "mass": 7,
+   "baseMass": 3.6,
+   "armMass": 3.4,
+   "payload": 0.5,
+   "maxLiftKg": 0.5,
+   "reach": 0.34,
+   "dof": 3,
+   "aiming": true,
+   "boost": false,
+   "moving": false,
+   "wheels": [
+    -579.0318116871264,
+    -579.0318116871264
+   ],
+   "pushes": 0
+  }
+ },
+ "staticNames": [
+  "floor_wood",
+  "floor_tile",
+  "thresholds",
+  "ceiling",
+  "walls",
+  "windows",
+  "ceiling_lamps",
+  "wall_art",
+  "exterior",
+  "city_view",
+  "rug",
+  "tv_stand",
+  "kitchen_counter",
+  "stove",
+  "bedroom_rug",
+  "bathtub",
+  "toilet",
+  "bathroom_vanity",
+  "towel_rail",
+  "entry_mat",
+  "umbrella",
+  "drapes"
+ ],
+ "screenshot": "qa/physics/shots/final-round2-scene.png"
+}
