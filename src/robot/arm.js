@@ -62,6 +62,7 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
     relPos: new THREE.Vector3(),
     relQuat: new THREE.Quaternion(),
     frozenLocal: new THREE.Vector3(),
+    gripX: 0.038,
     targetLocal: new THREE.Vector3(),
     targetWorld: new THREE.Vector3(),
     yawBase: 0,
@@ -191,7 +192,8 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
       solveWorld(_b);
     }
 
-    parts.setGrip(state.held ? 0.34 : 1);
+    if (state.held) parts.setGripX(state.gripX);
+    else parts.setGrip(1);
     writeGripperBody(false);
     guardHeldObject();
   }
@@ -217,7 +219,7 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
     }
     try {
       if (state.joint && typeof state.joint.isValid === 'function' && !state.joint.isValid()) {
-        state.joint = null;
+        clearHeld();
         return;
       }
     } catch {
@@ -242,7 +244,7 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
 
   function grab(obj) {
     if (!obj || !obj.body) return { ok: false, reason: 'invalid' };
-    if (state.held) return { ok: false, reason: 'busy', held: state.held.name };
+    if (state.held) return { ok: false, reason: 'busy' };
     const body = obj.body;
     const isStatic = obj.isStatic === true || (typeof body.isDynamic === 'function' && !body.isDynamic());
     if (isStatic) return { ok: false, reason: 'static' };
@@ -255,15 +257,15 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
         mass = 0;
       }
     }
-    if (!(mass <= maxLiftKg + 1e-9)) return { ok: false, reason: 'too_heavy', mass };
-    if (obj.grabbable === false) return { ok: false, reason: 'not_grabbable', mass };
+    if (!(mass <= maxLiftKg + 1e-9)) return { ok: false, reason: 'too_heavy' };
+    if (obj.grabbable === false) return { ok: false, reason: 'not_grabbable' };
 
     const t = body.translation();
     const objPos = _c.set(t.x, t.y, t.z);
     const shoulder = shoulderWorld(_a);
     const distance = shoulder.distanceTo(objPos);
     if (!Number.isFinite(distance) || distance > reach + 0.05) {
-      return { ok: false, reason: 'out_of_reach', distance, mass };
+      return { ok: false, reason: 'out_of_reach' };
     }
 
     // Snap the arm onto the object so the gripper physically reaches it.
@@ -292,8 +294,8 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
     let joint = null;
     try {
       joint = world.createImpulseJoint(jointData, gripperBody, body, true);
-    } catch (err) {
-      return { ok: false, reason: 'joint_failed', error: String(err && err.message ? err.message : err) };
+    } catch {
+      return { ok: false, reason: 'joint_failed' };
     }
 
     // Stop robot <-> held collisions, remember the original groups.
@@ -317,8 +319,54 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
 
     state.held = obj;
     state.joint = joint;
-    parts.setGrip(0.34);
-    return { ok: true, obj, mass, distance };
+    state.gripX = measureGripWidth(obj);
+    parts.setGripX(state.gripX);
+    return { ok: true };
+  }
+
+  // Finger opening just wide enough to straddle the held object.
+  function measureGripWidth(obj) {
+    let half = 0.03;
+    try {
+      if (obj.mesh) {
+        const box = new THREE.Box3().setFromObject(obj.mesh);
+        const size = box.getSize(_b);
+        half = Math.max(size.x, size.z) * 0.5;
+      }
+    } catch {
+      /* fall back to default */
+    }
+    return Math.max(0.024, Math.min(0.05, half + 0.009));
+  }
+
+  // Hard-place the held object at the joint frame (used after teleports).
+  function snapHeldToGripper() {
+    const obj = state.held;
+    if (!obj || !obj.body) return;
+    const gt = gripperBody.translation();
+    const gr = gripperBody.rotation();
+    _q1.set(gr.x, gr.y, gr.z, gr.w);
+    _a.copy(state.relPos).applyQuaternion(_q1).add(_b.set(gt.x, gt.y, gt.z));
+    const q = _q2.copy(_q1).multiply(state.relQuat);
+    obj.body.setTranslation({ x: _a.x, y: _a.y, z: _a.z }, true);
+    obj.body.setRotation({ x: q.x, y: q.y, z: q.z, w: q.w }, true);
+    obj.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    obj.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+  }
+
+  // Forget the held object (e.g. it was removed from the physics world).
+  function clearHeld() {
+    for (const rec of state.savedGroups) {
+      try {
+        rec.collider.setCollisionGroups(rec.groups);
+      } catch {
+        /* ignore */
+      }
+    }
+    state.savedGroups = [];
+    state.joint = null;
+    state.held = null;
+    parts.setGrip(1);
   }
 
   function release() {
@@ -357,8 +405,9 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
   }
 
   function canReach(point) {
-    if (!point) return false;
-    const d = shoulderWorld(_a).distanceTo(point);
+    if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y) || !Number.isFinite(point.z)) return false;
+    const s = shoulderWorld(_a);
+    const d = Math.hypot(point.x - s.x, point.y - s.y, point.z - s.z);
     return Number.isFinite(d) && d <= reach + 0.05 && d >= 0.04;
   }
 
@@ -416,6 +465,7 @@ export function createArm({ ctx, model, group, reach = 0.62, maxLiftKg = 2.5 }) 
     canReach,
     getGripperPose,
     shoulderWorld,
+    snapHeldToGripper,
     sync,
     reset,
     solve,

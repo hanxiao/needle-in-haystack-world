@@ -9,7 +9,8 @@
     "build": "vite build",
     "serve": "node tools/serve.mjs",
     "shot": "node tools/shot.mjs",
-    "qa": "node qa/run.mjs"
+    "qa": "node qa/run.mjs",
+    "deploy": "node tools/deploy.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "0.21.0",

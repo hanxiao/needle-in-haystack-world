@@ -17,6 +17,8 @@ import {
   gPlane,
   matOf,
   scaleUV,
+  swapUV,
+  artMaterials,
   variant,
   mulberry32,
 } from './helpers.js';
@@ -43,8 +45,8 @@ export const WINDOWS = [
 export const DOORS = [
   { id: 'd_bedroom', hinge: [PART.bedroomHallX, 2.7], dir: [0, 1], swing: -1.745, width: 0.88, room: 'bedroom', wall: 'x' },
   { id: 'd_bathroom', hinge: [PART.hallBathX, 1.0], dir: [0, 1], swing: 1.745, width: 0.88, room: 'bathroom', wall: 'x' },
-  { id: 'd_study', hinge: [3.5, PART.frontBackZ], dir: [1, 0], swing: -1.745, width: 0.88, room: 'study', wall: 'z' },
-  { id: 'd_front', hinge: [-1.0, OUT.maxZ], dir: [1, 0], swing: 1.745, width: 0.88, room: 'hallway', wall: 'z', front: true },
+  { id: 'd_study', hinge: [4.5, PART.frontBackZ], dir: [-1, 0], swing: 1.745, width: 0.88, room: 'study', wall: 'z' },
+  { id: 'd_front', hinge: [-0.12, OUT.maxZ], dir: [-1, 0], swing: -1.745, width: 0.88, room: 'hallway', wall: 'z', front: true },
 ];
 
 const DOOR_H = 2.05;
@@ -59,10 +61,14 @@ function openingsFor(wall) {
   }
   for (const d of DOORS) {
     if (wall.axis === 'x' && d.wall === 'z' && Math.abs(d.hinge[1] - wall.at) < 1e-6) {
-      out.push({ from: d.hinge[0], to: d.hinge[0] + d.width, y0: 0, y1: DOOR_H });
+      const a = d.hinge[0];
+      const b = a + d.dir[0] * d.width;
+      out.push({ from: Math.min(a, b), to: Math.max(a, b), y0: 0, y1: DOOR_H });
     }
     if (wall.axis === 'z' && d.wall === 'x' && Math.abs(d.hinge[0] - wall.at) < 1e-6) {
-      out.push({ from: d.hinge[1], to: d.hinge[1] + d.width, y0: 0, y1: DOOR_H });
+      const a = d.hinge[1];
+      const b = a + d.dir[1] * d.width;
+      out.push({ from: Math.min(a, b), to: Math.max(a, b), y0: 0, y1: DOOR_H });
     }
   }
   // hallway cased opening (no leaf)
@@ -156,8 +162,13 @@ function buildFloors(ctx) {
   ];
   for (const [a, b, c, w] of strips) {
     // entries come as (x0, zLine, x1) for x-running or (xLine, z0, z1) for z-running
-    if (b === PART.frontBackZ) th.box(stripMat, c - a, w, 0.012, [(a + c) / 2, 0.006, b]);
-    else th.box(stripMat, w, c - a, 0.012, [a, 0.006, (b + c) / 2]);
+    if (b === PART.frontBackZ) {
+      th.box(stripMat, c - a, w, 0.012, [(a + c) / 2, 0.006, b]);
+      th.colliderBox(c - a, w, 0.012, [(a + c) / 2, 0.006, b]);
+    } else {
+      th.box(stripMat, w, c - a, 0.012, [a, 0.006, (b + c) / 2]);
+      th.colliderBox(w, c - a, 0.012, [a, 0.006, (b + c) / 2]);
+    }
   }
   const thObj = th.finish({ name: 'thresholds', isStatic: true, material: 'metal', tags: ['architecture'], shadows: false });
   return [woodObj, tileObj, thObj];
@@ -249,6 +260,8 @@ function buildWalls(ctx) {
   b.box(tile, bathX1 - bathX0, 0.018, 1.25, [(bathX0 + bathX1) / 2, 0.625, IN.maxZ - 0.009]);
   b.box(tile, bathX1 - bathX0, 0.018, 1.25, [(bathX0 + bathX1) / 2, 0.625, bathZ0 + 0.009]);
   b.box(tile, 0.018, IN.maxZ - bathZ0 - 0.02, 1.25, [bathX1 - 0.009, 0.625, (bathZ0 + IN.maxZ) / 2]);
+  b.box(tile, 0.018, 0.24, 1.25, [bathX0 + 0.009, 0.625, bathZ0 + 0.12]);
+  b.box(tile, 0.018, IN.maxZ - 1.9 - 0.02, 1.25, [bathX0 + 0.009, 0.625, (1.9 + IN.maxZ) / 2]);
 
   // kitchen backsplash around the window
   const bs = variant(ctx, 'tileWall', { repeat: [1.4, 1] });
@@ -300,8 +313,10 @@ function addDoorLeaf(batch, door, material) {
   const nz = Math.cos(yaw);
   const local = (x, y, z) => [cx + x * Math.cos(yaw) + z * nx, y, cz - x * Math.sin(yaw) + z * nz];
   const rot = [0, yaw, 0];
-  // slab
-  batch.box(material, width, 0.044, height, [cx, cy, cz], rot);
+  // slab (vertical grain)
+  const slab = gBox(width, 0.044, height, [cx, cy, cz], rot);
+  swapUV(slab);
+  batch.add(material, slab);
   // recessed panel strips (front + back)
   for (const side of [1, -1]) {
     batch.box(material, width * 0.7, 0.018, height * 0.3, local(0, height * 0.72, side * 0.028), rot);
@@ -324,11 +339,11 @@ function buildWindows(ctx) {
   const b = new Batch(ctx, 'windows');
   const frame = variant(ctx, 'woodLight', { color: 0xe2d6c2 });
   const rodMat = variant(ctx, 'metalDark', { color: 0x2f3234 });
-  const glass = matOf(ctx, 'glass');
+  const glass = variant(ctx, 'glass', { opacity: 0.07, roughness: 0.02 });
   const glassFrosted = matOf(ctx, 'glassFrosted');
   const curtainMats = {
     linen: variant(ctx, 'fabricLinen', { color: 0xd6cdb9 }),
-    wool: variant(ctx, 'fabricWool', { color: 0x9aa093 }),
+    wool: variant(ctx, 'fabricWool', { color: 0xaab0a2 }),
   };
 
   for (const win of WINDOWS) {
@@ -355,6 +370,10 @@ function buildWindows(ctx) {
     addWallBox(b, gm, axis, at, cu, cy, len - 0.1, hgt - 0.1, 0.012);
     // interior sill
     addWallBox(b, frame, axis, at, cu, y0 - 0.022, len + 0.16, 0.04, T + 0.16, inward * 0.045);
+    const [sw, sd, sh] = wallSize(axis, len + 0.16, 0.04, T + 0.16);
+    b.colliderBox(sw, sd, sh, wallXform(axis, at, cu, y0 - 0.022, inward * 0.045));
+    const [gw, gd, gh] = wallSize(axis, len - 0.1, hgt - 0.1, 0.012);
+    b.colliderBox(gw, gd, gh, wallXform(axis, at, cu, cy, 0));
     // curtain rod + panels
     if (win.curtains) {
       const rodY = y1 + 0.1;
@@ -395,6 +414,7 @@ function buildWindows(ctx) {
 function buildCeilingLamps(ctx) {
   const b = new Batch(ctx, 'ceiling_lamps');
   const shade = matOf(ctx, 'lampShade');
+  const shadePendant = variant(ctx, 'lampShade', { emissiveIntensity: 0.28, color: 0xd9cbb2 });
   const bulb = matOf(ctx, 'bulbWarm');
   const metal = variant(ctx, 'metalDark', { color: 0x33373a });
 
@@ -428,15 +448,15 @@ function buildCeilingLamps(ctx) {
   b.cyl(metal, 0.06, 0.06, 0.02, [px, H - 0.01, pz], [0, 0, 0], 12);
   b.cyl(metal, 0.006, 0.006, 0.72, [px, H - 0.38, pz], [0, 0, 0], 6);
   b.lathe(
-    shade,
+    shadePendant,
     [
       [0.02, 0.02],
-      [0.09, 0.0],
-      [0.15, -0.1],
-      [0.19, -0.2],
-      [0.185, -0.215],
-      [0.14, -0.18],
-      [0.075, -0.09],
+      [0.08, 0.0],
+      [0.13, -0.09],
+      [0.16, -0.18],
+      [0.155, -0.195],
+      [0.12, -0.16],
+      [0.065, -0.08],
       [0.02, -0.02],
     ],
     [px, H - 0.72, pz],
@@ -445,6 +465,158 @@ function buildCeilingLamps(ctx) {
   );
   b.sphere(bulb, 0.05, [px, H - 0.94, pz], 10);
   return b.finish({ name: 'ceiling_lamps', isStatic: true, material: 'metal', tags: ['architecture', 'fixture', 'lamp'], shadows: false });
+}
+
+// --------------------------------------------------------------- wall art
+
+function buildWallArt(ctx) {
+  const b = new Batch(ctx, 'wall_art');
+  const frame = variant(ctx, 'woodLight', { color: 0xc9b696 });
+  const frameDark = variant(ctx, 'woodDark', { color: 0x4b382a });
+  const art = artMaterials();
+  const canvasA = art.a;
+  const canvasB = art.b;
+  const canvasC = art.c;
+  // living: above the TV wall (north wall, faces -Z)
+  b.box(frameDark, 0.72, 0.035, 0.54, [-4.35, 1.62, PART.frontBackZ - T / 2 - 0.02]);
+  b.box(canvasA, 0.62, 0.02, 0.44, [-4.35, 1.62, PART.frontBackZ - T / 2 - 0.042]);
+  b.box(frame, 0.5, 0.035, 0.66, [-3.55, 1.56, PART.frontBackZ - T / 2 - 0.02]);
+  b.box(canvasB, 0.4, 0.02, 0.56, [-3.55, 1.56, PART.frontBackZ - T / 2 - 0.042]);
+  // bedroom: above the headboard (north wall, faces -Z)
+  b.box(frameDark, 0.62, 0.035, 0.82, [-4.4, 1.78, IN.maxZ - 0.02]);
+  b.box(canvasC, 0.52, 0.02, 0.72, [-4.4, 1.78, IN.maxZ - 0.042]);
+  b.box(frame, 0.34, 0.035, 0.42, [-3.45, 1.72, IN.maxZ - 0.02]);
+  b.box(canvasB, 0.26, 0.02, 0.34, [-3.45, 1.72, IN.maxZ - 0.042]);
+  // study: south wall (faces +Z)
+  b.box(frame, 0.56, 0.035, 0.72, [5.02, 1.62, PART.frontBackZ + T / 2 + 0.02]);
+  b.box(canvasC, 0.46, 0.02, 0.62, [5.02, 1.62, PART.frontBackZ + T / 2 + 0.042]);
+  // hallway: west wall (faces +X)
+  b.box(frameDark, 0.035, 0.62, 0.42, [PART.bedroomHallX + T / 2 + 0.02, 1.6, 2.2]);
+  b.box(canvasA, 0.02, 0.52, 0.32, [PART.bedroomHallX + T / 2 + 0.042, 1.6, 2.2]);
+  b.colliderBox(0.72, 0.1, 0.54, [-4.35, 1.62, PART.frontBackZ - T / 2 - 0.02]);
+  b.colliderBox(0.62, 0.1, 0.82, [-4.4, 1.78, IN.maxZ - 0.02]);
+  return b.finish({ name: 'wall_art', pos: [0, 0, 0], isStatic: true, material: 'wood', tags: ['decor'], recenter: false, shadows: false });
+}
+
+// ------------------------------------------------------- exterior landing
+
+function buildExterior(ctx) {
+  const b = new Batch(ctx, 'exterior');
+  const concrete = variant(ctx, 'concrete', { color: 0x9b978f });
+  const paint = variant(ctx, 'wallPaint', { color: 0xd9d4c8 });
+  const wood = variant(ctx, 'woodDark', { color: 0x9a7454 });
+  const chrome = matOf(ctx, 'metalChrome');
+  const bulb = matOf(ctx, 'bulbWarm');
+  const x0 = -1.78;
+  const x1 = 0.68;
+  const z0 = OUT.maxZ;
+  const z1 = 5.4;
+  const cx = (x0 + x1) / 2;
+  const cz = (z0 + z1) / 2;
+  // floor + ceiling
+  b.box(concrete, x1 - x0, z1 - z0, 0.1, [cx, -0.05, cz]);
+  b.box(paint, x1 - x0, z1 - z0, 0.12, [cx, H + 0.06, cz]);
+  // far + side walls
+  b.box(paint, x1 - x0, 0.14, H, [cx, H / 2, z1]);
+  b.box(paint, 0.14, z1 - z0, H, [x0, H / 2, cz]);
+  b.box(paint, 0.14, z1 - z0, H, [x1, H / 2, cz]);
+  // neighbour door + frame on the far wall
+  b.box(wood, 0.98, 0.06, 2.15, [-0.75, 1.075, z1 - 0.1]);
+  b.box(wood, 0.9, 0.05, 2.05, [-0.75, 1.025, z1 - 0.13]);
+  b.box(wood, 1.1, 0.06, 0.1, [-0.75, 2.17, z1 - 0.1]);
+  b.cyl(chrome, 0.016, 0.016, 0.1, [-0.36, 1.0, z1 - 0.16], [0, 0, 0], 8);
+  // ceiling lamp
+  b.cyl(concrete, 0.09, 0.1, 0.03, [cx, H - 0.02, cz], [0, 0, 0], 12);
+  b.sphere(bulb, 0.045, [cx, H - 0.08, cz], 8);
+  // colliders
+  b.colliderBox(x1 - x0, z1 - z0, 0.1, [cx, -0.05, cz]);
+  b.colliderBox(x1 - x0, 0.14, H, [cx, H / 2, z1]);
+  b.colliderBox(0.14, z1 - z0, H, [x0, H / 2, cz]);
+  b.colliderBox(0.14, z1 - z0, H, [x1, H / 2, cz]);
+  const obj = b.finish({ name: 'exterior', pos: [0, 0, 0], isStatic: true, material: 'concrete', tags: ['architecture', 'exterior'], recenter: false, shadows: true });
+  const corridorLight = new THREE.PointLight(0xffd8ac, 2.4, 4.5, 2);
+  corridorLight.position.set(cx, H - 0.25, cz);
+  ctx.scene.add(corridorLight);
+  return obj;
+}
+
+// ------------------------------------------------------- exterior city view
+
+function buildExteriorView(ctx) {
+  const b = new Batch(ctx, 'city_view');
+  const ground = variant(ctx, 'concrete', { color: 0x8d9384 });
+  const buildingA = variant(ctx, 'concrete', { color: 0xa9b0b6 });
+  const buildingB = variant(ctx, 'concrete', { color: 0xb8b1a2 });
+  const buildingC = variant(ctx, 'concrete', { color: 0x97a1ab });
+  const foliage = variant(ctx, 'plantLeaf', { color: 0x4c6b48 });
+  const foliage2 = variant(ctx, 'plantLeaf', { color: 0x3e5c3b });
+  const trunk = variant(ctx, 'woodDark', { color: 0x5b4636 });
+  const baseY = -0.3;
+  // ground + low garden wall right outside the south windows
+  b.box(ground, 70, 70, 0.4, [0, baseY - 0.2, 0]);
+  b.box(foliage, 11.5, 0.6, 0.7, [0, baseY + 0.3, OUT.minZ - 2.2]);
+  b.box(foliage2, 0.7, 7.5, 0.6, [OUT.maxX + 2.2, baseY + 0.3, 0]);
+  // distant blocks
+  const buildings = [
+    [-7.5, 5.4, -11, 6, 7, buildingA],
+    [-1.2, 6.2, -12.5, 8, 6, buildingB],
+    [6.4, 4.6, -11, 7, 8, buildingC],
+    [13, 5.2, -2.2, 6, 7, buildingB],
+    [13.5, 4.2, 4.4, 5, 6, buildingA],
+    [-10, 5.6, 8.5, 7, 6, buildingC],
+    [-2.2, 6.4, 11.5, 8, 7, buildingB],
+    [5.2, 5, 10, 6, 6, buildingA],
+    [-12.5, 4.6, 1, 5, 7, buildingC],
+  ];
+  const glassBand = variant(ctx, 'glassFrosted', { color: 0x5b6b78, opacity: 0.9 });
+  for (const [x, h, z, w, d, mat] of buildings) {
+    b.box(mat, w, d, h, [x, baseY + h / 2, z]);
+    b.box(mat, w + 0.4, d + 0.4, 0.3, [x, baseY + h, z]);
+    // roof box detail
+    b.box(mat, w * 0.3, d * 0.3, 1.1, [x + w * 0.15, baseY + h + 0.55, z - d * 0.15]);
+    // window bands on the face looking at the apartment
+    const faceZ = Math.abs(z) > Math.abs(x);
+    const rows = Math.max(2, Math.floor(h / 1.6));
+    for (let r = 0; r < rows; r++) {
+      const y = baseY + 1.0 + r * 1.5;
+      if (y > baseY + h - 0.6) break;
+      if (faceZ) {
+        const zz = z > 0 ? z - d / 2 - 0.03 : z + d / 2 + 0.03;
+        b.box(glassBand, w * 0.82, 0.06, 0.5, [x, y, zz]);
+      } else {
+        const xx = x > 0 ? x - w / 2 - 0.03 : x + w / 2 + 0.03;
+        b.box(glassBand, 0.06, d * 0.82, 0.5, [xx, y, z]);
+      }
+    }
+  }
+  // trees
+  const trees = [
+    [-5.2, -8.2, 0.95],
+    [-1.6, -8.6, 0.8],
+    [2.8, -8.4, 1.0],
+    [9.2, -3.4, 0.85],
+    [9.6, 1.4, 0.9],
+    [-8.0, -1.6, 0.85],
+    [-8.2, 3.6, 0.9],
+    [-3.4, 8.4, 0.95],
+    [1.8, 8.8, 0.85],
+    [5.4, 8.4, 0.9],
+    [-6.9, -6.0, 0.8],
+    [7.6, -6.2, 0.85],
+    [-7.6, -2.7, 0.9],
+    [-7.9, -4.1, 0.8],
+    [-7.8, 2.6, 0.85],
+    [7.8, 2.4, 0.8],
+    [7.9, -1.4, 0.75],
+  ];
+  for (const [x, z, s] of trees) {
+    b.cyl(trunk, 0.075 * s, 0.11 * s, 1.5 * s, [x, baseY + 0.75 * s, z], [0, 0, 0], 6);
+    b.sphere(foliage, 0.82 * s, [x, baseY + 2.0 * s, z], 9);
+    b.sphere(foliage2, 0.6 * s, [x + 0.55 * s, baseY + 1.55 * s, z + 0.3 * s], 8);
+    b.sphere(foliage, 0.52 * s, [x - 0.48 * s, baseY + 1.6 * s, z - 0.28 * s], 8);
+  }
+  b.colliderBox(70, 70, 0.4, [0, baseY - 0.2, 0]);
+  return b.finish({ name: 'city_view', pos: [0, 0, 0], isStatic: true, material: 'concrete', tags: ['exterior'], recenter: false, shadows: false });
 }
 
 // ------------------------------------------------------------------ exports
@@ -456,5 +628,8 @@ export function buildApartment(ctx) {
   objects.push(buildWalls(ctx));
   objects.push(buildWindows(ctx));
   objects.push(buildCeilingLamps(ctx));
+  objects.push(buildWallArt(ctx));
+  objects.push(buildExterior(ctx));
+  objects.push(buildExteriorView(ctx));
   return { objects, windows: WINDOWS, doors: DOORS, rooms: ROOMS };
 }

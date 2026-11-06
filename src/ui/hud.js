@@ -29,9 +29,10 @@ export function createHud(root) {
     <div class="hud-cam" data-cam="back"><span class="hud-cam-label">B</span></div>
     <div class="hud-surround-tag" id="hud-surround-tag">360°</div>
     <div class="hud-cross" id="hud-cross"></div>
+    <div class="hud-cursor" id="hud-cursor"></div>
     <div class="hud-target" id="hud-target" hidden></div>
     <div class="hud-held" id="hud-held" hidden></div>
-    <div class="hud-hint" id="hud-hint">WASD DRIVE · MOUSE ORBIT · CLICK GRAB · V VIEW · C 360 · L LIGHTS</div>
+    <div class="hud-hint" id="hud-hint">WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L</div>
     <div class="hud-toast" id="hud-toast" hidden></div>
     <div class="hud-fps" id="hud-fps" hidden></div>
   `;
@@ -42,6 +43,7 @@ export function createHud(root) {
     map: root.querySelector('#hud-map'),
     surroundTag: root.querySelector('#hud-surround-tag'),
     cross: root.querySelector('#hud-cross'),
+    cursor: root.querySelector('#hud-cursor'),
     target: root.querySelector('#hud-target'),
     held: root.querySelector('#hud-held'),
     hint: root.querySelector('#hud-hint'),
@@ -136,15 +138,38 @@ export function createHud(root) {
     setText(els.needle, 'NEEDLE FOUND');
     els.needle.hidden = !s.needleFound;
 
+    const firstPerson = s.mode === 'first';
+    const showCursor =
+      !firstPerson &&
+      s.pointer &&
+      s.pointer.active &&
+      s.pointer.x >= 0 &&
+      s.pointer.y >= 0 &&
+      s.pointer.x <= window.innerWidth &&
+      s.pointer.y <= window.innerHeight;
+    els.cross.classList.toggle('is-hidden', !firstPerson);
+    els.cursor.classList.toggle('is-hidden', !showCursor);
+    if (showCursor) {
+      els.cursor.style.transform = `translate(${s.pointer.x}px, ${s.pointer.y}px)`;
+    }
     if (s.target) {
-      const status = !s.reachable ? 'OUT OF REACH' : s.heavy ? 'PUSH' : 'GRAB';
+      const reachable = s.target.reachable !== false;
+      const heavy = !!s.target.heavy;
+      const status = !reachable ? 'OUT OF REACH' : heavy ? 'PUSH' : 'GRAB';
       setText(els.target, `${prettyName(s.target.name)} · ${formatMass(s.target.mass)} · ${status}`);
       els.target.hidden = false;
-      els.target.dataset.status = !s.reachable ? 'far' : s.heavy ? 'heavy' : 'grab';
+      els.target.dataset.status = !reachable ? 'far' : heavy ? 'heavy' : 'grab';
       els.cross.dataset.status = els.target.dataset.status;
+      els.cursor.dataset.status = els.target.dataset.status;
+      const px = firstPerson ? window.innerWidth / 2 : s.pointer?.x ?? window.innerWidth / 2;
+      const py = firstPerson ? window.innerHeight / 2 : s.pointer?.y ?? window.innerHeight / 2;
+      els.target.style.left = `${Math.min(window.innerWidth - 330, Math.max(8, px + 18))}px`;
+      els.target.style.top = `${Math.min(window.innerHeight - 40, Math.max(8, py + 14))}px`;
+      els.target.style.transform = 'none';
     } else {
       els.target.hidden = true;
       els.cross.dataset.status = '';
+      els.cursor.dataset.status = '';
     }
 
     if (s.held) {
@@ -155,7 +180,7 @@ export function createHud(root) {
     }
 
     els.hint.classList.toggle('is-faded', !s.hint);
-    els.hint.textContent = s.hintText || 'WASD DRIVE · MOUSE ORBIT · CLICK GRAB · V VIEW · C 360 · L LIGHTS';
+    els.hint.textContent = s.hintText || 'WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L';
     els.fps.hidden = !s.debug;
     if (s.debug) setText(els.fps, `${s.fps} FPS · ${s.drawCalls} CALLS · ${s.dynamic} DYN`);
   }

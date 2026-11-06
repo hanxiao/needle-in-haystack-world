@@ -17,7 +17,7 @@ function makeCanvas(w, h, draw) {
   const c = document.createElement('canvas');
   c.width = w;
   c.height = h;
-  const ctx = c.getContext('2d');
+  const ctx = c.getContext('2d', { willReadFrequently: true });
   draw(ctx, w, h);
   return c;
 }

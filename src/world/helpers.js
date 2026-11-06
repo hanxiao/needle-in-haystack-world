@@ -122,6 +122,18 @@ export function transformGeo(geo, { pos = [0, 0, 0], rot = [0, 0, 0], quat = nul
   return geo;
 }
 
+export function swapUV(geo) {
+  const uv = geo.attributes.uv;
+  if (!uv) return geo;
+  for (let i = 0; i < uv.count; i++) {
+    const u = uv.getX(i);
+    const v = uv.getY(i);
+    uv.setXY(i, v, u);
+  }
+  uv.needsUpdate = true;
+  return geo;
+}
+
 export function scaleUV(geo, su, sv) {
   const uv = geo.attributes.uv;
   if (!uv) return geo;
@@ -141,6 +153,12 @@ export function gCyl(rTop, rBot, hgt, pos = [0, 0, 0], rot = [0, 0, 0], seg = 14
 
 export function gSphere(radius, pos = [0, 0, 0], seg = 10) {
   return transformGeo(new THREE.SphereGeometry(radius, seg, Math.max(6, seg >> 1)), { pos });
+}
+
+export function gEllipsoid(rx, ry, rz, pos = [0, 0, 0], rot = [0, 0, 0], seg = 16) {
+  const geo = new THREE.SphereGeometry(1, seg, Math.max(8, seg >> 1));
+  geo.scale(rx, ry, rz);
+  return transformGeo(geo, { pos, rot });
 }
 
 export function gLathe(points, pos = [0, 0, 0], rot = [0, 0, 0], seg = 20) {
@@ -451,6 +469,74 @@ export class ContactShadows {
     this.ctx.scene.add(mesh);
     return mesh;
   }
+}
+
+// ------------------------------------------------------------------ artwork
+
+let _artMats = null;
+export function artMaterials() {
+  if (_artMats) return _artMats;
+  const make = (draw) => {
+    const c = document.createElement('canvas');
+    c.width = 256;
+    c.height = 320;
+    const g = c.getContext('2d');
+    draw(g, 256, 320);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.needsUpdate = true;
+    return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.9, metalness: 0 });
+  };
+  const a = make((g, w, h) => {
+    g.fillStyle = '#e7dfd0';
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = '#b0715a';
+    g.beginPath();
+    g.arc(w * 0.62, h * 0.38, w * 0.26, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = '#77836f';
+    g.fillRect(w * 0.16, h * 0.55, w * 0.3, h * 0.3);
+    g.fillStyle = '#3e4a5c';
+    g.fillRect(w * 0.52, h * 0.66, w * 0.3, h * 0.16);
+    g.strokeStyle = 'rgba(40,36,30,0.5)';
+    g.lineWidth = 3;
+    g.strokeRect(w * 0.08, h * 0.08, w * 0.84, h * 0.84);
+  });
+  const b = make((g, w, h) => {
+    const grd = g.createLinearGradient(0, 0, 0, h);
+    grd.addColorStop(0, '#a9c2d6');
+    grd.addColorStop(0.55, '#e5d7bf');
+    grd.addColorStop(1, '#8e9c86');
+    g.fillStyle = grd;
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = 'rgba(90,104,88,0.85)';
+    g.beginPath();
+    g.moveTo(0, h * 0.66);
+    g.quadraticCurveTo(w * 0.3, h * 0.46, w * 0.58, h * 0.68);
+    g.quadraticCurveTo(w * 0.8, h * 0.82, w, h * 0.62);
+    g.lineTo(w, h);
+    g.lineTo(0, h);
+    g.fill();
+    g.fillStyle = 'rgba(255,240,210,0.9)';
+    g.beginPath();
+    g.arc(w * 0.68, h * 0.28, w * 0.09, 0, Math.PI * 2);
+    g.fill();
+  });
+  const c = make((g, w, h) => {
+    g.fillStyle = '#2f3a46';
+    g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#cbbfa4';
+    g.lineWidth = 10;
+    for (let i = 0; i < 5; i++) {
+      g.beginPath();
+      g.arc(w * 0.5, h * 0.55, w * (0.12 + i * 0.09), Math.PI * 0.85, Math.PI * 1.85);
+      g.stroke();
+    }
+    g.fillStyle = '#b0715a';
+    g.fillRect(0, h * 0.82, w, h * 0.18);
+  });
+  _artMats = { a, b, c };
+  return _artMats;
 }
 
 // -------------------------------------------------------------------- colours

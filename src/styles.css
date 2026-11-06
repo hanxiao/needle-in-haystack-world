@@ -28,7 +28,7 @@ html, body {
   display: block;
   touch-action: none;
 }
-#scene { z-index: 0; }
+#scene { z-index: 0; cursor: none; }
 #hud-scene { z-index: 1; pointer-events: none; }
 
 #hud {
@@ -157,6 +157,35 @@ html[data-ready="1"] #boot { opacity: 0; pointer-events: none; }
 .hud-cross[data-status="far"] { opacity: 0.4; }
 
 /* ---------------------------------------------------------------- target / held / hint */
+.hud-cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 13px;
+  height: 13px;
+  margin: -6.5px 0 0 -6.5px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+.hud-cursor::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 2px;
+  margin: -1px 0 0 -1px;
+  background: rgba(255, 255, 255, 0.9);
+}
+.hud-cursor[data-status="grab"] { border-color: var(--amber); }
+.hud-cursor[data-status="grab"]::after { background: var(--amber); }
+.hud-cursor[data-status="heavy"] { border-color: var(--red); }
+.hud-cursor[data-status="heavy"]::after { background: var(--red); }
+.hud-cursor[data-status="far"] { opacity: 0.35; }
+.hud-cross.is-hidden, .hud-cursor.is-hidden { opacity: 0; }
+
 .hud-target {
   position: absolute;
   left: calc(50% + 20px);
@@ -227,7 +256,36 @@ html[data-ready="1"] #boot { opacity: 0; pointer-events: none; }
   .hud-room { left: 10px; top: 10px; }
   .hud-room-name { font-size: 10px; }
   .hud-sub { font-size: 7.5px; }
-  .hud-target { left: calc(50% + 14px); font-size: 9px; }
+  .hud-cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 13px;
+  height: 13px;
+  margin: -6.5px 0 0 -6.5px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+.hud-cursor::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 2px;
+  margin: -1px 0 0 -1px;
+  background: rgba(255, 255, 255, 0.9);
+}
+.hud-cursor[data-status="grab"] { border-color: var(--amber); }
+.hud-cursor[data-status="grab"]::after { background: var(--amber); }
+.hud-cursor[data-status="heavy"] { border-color: var(--red); }
+.hud-cursor[data-status="heavy"]::after { background: var(--red); }
+.hud-cursor[data-status="far"] { opacity: 0.35; }
+.hud-cross.is-hidden, .hud-cursor.is-hidden { opacity: 0; }
+
+.hud-target { left: calc(50% + 14px); font-size: 9px; }
   .hud-held { bottom: 54px; font-size: 8.5px; }
   .hud-hint { bottom: 14px; font-size: 8px; letter-spacing: 0.08em; }
   .hud-fps { right: 10px; bottom: 10px; }

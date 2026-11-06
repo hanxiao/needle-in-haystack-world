@@ -9,7 +9,7 @@ export const ROBOT_DIMS = {
   bodyY: 0.21,
   colliderRadius: 0.16,
   colliderHalfHeight: 0.19,
-  height: 0.415,
+  height: 0.428,
   width: 0.326,
   wheelRadius: 0.055,
   wheelWidth: 0.036,
@@ -22,7 +22,7 @@ export const ROBOT_DIMS = {
   shoulder: new THREE.Vector3(0, 0.26, -0.1),
   park: new THREE.Vector3(0, 0.18, -0.34),
   // Mount points
-  head: new THREE.Vector3(0, 0.305, 0),
+  head: new THREE.Vector3(0, 0.30, 0),
   cameraY: 0.34,
   tiltPivotY: 0.12,
 };
@@ -43,6 +43,8 @@ export function buildRobotModel(ctx) {
     for (const sz of [-1, 1]) {
       const wheel = new THREE.Mesh(wheelGeo, mats.rubber);
       wheel.position.set(sx * ROBOT_DIMS.wheelX, 0.057, sz * ROBOT_DIMS.wheelZ);
+      wheel.userData.side = sx; // -1 left, +1 right (skid steer)
+      wheel.userData.spin = 0;
       addShadows(wheel);
       visual.add(wheel);
       wheels.push(wheel);
@@ -105,22 +107,27 @@ export function buildRobotModel(ctx) {
   tilt.add(sensorBar);
 
   // neck
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.032, 0.05, 16), mats.metalDark);
-  neck.position.set(0, T(0.2365), 0);
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.034, 0.036, 16), mats.metalDark);
+  neck.position.set(0, T(0.228), 0);
   addShadows(neck);
   tilt.add(neck);
 
-  // head
+  // head: 0.15 x 0.11 x 0.145, centre at y = 0.30 (top 0.355)
+  const HEAD_Y = 0.30;
   const head = new THREE.Group();
   head.name = 'robot_head';
-  head.position.set(0, T(0.305), 0);
+  head.position.set(0, T(HEAD_Y), 0);
   tilt.add(head);
+  const H = (y) => y - HEAD_Y; // absolute height -> head-local
 
-  const headShell = new THREE.Mesh(rounded(0.15, 0.085, 0.145, 4, 0.026), mats.shell);
+  const headShell = new THREE.Mesh(rounded(0.15, 0.11, 0.145, 4, 0.028), mats.shell);
   addShadows(headShell);
   head.add(headShell);
 
-  const visor = new THREE.Mesh(rounded(0.154, 0.04, 0.149, 3, 0.012), mats.dark);
+  // dark sensor band around the upper head (holds the four lenses)
+  const VISOR_Y = H(0.335);
+  const visor = new THREE.Mesh(rounded(0.152, 0.03, 0.147, 3, 0.01), mats.dark);
+  visor.position.y = VISOR_Y;
   addShadows(visor);
   head.add(visor);
 
@@ -128,10 +135,10 @@ export function buildRobotModel(ctx) {
   const lensGeo = new THREE.CylinderGeometry(0.017, 0.017, 0.016, 16);
   const ringGeo = new THREE.TorusGeometry(0.019, 0.0028, 6, 16);
   const lensSpecs = [
-    { pos: [0, 0, -0.0775], axis: 'z' },
-    { pos: [0, 0, 0.0775], axis: 'z' },
-    { pos: [-0.079, 0, 0], axis: 'x' },
-    { pos: [0.079, 0, 0], axis: 'x' },
+    { pos: [0, VISOR_Y, -0.0775], axis: 'z' },
+    { pos: [0, VISOR_Y, 0.0775], axis: 'z' },
+    { pos: [-0.079, VISOR_Y, 0], axis: 'x' },
+    { pos: [0.079, VISOR_Y, 0], axis: 'x' },
   ];
   for (const spec of lensSpecs) {
     const lens = new THREE.Mesh(lensGeo, mats.lens);
@@ -160,16 +167,16 @@ export function buildRobotModel(ctx) {
     metalness: 0.1,
   });
   const led = new THREE.Mesh(new THREE.SphereGeometry(0.0075, 12, 8), ledMaterial);
-  led.position.set(0.032, T(0.3515), -0.03);
+  led.position.set(0.032, H(0.361), -0.03);
   head.add(led);
 
   // antenna
-  const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.06, 8), mats.metalDark);
-  antenna.position.set(0.05, T(0.3775), 0.045);
+  const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.062, 8), mats.metalDark);
+  antenna.position.set(0.05, H(0.386), 0.045);
   addShadows(antenna);
   head.add(antenna);
   const antennaTip = new THREE.Mesh(new THREE.SphereGeometry(0.006, 10, 8), mats.accent);
-  antennaTip.position.set(0.05, T(0.4095), 0.045);
+  antennaTip.position.set(0.05, H(0.422), 0.045);
   head.add(antennaTip);
 
   // ------------------------------------------------------------- arm
@@ -264,27 +271,29 @@ function buildArm(mats) {
   addShadows(palm);
   gripper.add(palm);
 
-  const fingerGeo = rounded(0.011, 0.028, 0.055, 2, 0.005);
-  const tipGeo = rounded(0.011, 0.02, 0.013, 2, 0.004);
+  const fingerGeo = rounded(0.01, 0.026, 0.052, 2, 0.0045);
+  const tipGeo = rounded(0.01, 0.018, 0.012, 2, 0.0035);
   const fingerL = new THREE.Mesh(fingerGeo, mats.rubber);
   const fingerR = new THREE.Mesh(fingerGeo, mats.rubber);
   const tipL = new THREE.Mesh(tipGeo, mats.accent);
   const tipR = new THREE.Mesh(tipGeo, mats.accent);
   for (const m of [fingerL, fingerR, tipL, tipR]) addShadows(m);
-  fingerL.position.z = 0.045;
-  fingerR.position.z = 0.045;
-  tipL.position.z = 0.074;
-  tipR.position.z = 0.074;
+  fingerL.position.z = 0.043;
+  fingerR.position.z = 0.043;
+  tipL.position.z = 0.071;
+  tipR.position.z = 0.071;
   gripper.add(fingerL, fingerR, tipL, tipR);
 
   let extension = 0;
   let grip = 1;
-  function applyGrip() {
-    const x = 0.02 + grip * 0.025;
+  function applyGripX(x) {
     fingerL.position.x = -x;
     fingerR.position.x = x;
     tipL.position.x = -x;
     tipR.position.x = x;
+  }
+  function applyGrip() {
+    applyGripX(0.018 + grip * 0.021);
   }
   function applyExtension() {
     const len = Math.max(0.0001, extension + 0.07);
@@ -317,6 +326,10 @@ function buildArm(mats) {
     setGrip(v) {
       grip = Math.max(0, Math.min(1, v));
       applyGrip();
+    },
+    // Open the fingers to a specific half-width (used to fit a held object).
+    setGripX(x) {
+      applyGripX(Math.max(0.018, Math.min(0.05, x)));
     },
   };
 }

@@ -6,11 +6,11 @@ import { ROBOT_DIMS } from './model.js';
 
 const FOV_SIDE = 120;
 const ASPECT_SIDE = 4 / 3;
-const FOV_TOP = 75;
+const FOV_TOP = 100;
 const NEAR = 0.02;
 const FAR = 40;
 const DOWN_TILT = -0.13; // ~7.5 degrees
-const RING_RADIUS = 0.082;
+const RING_RADIUS = 0.088;
 
 export function createCameras() {
   const make = (fov, aspect) => new THREE.PerspectiveCamera(fov, aspect, NEAR, FAR);
@@ -41,8 +41,11 @@ export function createCameras() {
 
   const top = make(FOV_TOP, 1);
   top.name = 'robot_cam_top';
-  top.position.set(0, 3.5, 0);
+  top.position.set(0, 2.3, 0);
   top.rotation.set(-Math.PI / 2, 0, 0);
 
   return { front, back, left, right, top };
 }
+
+// Highest the top camera may sit in world space (below the 2.7 m ceiling).
+export const TOP_CAM_MAX_WORLD_Y = 2.58;

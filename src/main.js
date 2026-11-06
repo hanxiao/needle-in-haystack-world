@@ -29,6 +29,7 @@ const state = {
   triangles: 0,
   debug: new URLSearchParams(location.search).has('debug'),
   lastPush: 0,
+  pointer: { x: window.innerWidth / 2, y: window.innerHeight / 2, active: false },
 };
 
 const keys = new Set();
@@ -69,11 +70,11 @@ async function init() {
   hud.setSurround(state.surround);
 
   const marker = new THREE.Mesh(
-    new THREE.RingGeometry(0.028, 0.042, 28),
+    new THREE.RingGeometry(0.022, 0.032, 32),
     new THREE.MeshBasicMaterial({
       color: 0xf0b35c,
       transparent: true,
-      opacity: 0.95,
+      opacity: 0.85,
       side: THREE.DoubleSide,
       depthTest: true,
       depthWrite: false,
@@ -151,7 +152,7 @@ async function init() {
       pushObject(obj);
       return;
     }
-    if (!state.hit || !robot.canReach(state.hit.point)) {
+    if (!robot.canReach(objectCenter(obj))) {
       hud.showToast('OUT OF REACH', 'heavy');
       return;
     }
@@ -192,16 +193,68 @@ async function init() {
     state.forcedAim = point.clone();
   }
 
+  function findFreeSpot(obj, preferred = 0.45) {
+    const c = objectCenter(obj);
+    const RAPIER = physics.RAPIER;
+    const shape = new RAPIER.Cylinder(0.19, 0.16);
+    const rot = { x: 0, y: 0, z: 0, w: 1 };
+    const candidates = [];
+    for (let ring = 0; ring < 4; ring++) {
+      const radius = preferred + ring * 0.12;
+      for (let i = 0; i < 20; i++) {
+        const a = (i / 20) * Math.PI * 2 + ring * 0.16;
+        const x = c.x + Math.cos(a) * radius;
+        const z = c.z + Math.sin(a) * radius;
+        if (x < -5.35 || x > 5.35 || z < -3.55 || z > 3.55) continue;
+        const down = physics.castRay([x, 2.2, z], [0, -1, 0], 2.3);
+        if (!down || down.point.y > 0.06) continue;
+        const overlap = physics.world.intersectionWithShape(
+          { x, y: 0.23, z },
+          rot,
+          shape,
+          undefined,
+          undefined,
+          undefined,
+          robot.body,
+          (collider) => {
+            const o = physics.colliderToObj.get(collider.handle);
+            if (!o) return false;
+            if (o.isStatic && o.body.translation().y < 0.14) return false;
+            return true;
+          }
+        );
+        if (overlap) continue;
+        const shoulderY = 0.26;
+        const d = Math.hypot(c.x - x, c.y - shoulderY, c.z - z);
+        candidates.push({ x, z, d, floorY: down.point.y });
+      }
+      if (candidates.some((s) => s.d <= 0.6)) break;
+    }
+    if (!candidates.length) return null;
+    const reachable = candidates.filter((s) => s.d <= 0.6);
+    const pool = reachable.length ? reachable : candidates;
+    pool.sort((a, b) => Math.abs(a.d - 0.5) - Math.abs(b.d - 0.5));
+    return pool[0];
+  }
+
   function teleportNear(name, dist = 0.5) {
     const obj = physics.get(name);
     if (!obj) return null;
     const c = objectCenter(obj);
-    const room = roomAt(c);
-    const dir = new THREE.Vector3((room?.center?.[0] ?? 0) - c.x, 0, (room?.center?.[2] ?? 0) - c.z);
-    if (dir.lengthSq() < 1e-4) dir.set(1, 0, 0);
-    dir.normalize();
-    const px = c.x + dir.x * dist;
-    const pz = c.z + dir.z * dist;
+    const spot = findFreeSpot(obj, Math.max(0.35, Math.min(dist, 0.6)));
+    let px;
+    let pz;
+    if (spot) {
+      px = spot.x;
+      pz = spot.z;
+    } else {
+      const room = roomAt(c);
+      const dir = new THREE.Vector3((room?.center?.[0] ?? 0) - c.x, 0, (room?.center?.[2] ?? 0) - c.z);
+      if (dir.lengthSq() < 1e-4) dir.set(1, 0, 0);
+      dir.normalize();
+      px = c.x + dir.x * dist;
+      pz = c.z + dir.z * dist;
+    }
     const yaw = Math.atan2(-(c.x - px), -(c.z - pz));
     robot.setPose([px, 0, pz], yaw);
     rig.state.yaw = yaw;
@@ -209,7 +262,7 @@ async function init() {
     rig.state.dist = 1.25;
     rig.state.initialized = false;
     state.forcedAim = c.clone();
-    return { pos: [px, 0, pz], yaw, object: c.toArray() };
+    return { pos: [px, 0, pz], yaw, object: c.toArray(), freeSpot: !!spot };
   }
 
   function sampleCanvas(which, rect) {
@@ -247,15 +300,18 @@ async function init() {
       ? { name: robot.arm.held.name, mass: robot.arm.held.mass }
       : null;
     let target = null;
-    if (state.hover) {
+    const heldObj = robot.arm.held;
+    if (state.hover && state.hover !== heldObj) {
       target = {
         name: state.hover.name,
         mass: state.hover.mass,
         heavy: state.hover.mass > robot.arm.maxLiftKg,
-        reachable: state.hit ? robot.canReach(state.hit.point) : false,
+        reachable: robot.canReach(objectCenter(state.hover)),
       };
     }
     hud.update({
+      mode: rig.mode,
+      pointer: state.pointer,
       roomLabel: room?.label || 'APARTMENT',
       target,
       held,
@@ -284,13 +340,21 @@ async function init() {
       state.hintUsed = true;
     }
 
-    const rayHit = physics.castRayFromCamera(camera, 0, 0, 14, robotExclude());
+    let ndcX = 0;
+    let ndcY = 0;
+    if (rig.mode !== 'first') {
+      ndcX = (state.pointer.x / window.innerWidth) * 2 - 1;
+      ndcY = -(state.pointer.y / window.innerHeight) * 2 + 1;
+    }
+    const rayHit = physics.castRayFromCamera(camera, ndcX, ndcY, 14, robotExclude());
     const hover = rayHit && !rayHit.obj.isStatic ? rayHit.obj : null;
 
     let aim;
     if (state.forcedAim) {
       aim = state.forcedAim;
       state.forcedAim = null;
+    } else if (hover) {
+      aim = objectCenter(hover);
     } else if (rayHit) {
       aim = rayHit.point;
     } else {
@@ -324,8 +388,8 @@ async function init() {
 
     if (hover && rayHit) {
       marker.visible = true;
-      marker.position.copy(rayHit.point).addScaledVector(rayHit.normal, 0.005);
-      marker.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), rayHit.normal);
+      marker.position.copy(rayHit.point).addScaledVector(camera.getWorldDirection(new THREE.Vector3()), -0.012);
+      marker.quaternion.copy(camera.quaternion);
       marker.material.color.setHex(hover.mass > robot.arm.maxLiftKg ? 0xe07a5f : 0xf0b35c);
     } else {
       marker.visible = false;
@@ -333,7 +397,10 @@ async function init() {
 
     updateHud();
 
+    const robotVisible = rig.mode !== 'first';
+    robot.group.visible = robotVisible;
     renderSystem.render();
+    robot.group.visible = true;
     if (state.surround && frameCount % 2 === 0) {
       renderSystem.renderHud(robot, hud.layout());
     }
@@ -396,8 +463,14 @@ async function init() {
     pointer.x = e.clientX;
     pointer.y = e.clientY;
     pointer.moved = 0;
+    state.pointer.x = e.clientX;
+    state.pointer.y = e.clientY;
+    if (e.pointerType === 'mouse') state.pointer.active = true;
   });
   window.addEventListener('pointermove', (e) => {
+    state.pointer.x = e.clientX;
+    state.pointer.y = e.clientY;
+    if (e.pointerType === 'mouse') state.pointer.active = true;
     if (!pointer.down) return;
     const dx = e.clientX - pointer.x;
     const dy = e.clientY - pointer.y;
@@ -424,6 +497,11 @@ async function init() {
   );
   window.addEventListener('contextmenu', (e) => e.preventDefault());
   window.addEventListener('resize', () => {
+    if (state.pointer.x < 0 || state.pointer.y < 0 || state.pointer.x > window.innerWidth || state.pointer.y > window.innerHeight) {
+      state.pointer.x = window.innerWidth / 2;
+      state.pointer.y = window.innerHeight / 2;
+      state.pointer.active = false;
+    }
     renderSystem.resize();
     hud.layout(true);
     renderSystem.clearHud();
@@ -535,7 +613,30 @@ async function init() {
         if (!o) return false;
         const c = objectCenter(o);
         facePoint(c);
+        requestAnimationFrame(() => {
+          const p = c.clone().project(camera);
+          if (p.z < 1 && Math.abs(p.x) < 1.05 && Math.abs(p.y) < 1.05) {
+            state.pointer.x = (p.x * 0.5 + 0.5) * window.innerWidth;
+            state.pointer.y = (-p.y * 0.5 + 0.5) * window.innerHeight;
+            state.pointer.active = true;
+          }
+        });
         return true;
+      },
+      screenOf(name) {
+        const o = physics.get(name);
+        if (!o) return null;
+        const p = objectCenter(o).project(camera);
+        return {
+          x: (p.x * 0.5 + 0.5) * window.innerWidth,
+          y: (-p.y * 0.5 + 0.5) * window.innerHeight,
+          ndc: [p.x, p.y, p.z],
+        };
+      },
+      pointerAt(x, y) {
+        state.pointer.x = x;
+        state.pointer.y = y;
+        state.pointer.active = true;
       },
       aimAtPoint(point) {
         facePoint(new THREE.Vector3(point[0], point[1], point[2]));
@@ -544,7 +645,9 @@ async function init() {
         const o = physics.get(name);
         if (!o) return { ok: false, reason: 'missing' };
         state.forcedAim = objectCenter(o);
-        return robot.grab(o);
+        const res = robot.grab(o) || {};
+        if (res.ok && o.name.includes('needle')) state.needleFound = true;
+        return { ok: !!res.ok, reason: res.reason || null, held: robot.arm.held?.name || null };
       },
       release() {
         robot.release();
@@ -570,6 +673,40 @@ async function init() {
       },
       setView(mode) {
         rig.setMode(mode);
+      },
+      look(yaw, pitch = 0) {
+        rig.setMode('first');
+        const p = robot.group.position;
+        robot.setPose([p.x, p.y, p.z], yaw);
+        rig.state.fpYaw = yaw;
+        rig.state.fpPitch = pitch;
+        rig.state.initialized = false;
+      },
+      cameraInfo() {
+        return {
+          mode: rig.mode,
+          pos: camera.position.toArray(),
+          quat: camera.quaternion.toArray(),
+          fov: camera.fov,
+        };
+      },
+      raycast() {
+        let nx = 0;
+        let ny = 0;
+        if (rig.mode !== 'first') {
+          nx = (state.pointer.x / window.innerWidth) * 2 - 1;
+          ny = -(state.pointer.y / window.innerHeight) * 2 + 1;
+        }
+        const hit = physics.castRayFromCamera(camera, nx, ny, 14, robotExclude());
+        if (!hit) return null;
+        return {
+          name: hit.obj.name,
+          static: hit.obj.isStatic,
+          distance: +hit.distance.toFixed(3),
+          point: hit.point.toArray().map((v) => +v.toFixed(3)),
+          camera: camera.position.toArray().map((v) => +v.toFixed(3)),
+          robot: robot.group.position.toArray().map((v) => +v.toFixed(3)),
+        };
       },
       setCamera(yaw, pitch, dist) {
         rig.state.yaw = yaw;

@@ -41,7 +41,7 @@ export function createCameraRig(camera, physics) {
     if (mode === state.mode) return;
     state.mode = mode;
     if (mode === 'first') {
-      state.fpYaw = state.yaw + Math.PI; // camera-forward yaw
+      state.fpYaw = state.yaw; // third-person camera-forward == fp forward
       state.fpPitch = -0.08;
     } else {
       state.yaw = state.fpYaw;
@@ -54,7 +54,7 @@ export function createCameraRig(camera, physics) {
   }
 
   function aimYaw() {
-    return state.mode === 'first' ? state.fpYaw : state.yaw + Math.PI;
+    return state.fpYaw;
   }
 
   function cameraForward(out = new THREE.Vector3()) {
@@ -83,7 +83,7 @@ export function createCameraRig(camera, physics) {
     if (state.mode === 'first') {
       state.fpYaw = yaw;
       _dir.set(-Math.sin(yaw), 0, -Math.cos(yaw));
-      camera.position.set(rp.x + _dir.x * 0.06, rp.y + 0.36, rp.z + _dir.z * 0.06);
+      camera.position.set(rp.x + _dir.x * 0.16, rp.y + 0.35, rp.z + _dir.z * 0.16);
       const e = new THREE.Euler(state.fpPitch, yaw, 0, 'YXZ');
       camera.quaternion.setFromEuler(e);
       camera.fov = 62;
