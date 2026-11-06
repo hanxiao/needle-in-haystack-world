@@ -243,6 +243,11 @@ export function createCameraRig(camera, physics) {
     }
     if (blocked) state.desired.copy(head);
     state.desired.y = Math.max(0.12, state.desired.y);
+    // Never let the camera leave the apartment shell.
+    const A = CONFIG.apartment;
+    state.desired.x = clamp(state.desired.x, A.minX + 0.18, A.maxX - 0.18);
+    state.desired.z = clamp(state.desired.z, A.minZ + 0.18, A.maxZ - 0.18);
+    state.desired.y = clamp(state.desired.y, 0.12, A.ceiling - 0.12);
 
     if (!state.initialized) {
       state.pos.copy(state.desired);
@@ -251,6 +256,9 @@ export function createCameraRig(camera, physics) {
       const k = 1 - Math.exp(-dt * 14);
       state.pos.lerp(state.desired, k);
     }
+    state.pos.x = clamp(state.pos.x, A.minX + 0.18, A.maxX - 0.18);
+    state.pos.z = clamp(state.pos.z, A.minZ + 0.18, A.maxZ - 0.18);
+    state.pos.y = clamp(state.pos.y, 0.12, A.ceiling - 0.12);
     camera.position.copy(state.pos);
     _tmp.copy(state.target);
     _tmp.y += 0.02;

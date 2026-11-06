@@ -1,8 +1,23 @@
-# round 3 FINAL — visual QA — 2026-11-06
+# round 3b FINAL — visual QA — 2026-11-06
 
-**Build:** `qa/frozen/index.html` — sha256 `eef3be85f2ab494b…`, 5,261,883 B (served `PORT=4182 node tools/serve.mjs qa/frozen`).
-**Method:** puppeteer-core + local Chrome (ANGLE Metal); 1440×900 @DPR1; 390×844 @DPR2 **with touch emulation** (`hasTouch`/`isMobile`); 1920×1080. Round-3 set: `qa/visual/shots/r3-*.png`; scripts `qa/visual/round3.mjs`, `mobile3.mjs`, `robot3.mjs`.
-**Machine facts (this sha):** ready 997 ms; 60 fps at rest; 312 draw calls / 64 k tris at spawn; 0 console errors/warnings; 1 network request; HUD samples litRatio 0.98–1.0, mean 116–131.
+**Build:** `qa/frozen/index.html` — sha256 `6f8adfa238593c7c…`, 5,262,758 B (served `PORT=4182 node tools/serve.mjs qa/frozen`). Camera P2 re-check on top of `eef3be85f2ab` (same physics/HUD/robot).
+**Method:** puppeteer-core + local Chrome (ANGLE Metal); 1440×900 @DPR1; 390×844 @DPR2 with touch emulation; 1920×1080. Camera set: `qa/visual/shots/c6-*.png`; script `qa/visual/camera6.mjs` (bbox containment + camera→robot raycast + NDC projection).
+**Machine facts (this sha):** ready 1652 ms; 60 fps at rest; 297–306 draw calls at spawn; 0 console errors/warnings; 1 request; HUD samples litRatio 0.98–1.0, mean 116–131.
+
+---
+
+## Camera P2 re-check (this sha)
+
+| pose | camera outside furniture | robot on screen (NDC) | occluder between camera and robot | evidence |
+|---|---|---|---|---|
+| drive into sofa | yes (`inside=false`), cam y 1.06 | yes (−0.16, −0.09) | coffee table @0.95 m of 1.40 m (robot partly behind table edge, still visible) | `c6-cam-sofa.png` |
+| drive into bed | yes, cam y **1.03** (was 1.40) | yes (−0.15, −0.04) | none | `c6-cam-bed.png` |
+| drive into wardrobe | yes, cam y 0.70 | yes (−0.16, −0.11) | none | `c6-cam-wardrobe.png` |
+| under coffee table | yes, cam y 0.70 above table top 0.47 | yes (−0.16, −0.11) | none | `c6-cam-under-table.png` |
+| approach table from the side | yes, cam y 0.69 | yes (−0.16, −0.11) | none | `c6-cam-approach-table.png` |
+
+Result: **P2 fixed** — the fallback now takes the low perch (bed cam 1.40 → 1.03) and keeps the robot on screen at ~−0.16 NDC in every pose; no hard collapse to the head. Trail widened to 0.13 m (visible ~3–4 px at the 180 px map, `c6-map-trail.png`). No regressions: spawn framing, 360 feeds (litRatio 0.98–1.0), control panel, touch UI, draw calls all unchanged.
+Remaining nit (P3): in the sofa pose the robot sits behind the coffee-table edge and the frame is dominated by the tabletop; a small lateral bias would keep it clear.
 
 ---
 
@@ -47,7 +62,7 @@
 
 ## Remaining issues (no P1)
 
-1. **[P2] Camera fallback is a hard high-angle jump in tight spots** — when the robot is against the sofa/bed, the camera jumps above the furniture and the robot can be partly hidden behind the top (e.g., sofa top edge). `r3-cam-sofa.png`, `r3-cam-bed.png`. Fix: `src/core/camera.js` — clamp the fallback height to ~0.9 m above the obstacle, lerp the fallback, and bias the orbit toward the room-centre side so the robot stays visible.
+1. **[P3] Sofa-pose framing** — camera is outside the sofa and the robot is on screen, but the coffee table edge partly covers it and the tabletop dominates the frame. `c6-cam-sofa.png`. Fix: bias the fallback laterally toward the open floor when the line of sight passes a low object.
 2. **[P3] LED states not visually distinguishable** — the orange strip on the base reads constant across idle/moving/holding; if LEDs encode state, make colour/brightness changes obvious (or drop the claim). `r3-robot-closeup.png`, `r3-robot-moving.png`.
 3. **[P3] Minimap trail still small** — ~3 px wide on a 2 m-radius map; the trail is short in normal play. Optional: fade older segments and keep the newest 3–4 s brighter.
 4. **[P3] Bathroom props** — tub/toilet are still simple boxes/cylinders and the mirror is a blank panel; could reuse the rebalance pass to add a folded towel on the rail and a real mirror reflection.
@@ -57,4 +72,4 @@
 
 ## Verdict
 
-**SHIP.** Camera tight-space, bathroom rebalance, HUD polish (H/R split, trail legend, wider trail), touch controls and robot detail all check out on `eef3be85f2ab`; no P1 found. Remaining items are P2/P3 polish.
+**SHIP** on `6f8adfa23859`. The camera P2 is fixed (outside furniture + robot visible in all five poses, low perch instead of a high collapse), trail widened, and round-3 features (bathroom rebalance, HUD/touch polish, robot detail) carry over unchanged. No P1; only P3 nits remain (sofa-pose framing, LED state legibility, trail length on the 2 m map).

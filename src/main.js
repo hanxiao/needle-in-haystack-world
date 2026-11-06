@@ -358,14 +358,16 @@ async function init() {
     let target = null;
     const heldObj = robot.arm.held;
     if (state.hover && state.hover !== heldObj) {
-      target = {
-        name: state.hover.name,
-        mass: state.hover.mass,
-        heavy: state.hover.mass > robot.arm.maxLiftKg,
-        reachable:
-          robot.canReach(objectCenter(state.hover)) ||
-          (state.hit ? robot.canReach(state.hit.point) : false),
-      };
+      const heavy = state.hover.mass > robot.arm.maxLiftKg;
+      let reachable = robot.canReach(objectCenter(state.hover));
+      if (state.hit) reachable = reachable || robot.canReach(state.hit.point);
+      if (heavy && state.hit) {
+        // Pushing is a body action, not an arm action: close enough to touch the surface is enough.
+        const rp = robot.group.position;
+        const d = Math.hypot(state.hit.point.x - rp.x, state.hit.point.z - rp.z);
+        reachable = reachable || d <= 0.62;
+      }
+      target = { name: state.hover.name, mass: state.hover.mass, heavy, reachable };
     }
     hud.update({
       mode: rig.mode,
