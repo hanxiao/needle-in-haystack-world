@@ -25,8 +25,8 @@ function fin(b, name, opts) {
     ccd,
     ...damping,
   });
-  // only heavy items and things resting on surfaces cast shadows (keeps the shadow pass cheap)
-  const castDefault = mass >= 0.85 || (y > 0.25 && mass >= 0.3);
+  // clutter does not cast shadows (furniture/architecture ground the scene; keeps the shadow pass cheap)
+  const castDefault = mass >= 3;
   if (opts.castShadow === false || (opts.castShadow === undefined && !castDefault)) {
     obj.mesh.traverse((m) => {
       if (m.isMesh) m.castShadow = false;
@@ -399,8 +399,8 @@ function addWaterBottle(ctx, name, x, y, z, o = {}) {
 function addCushion(ctx, name, x, y, z, o = {}) {
   const b = new Batch(ctx, name);
   const fab = variant(ctx, 'fabricLinen', { color: o.color ?? 0xb8a487 });
-  b.add(fab, gEllipsoid(0.21, 0.065, 0.2, [0, 0.065, 0]));
-  b.add(fab, gEllipsoid(0.06, 0.03, 0.06, [0, 0.115, 0], [0, 0, 0.3]));
+  b.add(fab, gEllipsoid(0.21, 0.062, 0.2, [0, 0.065, 0], [0, 0, 0], 18));
+  b.box(fab, 0.36, 0.32, 0.02, [0, 0.008, 0]);
   b.colliderBox(0.42, 0.4, 0.13, [0, 0.065, 0]);
   return fin(b, name, { x, y, z, yaw: o.yaw ?? 0, mass: 0.45, material: 'fabric', room: o.room ?? 'living', tags: ['clutter', 'cushion'] });
 }
@@ -410,9 +410,14 @@ function addThrow(ctx, name, x, y, z, o = {}) {
   const fab = variant(ctx, 'fabricWool', { color: o.color ?? 0xa88d6f });
   const w = o.w ?? 0.52;
   const d = o.d ?? 0.58;
-  b.box(fab, w, d, 0.05, [0, 0.025, 0]);
-  b.box(fab, w * 0.94, 0.06, 0.06, [0, 0.055, -d / 2 + 0.03], [0, 0.1, 0]);
-  b.box(fab, w * 0.9, 0.04, 0.08, [0, 0.045, d / 2 - 0.04], [0, -0.08, 0]);
+  // quilted, lumpy blanket rather than a flat slab
+  b.box(fab, w - 0.06, d - 0.06, 0.024, [0, 0.012, 0]);
+  const lumps = 3;
+  for (let i = 0; i < lumps; i++) {
+    const z = -d / 2 + ((i + 0.5) * d) / lumps;
+    const sag = Math.sin(i * 1.7) * 0.004;
+    b.add(fab, gEllipsoid(w / 2 - 0.02, 0.032, d / (2 * lumps) + 0.02, [0, 0.028 + sag, z], [0, 0, 0], 20));
+  }
   b.colliderBox(w, d, 0.06, [0, 0.03, 0]);
   return fin(b, name, { x, y, z, yaw: o.yaw ?? 0, mass: o.mass ?? 0.9, material: 'fabric', room: o.room ?? 'living', tags: ['clutter', 'blanket'] });
 }
@@ -900,17 +905,9 @@ function buildDrapes(ctx) {
   clothOver(b, throwFab, { x: -1.55, z: -2.75, topY: 0.7, axis: 'z', width: 0.44, drop: 0.3, sideOffset: 0.1 });
   // hoodie over desk chair back
   clothOver(b, hoodie, { x: 4.15, z: 2.4, topY: 0.96, axis: 'x', width: 0.32, drop: 0.3, sideOffset: 0.075 });
-  // blanket hanging off the side of the bed (reads as half-off)
-  const blanketFab = variant(ctx, 'fabricWool', { color: 0xa8aeac });
-  // hanging edge of the blanket (half off the bed), three overlapping folds
-  for (const [z, w, drop] of [[2.03, 0.5, 0.3], [2.42, 0.46, 0.36], [2.78, 0.5, 0.27]]) {
-    b.box(blanketFab, 0.022, drop, w, [-3.24, 0.6 - drop / 2, z]);
-  }
-  b.box(blanketFab, 0.03, 0.05, 0.94, [-3.24, 0.6, 2.4]);
   b.colliderBox(0.4, 0.08, 0.06, [1.72, 0.97, -1.75]);
   b.colliderBox(0.24, 0.5, 0.06, [-1.55, 0.74, -2.75]);
   b.colliderBox(0.4, 0.08, 0.06, [4.15, 1.0, 2.4]);
-  b.colliderBox(0.06, 0.96, 0.08, [-3.24, 0.45, 2.4]);
   return b.finish({ name: 'drapes', pos: [0, 0, 0], isStatic: true, material: 'fabric', room: '', tags: ['clutter', 'clothes'], recenter: false, shadows: true });
 }
 
@@ -1067,11 +1064,11 @@ export function buildClutter(ctx) {
   add(addMail(ctx, 'mail_counter', 2.08, 0.902, -3.2, { yaw: 0.4, room: 'kitchen' }));
 
   // ---- bedroom bed
-  add(addCushion(ctx, 'pillow_1', -4.55, 0.522, 3.3, { yaw: 0.1, color: 0xe3dccb }));
-  add(addCushion(ctx, 'pillow_2', -3.75, 0.522, 3.3, { yaw: -0.12, color: 0xd8d0bd }));
-  add(addThrow(ctx, 'blanket_bed', -4.0, 0.615, 2.2, { yaw: 0.04, color: 0xa8aeac, w: 1.5, d: 0.95, mass: 1.4 }));
-  add(addBook(ctx, 'book_bed', -4.55, 0.615, 2.95, { yaw: 0.6, w: 0.2, d: 0.14, h: 0.03, color: 0x8b3f36, mass: 0.45, room: 'bedroom' }));
-  add(addPhone(ctx, 'phone_bed', -3.85, 0.615, 2.9, { yaw: -0.4, room: 'bedroom' }));
+  add(addCushion(ctx, 'pillow_1', -4.52, 0.612, 2.94, { yaw: 0.1, color: 0xe3dccb }));
+  add(addCushion(ctx, 'pillow_2', -3.78, 0.612, 2.96, { yaw: -0.12, color: 0xd8d0bd }));
+  add(addThrow(ctx, 'blanket_bed', -4.1, 0.612, 2.0, { yaw: 0.04, color: 0xa9ae9e, w: 1.4, d: 0.8, mass: 1.4 }));
+  add(addBook(ctx, 'book_bed', -4.5, 0.674, 1.95, { yaw: 0.6, w: 0.2, d: 0.14, h: 0.03, color: 0x8b3f36, mass: 0.45, room: 'bedroom' }));
+  add(addPhone(ctx, 'phone_bed', -4.2, 0.674, 2.0, { yaw: -0.4, room: 'bedroom' }));
 
   // ---- bedroom nightstand
   add(addGlasses(ctx, 'glasses', -3.1, 0.562, 3.32, { yaw: 0.5 }));

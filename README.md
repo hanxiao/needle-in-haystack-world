@@ -17,6 +17,7 @@ Live: <https://hanxiao.io/needle-in-haystack-world/>
 | `W A S D` | drive (camera-relative) |
 | `Shift` | boost |
 | drag mouse | orbit camera |
+| move mouse | aim / highlight objects |
 | wheel | zoom |
 | click / `Space` | grab, place, or push |
 | `V` | first / third person |
@@ -25,7 +26,9 @@ Live: <https://hanxiao.io/needle-in-haystack-world/>
 | `H` | toggle hint |
 | `R` | reset |
 
-Objects under 2.5 kg can be lifted. Heavier objects only get pushed — the sofa (85 kg), fridge (95 kg) and wardrobe (120 kg) barely move. A sewing needle (1.2 g) is hidden somewhere.
+Objects under 2.5 kg can be lifted. Heavier objects only get pushed — the sofa (85 kg), fridge (95 kg) and wardrobe (120 kg) barely move (measured: 0.0004 m for the sofa vs 0.06 m for a 5.5 kg chair). A sewing needle (1.2 g) is hidden somewhere.
+
+The mouse cursor targets objects in third person; the 360° surround view (front/right/left/back + top-down minimap with robot heading) is always live. `V` toggles a clean first-person view.
 
 ## Develop
 

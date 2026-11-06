@@ -14,7 +14,7 @@ export function createRenderSystem(canvas, hudCanvas) {
   renderer.setSize(window.innerWidth, window.innerHeight, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.06;
+  renderer.toneMappingExposure = 1.0;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.autoClear = true;
@@ -132,6 +132,30 @@ export function createRenderSystem(canvas, hudCanvas) {
   const mainEnv = scene.environment;
 
   let night = false;
+  const nightTargets = [];
+  let nightCollected = false;
+  function collectNightTargets() {
+    if (nightCollected) return;
+    nightCollected = true;
+    const seen = new Set();
+    scene.traverse((o) => {
+      if (!o.isMesh) return;
+      const name = o.name || o.parent?.name || '';
+      if (!/^(city_view|exterior|windows)/.test(name)) return;
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      for (const m of mats) {
+        if (!m || seen.has(m.uuid)) continue;
+        seen.add(m.uuid);
+        nightTargets.push({
+          m,
+          kind: name.startsWith('city_view') ? 'city' : name.startsWith('exterior') ? 'exterior' : 'window',
+          color: m.color ? m.color.getHex() : null,
+          emissive: m.emissive ? m.emissive.getHex() : null,
+          emissiveIntensity: m.emissiveIntensity,
+        });
+      }
+    });
+  }
 
   function setNight(on) {
     night = on;
@@ -146,8 +170,19 @@ export function createRenderSystem(canvas, hudCanvas) {
       for (const l of lamps) l.light.intensity = l.base * 2.3;
       fill.intensity = 1.6;
       scene.environmentIntensity = 0.24;
-      renderer.toneMappingExposure = 1.0;
-      hudRenderer.toneMappingExposure = 1.0;
+      renderer.toneMappingExposure = 0.94;
+      hudRenderer.toneMappingExposure = 0.94;
+      collectNightTargets();
+      for (const t of nightTargets) {
+        if (t.color !== null) {
+          const k = t.kind === 'window' ? 0.45 : 0.62;
+          t.m.color.setHex(t.color).lerp(new THREE.Color(0x0b1220), k);
+        }
+        if (t.kind === 'city' && t.emissive !== null) {
+          t.m.emissive.setHex(0xffc98a);
+          t.m.emissiveIntensity = Math.max(t.emissiveIntensity || 0, 0.75);
+        }
+      }
     } else {
       skyUniforms.top.value.setHex(0x7ea6d2);
       skyUniforms.horizon.value.setHex(0xf0d9ba);
@@ -159,8 +194,15 @@ export function createRenderSystem(canvas, hudCanvas) {
       for (const l of lamps) l.light.intensity = l.base;
       fill.intensity = 2.2;
       scene.environmentIntensity = 0.5;
-      renderer.toneMappingExposure = 1.06;
-      hudRenderer.toneMappingExposure = 1.06;
+      renderer.toneMappingExposure = 1.0;
+      hudRenderer.toneMappingExposure = 1.0;
+      for (const t of nightTargets) {
+        if (t.color !== null) t.m.color.setHex(t.color);
+        if (t.emissive !== null) {
+          t.m.emissive.setHex(t.emissive);
+          t.m.emissiveIntensity = t.emissiveIntensity;
+        }
+      }
     }
   }
 
@@ -176,8 +218,20 @@ export function createRenderSystem(canvas, hudCanvas) {
   }
 
   function render() {
+    const wantDpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (renderer.getPixelRatio() !== wantDpr) {
+      renderer.setPixelRatio(wantDpr);
+      renderer.setSize(window.innerWidth, window.innerHeight, false);
+    }
+    const aspect = renderer.domElement.clientWidth / renderer.domElement.clientHeight;
+    if (Number.isFinite(aspect) && aspect > 0 && Math.abs(camera.aspect - aspect) > 1e-3) {
+      camera.aspect = aspect;
+      camera.updateProjectionMatrix();
+    }
     renderer.setScissorTest(false);
-    renderer.setViewport(0, 0, renderer.domElement.width, renderer.domElement.height);
+    // setViewport expects CSS pixels; three multiplies by the pixel ratio internally.
+    const size = renderer.getSize(new THREE.Vector2());
+    renderer.setViewport(0, 0, size.x, size.y);
     renderer.render(scene, camera);
   }
 
@@ -194,7 +248,9 @@ export function createRenderSystem(canvas, hudCanvas) {
 
   function clearHud() {
     hudRenderer.setScissorTest(false);
-    hudRenderer.setViewport(0, 0, hudRenderer.domElement.width, hudRenderer.domElement.height);
+    const size = hudRenderer.getSize(new THREE.Vector2());
+    hudRenderer.setViewport(0, 0, size.x, size.y);
+    hudRenderer.setClearColor(0x000000, 0);
     hudRenderer.clear(true, true, false);
   }
 
@@ -227,7 +283,9 @@ export function createRenderSystem(canvas, hudCanvas) {
     }
 
     hudRenderer.setScissorTest(false);
-    hudRenderer.setViewport(0, 0, hudRenderer.domElement.width, hudRenderer.domElement.height);
+    const hudSize = hudRenderer.getSize(new THREE.Vector2());
+    hudRenderer.setViewport(0, 0, hudSize.x, hudSize.y);
+    hudRenderer.setClearColor(0x000000, 0);
     scene.environment = mainEnv;
     if (robot.group) robot.group.visible = prevVisible;
   }

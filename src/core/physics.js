@@ -185,14 +185,15 @@ export class Physics {
       }
     }
     const staticOnly = !!opts.staticOnly;
+    const filterObj = opts.filterObj || null;
     let predicate;
-    if (handles.size || staticOnly) {
+    if (handles.size || staticOnly || filterObj) {
       predicate = (collider) => {
         if (handles.has(collider.handle)) return false;
-        if (staticOnly) {
-          const obj = this.colliderToObj.get(collider.handle);
-          if (!obj || !obj.isStatic) return false;
-        }
+        const obj = this.colliderToObj.get(collider.handle);
+        if (!obj) return false;
+        if (staticOnly && !obj.isStatic) return false;
+        if (filterObj && !filterObj(obj)) return false;
         return true;
       };
     }

@@ -6,7 +6,7 @@ import { ROBOT_DIMS } from './model.js';
 
 const FOV_SIDE = 120;
 const ASPECT_SIDE = 4 / 3;
-const FOV_TOP = 100;
+const FOV_TOP = 112;
 const NEAR = 0.02;
 const FAR = 40;
 const DOWN_TILT = -0.13; // ~7.5 degrees

@@ -54,13 +54,21 @@ The app is a single HTML with inline JS/WASM: it must also work from `file://`.
 
 `window.__APP__.errors` accumulates runtime errors.
 
-## Known gaps (v2, being fixed)
+## Targeting model (v3)
+
+Third person is pointer-based: the mouse cursor aims, the highlight ring/target label follows the pointer, and the
+selection ray goes from the camera through the pointer. In first person the centre crosshair is used. QA helpers:
+`qa.screenOf(name)` → projected screen position, `qa.pointerAt(x,y)` → move the virtual pointer, `qa.raycast()` →
+what is under the pointer. `qa.aimAt(name)` also sets the pointer after the camera settles.
+
+## Known gaps (v3, accepted)
 
 - Arm/gripper has no solid collision (visual arm may pass through a tabletop; no physics effect).
 - First person hides the whole robot model (no visible arm in FP).
-- Sky through windows is a flat pale gradient; sky detail is low.
-- Top-down minimap is fairly tight (~2 m radius); may widen.
-- Some furniture is blocky; scene-smith is adding detail.
+- Arm always follows the aim point; no park pose in normal play.
+- Minimap top camera covers ~3.4 m half-width and has a robot dot/heading; it is a perspective top view, not a
+  stitched bowl.
+- Some furniture remains stylised/low-poly; the apartment is intentionally readable rather than photoreal.
 
 ## Acceptance gates
 

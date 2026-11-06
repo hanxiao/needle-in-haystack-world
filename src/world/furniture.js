@@ -645,41 +645,114 @@ function buildTrashBin(ctx) {
 
 function buildBed(ctx, shadows) {
   const b = new Batch(ctx, 'bed');
-  const frame = variant(ctx, 'woodWarm', { color: 0x7d5b40 });
-  const head = variant(ctx, 'woodDark', { color: 0x86684c });
-  const foam = matOf(ctx, 'foam');
-  const linen = variant(ctx, 'fabricLinen', { color: 0xb9b3a3 });
   const w = 1.62;
   const d = 2.02;
-  // feet
+  const frame = variant(ctx, 'woodWarm', { color: 0x8a6a4c });
+  const headWood = variant(ctx, 'woodDark', { color: 0x7a5a42 });
+  const mattressMat = variant(ctx, 'foam', { color: 0xe8e1d2 });
+  const bedding = variant(ctx, 'fabricLinen', { color: 0xd9cdb4, repeat: [2, 2] });
+  const skirtMat = variant(ctx, 'fabricLinen', { color: 0xc4b7a0, repeat: [2, 1] });
+  const headFab = variant(ctx, 'fabricWool', { color: 0xd0b593, repeat: [2, 2] });
+  const blanketMat = variant(ctx, 'fabricLinen', { color: 0xa9ae9e, repeat: [2, 2] });
+  const pillowMat = variant(ctx, 'fabricLinen', { color: 0xe0d6c2, repeat: [2, 2] });
+  const seamMat = variant(ctx, 'woodDark', { color: 0x6a4c34 });
+
+  // feet + frame
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) b.box(frame, 0.07, 0.07, 0.1, [sx * (w / 2 - 0.09), 0.05, sz * (d / 2 - 0.09)]);
-  // frame
   b.box(frame, w, d, 0.2, [0, 0.2, 0]);
+
+  // bed skirt: wavy panels from the frame down to the floor
+  const skirtPanels = (axis, fixed, from, to, count, height) => {
+    const step = (to - from) / count;
+    for (let i = 0; i < count; i++) {
+      const u = from + step * (i + 0.5);
+      const wave = Math.sin(i * 1.9) * 0.006;
+      const hh = height + Math.sin(i * 1.3) * 0.012;
+      if (axis === 'x') b.box(skirtMat, step * 1.03, 0.02, hh, [u, 0.012 + hh / 2, fixed + wave]);
+      else b.box(skirtMat, 0.02, step * 1.03, hh, [fixed + wave, 0.012 + hh / 2, u]);
+    }
+  };
+  skirtPanels('x', d / 2 + 0.012, -w / 2 - 0.01, w / 2 + 0.01, 6, 0.31);
+  skirtPanels('x', -d / 2 - 0.012, -w / 2 - 0.01, w / 2 + 0.01, 6, 0.31);
+  skirtPanels('z', w / 2 + 0.012, -d / 2, d / 2, 8, 0.31);
+  skirtPanels('z', -w / 2 - 0.012, -d / 2, d / 2, 8, 0.31);
+
   // mattress
-  b.box(foam, w - 0.06, d - 0.08, 0.24, [0, 0.42, 0]);
-  // duvet
-  b.box(linen, w - 0.02, d * 0.72, 0.07, [0, 0.575, d * 0.11]);
-  // folded sheet edge
-  b.box(linen, w - 0.06, 0.16, 0.05, [0, 0.585, d * 0.11 - d * 0.36]);
-  // headboard (upholstered panel on a wood frame)
-  b.box(head, w + 0.08, 0.08, 1.16, [0, 0.58, -d / 2 - 0.02]);
-  b.box(head, w + 0.08, 0.09, 0.06, [0, 1.13, -d / 2 - 0.02]);
-  const headFab = variant(ctx, 'fabricLinen', { color: 0xaaa79a });
-  b.box(headFab, w - 0.04, 0.035, 1.02, [0, 0.6, -d / 2 + 0.02]);
-  for (const sx of [-0.5, 0, 0.5]) {
-    b.box(head, 0.012, 0.02, 1.0, [sx * (w - 0.2), 0.6, -d / 2 + 0.042]);
+  b.box(mattressMat, w - 0.05, d - 0.06, 0.22, [0, 0.41, 0]);
+
+  // duvet: slab + puffy rounded top, covering the foot 3/4 of the bed
+  const duvetZ = 0.15;
+  const duvetD = 1.66;
+  b.box(bedding, w - 0.01, duvetD, 0.07, [0, 0.535, duvetZ]);
+  b.add(bedding, gEllipsoid(w / 2 - 0.03, 0.042, duvetD / 2 - 0.03, [0, 0.568, duvetZ], [0, 0, 0], 22));
+  // folded-back top edge (rolled fold + flat fold)
+  b.cyl(bedding, 0.048, 0.048, w - 0.1, [0, 0.575, duvetZ - duvetD / 2 + 0.03], [0, 0, Math.PI / 2], 14);
+  b.box(bedding, w - 0.08, 0.14, 0.028, [0, 0.59, duvetZ - duvetD / 2 + 0.14]);
+  // duvet hangs over the mattress sides + foot (wavy fabric, no flat cards)
+  const duvetPanels = (axis, fixed, from, to, count, height) => {
+    const step = (to - from) / count;
+    for (let i = 0; i < count; i++) {
+      const u = from + step * (i + 0.5);
+      const wave = Math.sin(i * 1.8) * 0.007;
+      const hh = height + Math.sin(i * 1.45) * 0.02;
+      const yc = 0.565 - hh / 2;
+      if (axis === 'x') b.box(bedding, step * 1.04, 0.024, hh, [u, yc, fixed + wave]);
+      else b.box(bedding, 0.024, step * 1.04, hh, [fixed + wave, yc, u]);
+    }
+  };
+  duvetPanels('z', w / 2 + 0.006, duvetZ - duvetD / 2, duvetZ + duvetD / 2, 6, 0.24);
+  duvetPanels('z', -w / 2 - 0.006, duvetZ - duvetD / 2, duvetZ + duvetD / 2, 6, 0.24);
+  duvetPanels('x', duvetZ + duvetD / 2 + 0.006, -w / 2, w / 2, 6, 0.24);
+
+  // two rounded pillows against the headboard (one slightly askew)
+  b.add(pillowMat, gEllipsoid(0.31, 0.09, 0.18, [0.36, 0.59, -0.85], [-0.25, 0, 0], 18));
+  b.add(pillowMat, gEllipsoid(0.3, 0.09, 0.17, [-0.34, 0.595, -0.87], [-0.2, 0.18, 0.05], 18));
+
+  // headboard: wood frame + warm upholstered panel with seams and buttons
+  b.box(headWood, 0.1, 0.1, 1.18, [-(w / 2 + 0.03), 0.59, -d / 2 - 0.02]);
+  b.box(headWood, 0.1, 0.1, 1.18, [w / 2 + 0.03, 0.59, -d / 2 - 0.02]);
+  b.box(headWood, w + 0.16, 0.1, 0.1, [0, 1.13, -d / 2 - 0.02]);
+  b.box(headWood, w + 0.16, 0.09, 0.09, [0, 0.08, -d / 2 - 0.02]);
+  b.box(headFab, w - 0.02, 0.04, 1.02, [0, 0.6, -d / 2 + 0.035]);
+  for (const sx of [-0.36, 0, 0.36]) {
+    b.box(seamMat, 0.012, 0.022, 1.0, [sx, 0.6, -d / 2 + 0.057]);
   }
-  // bed skirt hanging from the frame
-  const skirt = variant(ctx, 'fabricLinen', { color: 0xa8a294 });
-  b.box(skirt, w + 0.03, 0.015, 0.3, [0, 0.15, d / 2 + 0.005]);
-  b.box(skirt, w + 0.03, 0.015, 0.3, [0, 0.15, -d / 2 - 0.005]);
-  b.box(skirt, 0.015, 0.3, d, [w / 2 + 0.005, 0.15, 0]);
-  b.box(skirt, 0.015, 0.3, d, [-w / 2 - 0.005, 0.15, 0]);
-  // duvet fold line near the pillows
-  b.box(linen, w - 0.1, 0.03, 0.05, [0, 0.615, d * 0.11 - d * 0.3]);
+  for (const sx of [-0.36, 0, 0.36]) for (const sy of [0.38, 0.78]) {
+    b.cyl(seamMat, 0.013, 0.013, 0.012, [sx, sy, -d / 2 + 0.058], [Math.PI / 2, 0, 0], 8);
+  }
+
+  // blanket: curved strip attached at the mattress edge, hanging down the side
+  const strip = [
+    [-0.58, 0.607],
+    [-0.72, 0.606],
+    [-0.8, 0.6],
+    [-0.828, 0.58],
+    [-0.842, 0.535],
+    [-0.85, 0.47],
+    [-0.856, 0.395],
+    [-0.86, 0.32],
+    [-0.863, 0.265],
+  ];
+  const stripZ = 0.1;
+  const stripD = 0.9;
+  for (let i = 0; i < strip.length - 1; i++) {
+    const p0 = strip[i];
+    const p1 = strip[i + 1];
+    const dx = p1[0] - p0[0];
+    const dy = p1[1] - p0[1];
+    const len = Math.hypot(dx, dy);
+    const ang = Math.atan2(dy, dx);
+    b.box(blanketMat, len + 0.014, stripD, 0.02, [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, stripZ], [0, 0, ang]);
+  }
+  // soft folds on the hanging part
+  for (const dz of [-0.26, 0.02, 0.3]) {
+    b.box(blanketMat, 0.012, 0.02, 0.34, [-0.858, 0.44, stripZ + dz], [0, 0, 0.02]);
+  }
+  b.box(blanketMat, 0.03, 0.03, stripD, [-0.864, 0.27, stripZ]);
+
   b.colliderBox(w, d, 0.52, [0, 0.26, 0]);
-  b.colliderBox(w - 0.02, d * 0.72, 0.07, [0, 0.575, d * 0.11]);
-  b.colliderBox(w + 0.08, 0.1, 1.16, [0, 0.58, -d / 2 - 0.02]);
+  b.colliderBox(w - 0.02, duvetD, 0.07, [0, 0.575, duvetZ]);
+  b.colliderBox(w + 0.16, 0.1, 1.18, [0, 0.59, -d / 2 - 0.02]);
   const obj = b.finish({
     name: 'bed',
     pos: [SURFACES.bed.x, 0, SURFACES.bed.z],
@@ -1017,15 +1090,16 @@ function buildDesk(ctx, shadows) {
   const w = 1.4;
   const d = 0.7;
   b.box(wood, w, d, 0.05, [0, 0.725, 0]);
-  // side frames
+  // side frames (wood so the study doesn't read as black slabs)
   for (const sx of [-1, 1]) {
-    b.box(metal, 0.05, d - 0.04, 0.7, [sx * (w / 2 - 0.04), 0.35, 0]);
-    b.box(metal, 0.05, d - 0.04, 0.04, [sx * (w / 2 - 0.04), 0.68, 0]);
+    b.box(wood, 0.05, d - 0.04, 0.7, [sx * (w / 2 - 0.04), 0.35, 0]);
+    b.box(wood, 0.05, d - 0.04, 0.04, [sx * (w / 2 - 0.04), 0.68, 0]);
   }
   // drawer pedestal right
   b.box(wood, 0.4, d - 0.06, 0.6, [0.44, 0.3, 0]);
+  const drawer = variant(ctx, 'woodWarm', { color: 0x9a7a58 });
   for (const [y, hh] of [[0.14, 0.16], [0.34, 0.16], [0.54, 0.12]]) {
-    b.box(metal, 0.34, 0.02, hh, [0.44, y, d / 2 - 0.02]);
+    b.box(drawer, 0.34, 0.02, hh, [0.44, y, d / 2 - 0.02]);
     b.box(metal, 0.12, 0.02, 0.018, [0.44, y, d / 2 - 0.005]);
   }
   // modesty panel
@@ -1050,8 +1124,8 @@ function buildDesk(ctx, shadows) {
 
 function buildDeskChair(ctx, shadows) {
   const b = new Batch(ctx, 'desk_chair');
-  const fab = variant(ctx, 'fabricSofa', { color: 0x6b7681 });
-  const metal = variant(ctx, 'metalDark', { color: 0x2b2d2f });
+  const fab = variant(ctx, 'fabricSofa', { color: 0x8a95a0 });
+  const metal = variant(ctx, 'metalDark', { color: 0x4b5055, metalness: 0.5, roughness: 0.45 });
   const chrome = matOf(ctx, 'metalChrome');
   // swivel base
   for (let i = 0; i < 5; i++) {
@@ -1081,7 +1155,7 @@ function buildDeskChair(ctx, shadows) {
 
 function buildMonitor(ctx) {
   const b = new Batch(ctx, 'monitor');
-  const dark = variant(ctx, 'plasticDark', { color: 0x222427 });
+  const dark = variant(ctx, 'plasticDark', { color: 0x3a3f45 });
   const screen = matOf(ctx, 'screen');
   b.box(dark, 0.62, 0.035, 0.37, [0, 0.42, 0]);
   b.box(screen, 0.58, 0.006, 0.33, [0, 0.42, -0.021]);

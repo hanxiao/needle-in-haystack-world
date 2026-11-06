@@ -107,18 +107,24 @@ if (dry) {
   process.exit(0);
 }
 
-// 2. wait for the Pages build for this commit
+// 2. wait for the Pages build for this commit; retrigger on transient failures
 let built = false;
-for (let i = 0; i < 60; i++) {
+let triggered = false;
+for (let i = 0; i < 72; i++) {
   const build = await api(`/repos/${SITE_REPO}/pages/builds/latest`);
   if (build.status === 'built' && build.commit === result.commit.sha) {
     built = true;
     console.log(`pages built in ${(i + 1) * 5}s`);
     break;
   }
+  if (!triggered && (build.status === 'errored' || (i > 6 && build.commit !== result.commit.sha))) {
+    console.log(`pages build ${build.status} for ${String(build.commit).slice(0, 8)}; retriggering`);
+    await api(`/repos/${SITE_REPO}/pages/builds`, { method: 'POST' });
+    triggered = true;
+  }
   await sleep(5000);
 }
-if (!built) console.log('pages build not confirmed in 300s (continuing to verify)');
+if (!built) console.log('pages build not confirmed in 360s (continuing to verify)');
 
 // 3. verify the live URL serves this exact build
 let verified = false;

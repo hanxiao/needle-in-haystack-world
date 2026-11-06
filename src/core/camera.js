@@ -94,14 +94,18 @@ export function createCameraRig(camera, physics) {
     camera.fov = CONFIG.camera.fov;
     camera.updateProjectionMatrix();
 
-    const cosP = Math.cos(state.pitch);
+    const aspect = camera.aspect;
+    const portrait = aspect < 0.8;
+    const dist = state.dist * (portrait ? 1.55 : 1);
+    const pitch = portrait ? Math.min(state.pitch, 0.3) : state.pitch;
+    const cosP = Math.cos(pitch);
     _right.set(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
     state.target.set(rp.x, rp.y + C.targetHeight, rp.z).addScaledVector(_right, C.shoulder);
 
     state.desired.set(
-      state.target.x + Math.sin(state.yaw) * cosP * state.dist,
-      state.target.y + Math.sin(state.pitch) * state.dist,
-      state.target.z + Math.cos(state.yaw) * cosP * state.dist
+      state.target.x + Math.sin(state.yaw) * cosP * dist,
+      state.target.y + Math.sin(pitch) * dist,
+      state.target.z + Math.cos(state.yaw) * cosP * dist
     );
     state.desired.y = Math.max(0.16, state.desired.y);
 
@@ -109,9 +113,11 @@ export function createCameraRig(camera, physics) {
     const want = _dir.length();
     _dir.normalize();
     if (physics) {
-      const hit = physics.castRay(state.target, _dir, want, robot.colliders ? robot : null, { staticOnly: true });
+      const hit = physics.castRay(state.target, _dir, want, robot.colliders ? robot : null, {
+        filterObj: (o) => o.isStatic || (o.tags && o.tags.includes('furniture') && o.mass >= 5),
+      });
       if (hit && hit.distance < want - 0.04) {
-        const d = Math.max(0.32, hit.distance - 0.1);
+        const d = Math.max(0.14, hit.distance - 0.1);
         state.desired.copy(state.target).addScaledVector(_dir, d);
       }
     }

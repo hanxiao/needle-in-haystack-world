@@ -22,7 +22,7 @@ export function createHud(root) {
       <span class="hud-sub">NEEDLE IN A HAYSTACK WORLD</span>
       <span class="hud-needle" id="hud-needle" hidden>NEEDLE FOUND</span>
     </div>
-    <div class="hud-map" id="hud-map"><span class="hud-tag">SURROUND</span></div>
+    <div class="hud-map" id="hud-map"><span class="hud-tag">SURROUND</span><div class="hud-map-dot" id="hud-map-dot"></div></div>
     <div class="hud-cam" data-cam="front"><span class="hud-cam-label">F</span></div>
     <div class="hud-cam" data-cam="right"><span class="hud-cam-label">R</span></div>
     <div class="hud-cam" data-cam="left"><span class="hud-cam-label">L</span></div>
@@ -41,6 +41,7 @@ export function createHud(root) {
     room: root.querySelector('#hud-room-name'),
     needle: root.querySelector('#hud-needle'),
     map: root.querySelector('#hud-map'),
+    mapDot: root.querySelector('#hud-map-dot'),
     surroundTag: root.querySelector('#hud-surround-tag'),
     cross: root.querySelector('#hud-cross'),
     cursor: root.querySelector('#hud-cursor'),
@@ -179,6 +180,10 @@ export function createHud(root) {
       els.held.hidden = true;
     }
 
+    if (els.mapDot) {
+      const yaw = s.robotYaw || 0;
+      els.mapDot.style.transform = `translate(-50%, -50%) rotate(${(-yaw).toFixed(3)}rad)`;
+    }
     els.hint.classList.toggle('is-faded', !s.hint);
     els.hint.textContent = s.hintText || 'WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L';
     els.fps.hidden = !s.debug;

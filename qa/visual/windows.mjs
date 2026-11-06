@@ -1,0 +1,41 @@
+import puppeteer from 'puppeteer-core';
+const URL = process.argv[2] || 'http://127.0.0.1:4183/';
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const yawTo = (x, z, tx, tz) => Math.atan2(-(tx - x), -(tz - z));
+const browser = await puppeteer.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true, args: ['--no-sandbox','--use-gl=angle','--use-angle=metal','--enable-gpu','--hide-scrollbars','--window-size=1440,900'], defaultViewport: { width: 1440, height: 900, deviceScaleFactor: 1 } });
+const page = await browser.newPage();
+await page.bringToFront();
+await page.goto(URL, { waitUntil: 'networkidle0', timeout: 60000 });
+await page.waitForFunction('window.__APP__ && window.__APP__.ready===true', { timeout: 60000 });
+await wait(2200);
+async function fp(name, x, z, tx, tz, pitch = -0.05) {
+  const yaw = yawTo(x, z, tx, tz);
+  await page.evaluate((x, z, yaw, pitch) => { const A = window.__APP__; A.qa.teleport(x, z, yaw); A.qa.look(yaw, pitch); }, x, z, yaw, pitch);
+  await wait(800);
+  await page.screenshot({ path: `qa/visual/shots/f-${name}.png` });
+  console.log(name, JSON.stringify(await page.evaluate(() => ({ cam: window.__APP__.qa.cameraInfo(), room: window.__APP__.state().room }))));
+}
+await fp('w-living-s', -3.5, -1.0, -3.5, -3.8, 0.30);
+await fp('w-living-w', -4.4, -2.6, -5.6, -2.6, 0.30);
+await fp('w-kitchen', 3.3, -2.6, 3.3, -3.8, 0.55);
+await fp('w-bedroom-w', -3.2, 2.6, -5.6, 2.65, 0.42);
+await fp('w-bedroom-n', -2.4, 2.6, -2.4, 3.8, 0.32);
+await fp('w-study', 4.1, 2.0, 4.1, 3.8, 0.40);
+await fp('d-bed', -1.6, 2.9, -4.0, 2.8, 0.02);
+await fp('d-kitchen-counter', 2.6, -2.2, 2.8, -3.4, 0.06);
+await fp('d-tv', -2.5, -2.4, -2.5, 0.45, 0.10);
+await fp('d-desk', 3.6, 2.2, 4.3, 3.4, 0.06);
+// held mug: front-side camera
+await page.evaluate(() => { const A = window.__APP__; A.qa.setView('third'); A.qa.teleportNear('mug_white', 0.45); });
+await wait(900);
+const grab = await page.evaluate(() => window.__APP__.qa.grabByName('mug_white'));
+await wait(700);
+await page.evaluate(() => { const A = window.__APP__; const r = A.state().robot; A.qa.setCamera(r.yaw + 2.3, 0.22, 1.15); });
+await wait(900);
+await page.screenshot({ path: 'qa/visual/shots/f-held-front.png' });
+console.log('held-front', JSON.stringify(grab), JSON.stringify(await page.evaluate(() => window.__APP__.qa.hudText())));
+await page.evaluate(() => window.__APP__.qa.action());
+await wait(1000);
+await page.screenshot({ path: 'qa/visual/shots/f-placed-front.png' });
+console.log('placed-front', JSON.stringify(await page.evaluate(() => window.__APP__.qa.hudText())));
+await browser.close();

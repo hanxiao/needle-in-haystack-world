@@ -76,8 +76,8 @@ html[data-ready="1"] #boot { opacity: 0; pointer-events: none; }
   flex-direction: column;
   gap: 3px;
 }
-.hud-room-name { font-size: 12px; letter-spacing: 0.18em; }
-.hud-sub { font-size: 8.5px; letter-spacing: 0.26em; color: var(--dim); }
+.hud-room-name { font-size: 12px; letter-spacing: 0.18em; color: #fff; }
+.hud-sub { font-size: 8.5px; letter-spacing: 0.26em; color: rgba(233, 230, 223, 0.72); }
 .hud-needle {
   margin-top: 5px;
   align-self: flex-start;
@@ -120,6 +120,27 @@ html[data-ready="1"] #boot { opacity: 0; pointer-events: none; }
   position: absolute;
   border: 1px solid var(--line);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28);
+}
+.hud-map-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 9px solid var(--amber);
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+}
+.hud-map-dot::after {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--amber);
 }
 .hud-map .hud-tag {
   position: absolute;
@@ -222,9 +243,11 @@ html[data-ready="1"] #boot { opacity: 0; pointer-events: none; }
   transform: translateX(-50%);
   font-size: 9px;
   letter-spacing: 0.14em;
-  color: var(--dim);
+  color: rgba(233, 230, 223, 0.78);
   white-space: nowrap;
   transition: opacity 0.7s ease;
+  background: rgba(8, 10, 12, 0.35);
+  padding: 2px 6px;
 }
 .hud-hint.is-faded { opacity: 0; }
 
@@ -286,7 +309,8 @@ html[data-ready="1"] #boot { opacity: 0; pointer-events: none; }
 .hud-cross.is-hidden, .hud-cursor.is-hidden { opacity: 0; }
 
 .hud-target { left: calc(50% + 14px); font-size: 9px; }
-  .hud-held { bottom: 54px; font-size: 8.5px; }
-  .hud-hint { bottom: 14px; font-size: 8px; letter-spacing: 0.08em; }
+  .hud-held { bottom: 214px; font-size: 8.5px; }
+  .hud-hint { bottom: 208px; font-size: 8px; letter-spacing: 0.08em; }
+  .hud-map-dot { border-left-width: 3px; border-right-width: 3px; border-bottom-width: 7px; }
   .hud-fps { right: 10px; bottom: 10px; }
 }

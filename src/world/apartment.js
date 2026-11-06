@@ -253,7 +253,7 @@ function buildWalls(ctx) {
   b.box(accentClay, 0.014, IN.maxZ - (PART.frontBackZ + T / 2) - 0.02, H, [PART.bathStudyX + T / 2 + 0.007, H / 2, (PART.frontBackZ + T / 2 + IN.maxZ) / 2]);
 
   // bathroom tile wainscot (3 walls, 1.25 m)
-  const tile = variant(ctx, 'tileWall', { repeat: [2, 1] });
+  const tile = variant(ctx, 'tileWall', { color: 0xa6b2ae, repeat: [2, 1] });
   const bathX0 = PART.hallBathX + T / 2;
   const bathX1 = PART.bathStudyX - T / 2;
   const bathZ0 = PART.frontBackZ + T / 2;
@@ -611,9 +611,9 @@ function buildExteriorView(ctx) {
   ];
   for (const [x, z, s] of trees) {
     b.cyl(trunk, 0.075 * s, 0.11 * s, 1.5 * s, [x, baseY + 0.75 * s, z], [0, 0, 0], 6);
-    b.sphere(foliage, 0.82 * s, [x, baseY + 2.0 * s, z], 9);
-    b.sphere(foliage2, 0.6 * s, [x + 0.55 * s, baseY + 1.55 * s, z + 0.3 * s], 8);
-    b.sphere(foliage, 0.52 * s, [x - 0.48 * s, baseY + 1.6 * s, z - 0.28 * s], 8);
+    b.sphere(foliage, 0.82 * s, [x, baseY + 2.0 * s, z], 14);
+    b.sphere(foliage2, 0.6 * s, [x + 0.55 * s, baseY + 1.55 * s, z + 0.3 * s], 12);
+    b.sphere(foliage, 0.52 * s, [x - 0.48 * s, baseY + 1.6 * s, z - 0.28 * s], 12);
   }
   b.colliderBox(70, 70, 0.4, [0, baseY - 0.2, 0]);
   return b.finish({ name: 'city_view', pos: [0, 0, 0], isStatic: true, material: 'concrete', tags: ['exterior'], recenter: false, shadows: false });

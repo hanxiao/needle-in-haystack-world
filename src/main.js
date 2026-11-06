@@ -312,6 +312,7 @@ async function init() {
     hud.update({
       mode: rig.mode,
       pointer: state.pointer,
+      robotYaw: robot.yaw,
       roomLabel: room?.label || 'APARTMENT',
       target,
       held,
@@ -390,6 +391,7 @@ async function init() {
       marker.visible = true;
       marker.position.copy(rayHit.point).addScaledVector(camera.getWorldDirection(new THREE.Vector3()), -0.012);
       marker.quaternion.copy(camera.quaternion);
+      marker.scale.setScalar(Math.min(2.5, Math.max(0.22, rayHit.distance * 0.55)));
       marker.material.color.setHex(hover.mass > robot.arm.maxLiftKg ? 0xe07a5f : 0xf0b35c);
     } else {
       marker.visible = false;
@@ -688,6 +690,31 @@ async function init() {
           pos: camera.position.toArray(),
           quat: camera.quaternion.toArray(),
           fov: camera.fov,
+          aspect: camera.aspect,
+        };
+      },
+      gpu() {
+        const r = renderSystem.renderer;
+        const vp = r.getViewport(new THREE.Vector4());
+        const sz = r.getSize(new THREE.Vector2());
+        return {
+          viewport: [vp.x, vp.y, vp.z, vp.w],
+          size: [sz.x, sz.y],
+          pixelRatio: r.getPixelRatio(),
+          canvas: [r.domElement.width, r.domElement.height],
+          css: [r.domElement.clientWidth, r.domElement.clientHeight],
+          scissorTest: r.getScissorTest(),
+        };
+      },
+      viewport() {
+        const c = renderSystem.renderer.domElement;
+        return {
+          inner: [window.innerWidth, window.innerHeight],
+          dpr: window.devicePixelRatio,
+          canvas: [c.width, c.height],
+          css: [c.clientWidth, c.clientHeight],
+          cameraAspect: camera.aspect,
+          hudCanvas: [renderSystem.hudRenderer.domElement.width, renderSystem.hudRenderer.domElement.height],
         };
       },
       raycast() {

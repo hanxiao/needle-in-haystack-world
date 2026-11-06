@@ -12,12 +12,12 @@ export const CONFIG = {
     wall: 0.12,
   },
   rooms: [
-    { id: 'living', label: 'LIVING ROOM', lamp: [-2.7, 2.44, -1.6], light: 7.0 },
-    { id: 'kitchen', label: 'KITCHEN / DINING', lamp: [2.9, 2.44, -1.6], light: 7.5 },
-    { id: 'bedroom', label: 'BEDROOM', lamp: [-3.5, 2.44, 2.3], light: 5.0 },
+    { id: 'living', label: 'LIVING ROOM', lamp: [-2.7, 2.44, -1.6], light: 6.2 },
+    { id: 'kitchen', label: 'KITCHEN / DINING', lamp: [2.9, 2.44, -1.6], light: 6.6 },
+    { id: 'bedroom', label: 'BEDROOM', lamp: [-3.5, 2.44, 2.3], light: 6.0 },
     { id: 'hallway', label: 'HALLWAY', lamp: [-0.4, 2.44, 2.3], light: 4.0 },
-    { id: 'bathroom', label: 'BATHROOM', lamp: [1.7, 2.44, 2.3], light: 4.5 },
-    { id: 'study', label: 'STUDY', lamp: [4.2, 2.44, 2.3], light: 5.0 },
+    { id: 'bathroom', label: 'BATHROOM', lamp: [1.7, 2.44, 2.3], light: 2.6 },
+    { id: 'study', label: 'STUDY', lamp: [4.2, 2.44, 2.3], light: 8.5 },
   ],
   spawn: { pos: [-3.6, 0.0, -1.2], yaw: 0 },
   robot: {

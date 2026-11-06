@@ -1,0 +1,12 @@
+import puppeteer from 'puppeteer-core';
+const browser = await puppeteer.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless:true, args:['--no-sandbox','--use-gl=angle','--use-angle=metal','--enable-gpu','--hide-scrollbars','--window-size=1440,900'], defaultViewport:{width:1440,height:900,deviceScaleFactor:1}});
+const page = await browser.newPage();
+await page.bringToFront();
+const t0=Date.now();
+await page.goto('http://127.0.0.1:4182/', {waitUntil:'domcontentloaded', timeout:60000});
+await page.waitForFunction('window.__APP__ && window.__APP__.ready===true', {timeout:60000});
+const readyMs=Date.now()-t0;
+await new Promise(r=>setTimeout(r,6000));
+const out = await page.evaluate(()=>({fps:window.__APP__.fps, draw:window.__APP__.state().drawCalls, tri:window.__APP__.state().triangles, errors:window.__APP__.state().errors, boot:document.getElementById('boot')?getComputedStyle(document.getElementById('boot')).opacity:null}));
+console.log(JSON.stringify({readyMs, ...out}));
+await browser.close();
