@@ -143,7 +143,9 @@ const INJECT_HELPERS = () => {
     async ensureHover(name, opts = {}) {
       const A = window.__APP__;
       const dists = opts.dists || [0.55, 0.45, 0.7];
-      const yaws = opts.yaws || [0, 0.5, -0.5];
+      const yaws = opts.yaws || [0, 0.6, -0.6, 1.0, -1.0];
+      const pitches = opts.pitches || [0.34, 0.5];
+      const cams = opts.cams || [1.25, 2.0];
       const offs = opts.offsets || [[0, 0], [-25, 0], [25, 0], [0, -25], [0, 25], [-25, -20], [25, -20], [-50, 0], [0, 50]];
       const tries = [];
       for (const dist of dists) {
@@ -153,34 +155,68 @@ const INJECT_HELPERS = () => {
         if (!near) return { found: false, reason: 'missing', tries };
         await this.sleep(650);
         for (const dy of yaws) {
-          if (A.qa.setCamera) A.qa.setCamera(near.yaw + dy, 0.34, 1.25);
-          await this.sleep(200);
-          const s = this.project(name);
-          if (!s) continue;
-          for (const [ox, oy] of offs) {
-            if (A.qa.pointerAt) A.qa.pointerAt(s.x + ox, s.y + oy);
-            await this.sleep(85);
-            const t = A.state().target;
-            tries.push({ dist, dy, ox, oy, target: t });
-            if (t === name) {
-              return {
-                found: true,
-                dist,
-                dy,
-                ox,
-                oy,
-                screen: { x: s.x + ox, y: s.y + oy },
-                near,
-                target: t,
-                robot: A.state().robot.pos,
-                obj: A.qa.object(name).pos,
-                hud: A.qa.hudText(),
-              };
+          for (const pitch of pitches) {
+            for (const cd of cams) {
+              if (A.qa.setCamera) A.qa.setCamera(near.yaw + dy, pitch, cd);
+              await this.sleep(330);
+              const s = this.project(name);
+              if (!s) continue;
+              for (const [ox, oy] of offs) {
+                if (A.qa.pointerAt) A.qa.pointerAt(s.x + ox, s.y + oy);
+                await this.sleep(85);
+                const t = A.state().target;
+                tries.push({ dist, dy, pitch, cd, ox, oy, target: t });
+                if (t === name) {
+                  return {
+                    found: true,
+                    dist,
+                    dy,
+                    pitch,
+                    cd,
+                    ox,
+                    oy,
+                    screen: { x: s.x + ox, y: s.y + oy },
+                    near,
+                    target: t,
+                    robot: A.state().robot.pos,
+                    obj: A.qa.object(name).pos,
+                    hud: A.qa.hudText(),
+                  };
+                }
+              }
             }
           }
         }
       }
       return { found: false, tries };
+    },
+    // Hover an object from the CURRENT robot pose (no reset/teleport): scan camera
+    // yaw/pitch/distance and pointer offsets until state().target === name.
+    async scanHover(name, opts = {}) {
+      const A = window.__APP__;
+      const yaws = opts.yaws || [0, 0.6, -0.6, 1.0, -1.0, 1.6, -1.6];
+      const pitches = opts.pitches || [0.34, 0.5, 0.2];
+      const cams = opts.cams || [1.25, 2.0, 3.0];
+      const offs = [[0, 0], [-25, 0], [25, 0], [0, -25], [0, 25], [-25, -20], [25, -20], [-50, 0], [0, 50]];
+      const baseYaw = A.state().robot.yaw;
+      for (const dy of yaws) {
+        for (const pitch of pitches) {
+          for (const cd of cams) {
+            if (A.qa.setCamera) A.qa.setCamera(baseYaw + dy, pitch, cd);
+            await this.sleep(320);
+            const s = this.project(name);
+            if (!s) continue;
+            for (const [ox, oy] of offs) {
+              if (A.qa.pointerAt) A.qa.pointerAt(s.x + ox, s.y + oy);
+              await this.sleep(85);
+              if (A.state().target === name) {
+                return { found: true, dy, pitch, cd, screen: { x: s.x + ox, y: s.y + oy }, robot: A.state().robot.pos, obj: A.qa.object(name).pos, hud: A.qa.hudText(), cam: A.qa.cameraInfo().pos };
+              }
+            }
+          }
+        }
+      }
+      return { found: false };
     },
     // Find a free robot pose whose arm can actually reach the object's body origin
     // (canReach is centre-based, so teleportNear's 0.35 m ring is sometimes too far for
@@ -220,6 +256,44 @@ const INJECT_HELPERS = () => {
         }
       }
       return { found: false };
+    },
+    // Hover an object from the current pose and pick a pointer ray that hits its NEAR
+    // surface (within arm reach) - needed to read the PUSH label for large furniture
+    // whose body centre is farther away than the arm can reach.
+    async nearSurfaceHover(name, opts = {}) {
+      const A = window.__APP__;
+      const baseYaw = A.state().robot.yaw;
+      const configs = opts.configs || [
+        [baseYaw, 0.34, 1.25],
+        [baseYaw, 0.34, 2.0],
+        [baseYaw, 0.5, 1.6],
+        [baseYaw + 0.6, 0.34, 1.6],
+        [baseYaw - 0.6, 0.34, 1.6],
+      ];
+      let fallback = null;
+      for (const [yaw, pitch, cd] of configs) {
+        if (A.qa.setCamera) A.qa.setCamera(yaw, pitch, cd);
+        await this.sleep(330);
+        const s = this.project(name);
+        if (!s) continue;
+        for (let gx = -80; gx <= 80; gx += 40) {
+          for (let gy = -60; gy <= 60; gy += 30) {
+            if (A.qa.pointerAt) A.qa.pointerAt(s.x + gx, s.y + gy);
+            await this.sleep(70);
+            if (A.state().target !== name) continue;
+            const ray = A.qa.raycast ? A.qa.raycast() : null;
+            const st = A.state();
+            const rp = st.robot.pos;
+            const yawR = st.robot.yaw;
+            const shoulder = [rp[0] - 0.085 * Math.sin(yawR), rp[1] + 0.26, rp[2] - 0.085 * Math.cos(yawR)];
+            const d = ray && ray.point ? Math.hypot(ray.point[0] - shoulder[0], ray.point[1] - shoulder[1], ray.point[2] - shoulder[2]) : Infinity;
+            const hit = { found: true, d: +d.toFixed(3), ray, hud: A.qa.hudText().target, cam: A.qa.cameraInfo().pos, pointer: [s.x + gx, s.y + gy] };
+            if (d <= 0.36) return hit;
+            if (!fallback || d < fallback.d) fallback = hit;
+          }
+        }
+      }
+      return fallback || { found: false };
     },
     // screen-space distance between robot and object, and physics pose of an object
     objPos(name) {
@@ -335,6 +409,31 @@ async function main() {
   await sleep(1500);
 
   const appErrors = await page.evaluate(() => (window.__APP__ && window.__APP__.errors) || []);
+
+  await test('L6', 'LOAD', 'shader warm-up: first seconds are not a fps dip', 'P1', async () => {
+    const m = await page.evaluate(async () => {
+      let frames = 0;
+      const t0 = performance.now();
+      await new Promise((res) => {
+        const loop = (t) => {
+          frames++;
+          if (t - t0 < 2000) requestAnimationFrame(loop);
+          else res();
+        };
+        requestAnimationFrame(loop);
+      });
+      const seconds = (performance.now() - t0) / 1000;
+      return { fps: frames / seconds, frames, seconds };
+    });
+    const load = os.loadavg()[0];
+    const loaded = load > os.cpus().length * 1.5;
+    const ok = m.fps >= 50 || (loaded && m.fps >= 45);
+    return {
+      pass: ok,
+      evidence: `first 2 s after ready: rAF ${m.fps.toFixed(1)} fps (${m.frames} frames); ready in ${loadMs} ms; machine load ${load.toFixed(1)}/${os.cpus().length} cores`,
+    };
+  }, 'measure rAF fps over the first 2 s after the ready flag (shader warm-up gate)');
+
 
   // ================================================================ BUILD
   await test('B1', 'BUILD', 'dist size 3-9 MB', 'P0', async () => {
@@ -1092,7 +1191,16 @@ async function main() {
       await new Promise((res) => setTimeout(res, 550));
       const before = A.qa.object('mug_white').pos;
       const g = A.qa.grabByName('mug_white');
-      await new Promise((res) => setTimeout(res, 700));
+      // aim-responsive carry: keep the aim at the object's grab height while measuring the
+      // neutral carry lift (aiming at the floor would legitimately lower the mug)
+      const rp = A.state().robot.pos;
+      const yaw = A.state().robot.yaw;
+      const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+      const end = performance.now() + 700;
+      while (performance.now() < end) {
+        A.qa.aimAtPoint([rp[0] + fx * 0.5, before[1], rp[2] + fz * 0.5]);
+        await new Promise((res) => setTimeout(res, 20));
+      }
       const held = A.qa.object('mug_white').pos;
       return { before, held, rise: +(held[1] - before[1]).toFixed(3), g, heldName: A.state().robot.held };
     });
@@ -1102,10 +1210,44 @@ async function main() {
     };
   }, 'grab the mug and measure the gripper carry lift after 0.7 s');
 
+  await test('G10', 'GRAB', 'aim-responsive carry: held mug rises/lowers with aim', 'P2', async () => {
+    const r = await page.evaluate(async () => {
+      const A = window.__APP__;
+      A.qa.reset();
+      A.qa.setView('third');
+      A.qa.teleportNear('mug_white', 0.33);
+      await new Promise((res) => setTimeout(res, 550));
+      const g = A.qa.grabByName('mug_white');
+      await new Promise((res) => setTimeout(res, 600));
+      const rp = A.state().robot.pos;
+      const yaw = A.state().robot.yaw;
+      const fx = -Math.sin(yaw);
+      const fz = -Math.cos(yaw);
+      // forcedAim is consumed per frame, so keep re-aiming for the whole hold window
+      const holdAim = async (py, ms) => {
+        const end = performance.now() + ms;
+        while (performance.now() < end) {
+          A.qa.aimAtPoint([rp[0] + fx * 0.5, py, rp[2] + fz * 0.5]);
+          await new Promise((res) => setTimeout(res, 20));
+        }
+      };
+      await holdAim(0.75, 900);
+      const high = A.qa.object('mug_white').pos[1];
+      await holdAim(0.30, 900);
+      const low = A.qa.object('mug_white').pos[1];
+      A.qa.release();
+      return { g, held: A.state().robot.held, high, low, delta: +(high - low).toFixed(3) };
+    });
+    return {
+      pass: r.g.ok === true && r.delta > 0.015,
+      evidence: `grab=${JSON.stringify(r.g)}; mug y aim-high ${r.high.toFixed(3)} vs aim-low ${r.low.toFixed(3)} -> carry delta ${r.delta.toFixed(3)} m`,
+    };
+  }, 'grab the mug, keep aiming high then low inside the carry band and measure the carried mug height change');
+
   // ================================================================ PHYSICS feel
   const pushObject = async (name, dists) => page.evaluate(async ({ name, dists }) => {
     const A = window.__APP__;
-    const h = await window.__QA.ensureHover(name, { dists, yaws: [0, 0.5, -0.5] });
+    const h = await window.__QA.ensureHover(name, { dists });
     if (!h.found) return { found: false, target: A.state().target };
     const robot = A.state().robot.pos;
     const obj0 = A.qa.object(name);
@@ -1419,19 +1561,9 @@ async function main() {
       // stand ~3 m from the sofa so even its nearest surface is outside the 0.34 m arm reach
       A.qa.teleport(-2.5, 0.4, 0);
       await new Promise((r) => setTimeout(r, 600));
-      A.qa.setCamera(0, 0.34, 2.2);
-      await new Promise((r) => setTimeout(r, 450));
-      const s = A.qa.screenOf('sofa');
-      let hud = null, target = null;
-      if (s) {
-        for (const [ox, oy] of [[0, 0], [-25, 0], [25, 0], [0, -25], [0, 25]]) {
-          A.qa.pointerAt(s.x + ox, s.y + oy);
-          await new Promise((r) => setTimeout(r, 110));
-          if (A.state().target === 'sofa') { target = 'sofa'; hud = A.qa.hudText().target; break; }
-        }
-      }
+      const h = await window.__QA.scanHover('sofa');
       const o = A.qa.object('sofa'); const rp = A.state().robot.pos;
-      return { target, hud, dist: +Math.hypot(o.pos[0] - rp[0], o.pos[2] - rp[2]).toFixed(2) };
+      return { found: h.found, target: h.found ? 'sofa' : A.state().target, hud: h.hud ? h.hud.target : null, dist: +Math.hypot(o.pos[0] - rp[0], o.pos[2] - rp[2]).toFixed(2), cam: h.cam };
     });
     const gT = (grab.hud && grab.hud.target) || '';
     const pT = (push.hud && push.hud.target) || '';
@@ -1463,23 +1595,15 @@ async function main() {
       const A = window.__APP__;
       const o = A.qa.object('sofa');
       const st = A.state();
-      const s = A.qa.screenOf('sofa');
-      let hud = null, target = null;
-      if (s) {
-        for (const [ox, oy] of [[0, 0], [-25, 0], [25, 0], [0, -25], [0, 25]]) {
-          A.qa.pointerAt(s.x + ox, s.y + oy);
-          await new Promise((r) => setTimeout(r, 110));
-          if (A.state().target === 'sofa') { target = 'sofa'; hud = A.qa.hudText().target; break; }
-        }
-      }
+      const h = await window.__QA.nearSurfaceHover('sofa');
       return {
         robot: st.robot.pos, obj: o.pos, dist: +Math.hypot(o.pos[0] - st.robot.pos[0], o.pos[2] - st.robot.pos[2]).toFixed(2),
-        canReachCenter: A.robot.canReach({ x: o.pos[0], y: o.pos[1], z: o.pos[2] }), target, hud,
+        canReachCenter: A.robot.canReach({ x: o.pos[0], y: o.pos[1], z: o.pos[2] }), target: h.found ? 'sofa' : A.state().target, hud: h.hud || null, hitDist: h.d, cam: h.cam,
       };
     });
     return {
       pass: out.target === 'sofa' && /SOFA/.test(out.hud || '') && /85 kg/.test(out.hud || '') && /PUSH/.test(out.hud || ''),
-      evidence: `closest approach ${out.dist} m, canReach(centre)=${out.canReachCenter}, label "${out.hud}" (expected SOFA · 85 kg · PUSH)`,
+      evidence: `closest approach ${out.dist} m, canReach(centre)=${out.canReachCenter}, nearest pointer hit ${out.hitDist} m from shoulder, label "${out.hud}" (expected SOFA · 85 kg · PUSH)`,
       detail: out,
     };
   }, 'drive against the sofa, hover it and read the target label');
@@ -1745,6 +1869,169 @@ async function main() {
       detail: after,
     };
   }, 'drive 1.5 s and inspect window.__APP__.trail.points + layer masks on trail meshes and 360 cameras');
+
+  await test('H15', 'HUD', 'touch controls: stick drives, drag looks, tap grabs', 'P1', async () => {
+    const setup = await page.evaluate(async () => {
+      const A = window.__APP__;
+      A.qa.reset();
+      A.qa.setView('third');
+      A.qa.setTouch(true);
+      A.qa.teleport(-3.6, -1.2, 0);
+      A.qa.setCamera(0, 0.34, 1.75);
+      await new Promise((r) => setTimeout(r, 500));
+      const hint = A.qa.hudText().hint;
+      const touchOn = document.querySelector('#hud-touch')?.classList.contains('is-on');
+      return { hint, touchOn };
+    });
+    // stick drive
+    const p0 = (await pageState()).robot.pos;
+    await page.evaluate(() => window.__APP__.qa.touchJoy(0, 1));
+    await sleep(2000);
+    const stick = await page.evaluate(() => {
+      const A = window.__APP__;
+      const el = document.querySelector('#hud-stick');
+      const knob = document.querySelector('#hud-stick-knob');
+      return { pos: A.state().robot.pos, active: el ? el.classList.contains('is-active') : null, knob: knob ? knob.style.transform : null };
+    });
+    await page.evaluate(() => window.__APP__.qa.touchRelease());
+    await sleep(400);
+    const pStop1 = (await pageState()).robot.pos;
+    await sleep(500);
+    const pStop2 = (await pageState()).robot.pos;
+    const stopDrift = Math.hypot(pStop2[0] - pStop1[0], pStop2[2] - pStop1[2]);
+    const moved = Math.hypot(stick.pos[0] - p0[0], stick.pos[2] - p0[2]);
+    // drag look
+    const cam0 = await page.evaluate(() => window.__APP__.qa.cameraInfo());
+    await page.evaluate(() => window.__APP__.qa.touchLook(140, 30));
+    await sleep(500);
+    const cam1 = await page.evaluate(() => window.__APP__.qa.cameraInfo());
+    const camMoved = Math.hypot(cam1.pos[0] - cam0.pos[0], cam1.pos[1] - cam0.pos[1], cam1.pos[2] - cam0.pos[2]);
+    // tap grab on a mug in arm range
+    const tap = await page.evaluate(async () => {
+      const A = window.__APP__;
+      const h = await window.__QA.closeSpot('mug_white', { radii: [0.28, 0.30, 0.26] });
+      if (!h.found) return { found: false };
+      A.qa.touchTap();
+      await new Promise((r) => setTimeout(r, 500));
+      const held = A.state().robot.held;
+      const hud = A.qa.hudText().held;
+      A.qa.touchTap();
+      await new Promise((r) => setTimeout(r, 400));
+      const after = A.state().robot.held;
+      A.qa.setTouch(false);
+      return { found: true, held, hud, after };
+    });
+    const hintOk = /LEFT STICK DRIVE/i.test(setup.hint || '') && /TAP GRAB/i.test(setup.hint || '');
+    return {
+      pass: setup.touchOn === true && hintOk && moved > 0.4 && stick.active === true && /translate/.test(stick.knob || '') &&
+        stopDrift < 0.05 && camMoved > 0.1 && tap.found && tap.held === 'mug_white' && tap.after === null,
+      evidence: `hud-touch on=${setup.touchOn}, hint "${setup.hint}"; stick moved robot ${moved.toFixed(2)} m (active=${stick.active}, knob="${stick.knob}"), stop drift ${stopDrift.toFixed(3)} m; drag-look camera moved ${camMoved.toFixed(2)} m; tap grab held=${tap.held}, second tap held=${tap.after}`,
+      detail: { setup, stick, moved, stopDrift, camMoved, tap },
+    };
+  }, 'enable touch mode, drive with qa.touchJoy, look with qa.touchLook, grab/place with qa.touchTap');
+
+  await test('H16', 'HUD', 'control panel rows: H and R are separate rows', 'P1', async () => {
+    const r = await page.evaluate(() => {
+      const rows = [...document.querySelectorAll('#hud-controls .hud-row')];
+      const info = rows.map((row) => ({
+        keys: [...row.querySelectorAll('kbd[data-key]')].map((k) => k.dataset.key),
+        act: (row.querySelector('.hud-act') || {}).textContent || '',
+      }));
+      const hRow = info.find((x) => x.keys.includes('KeyH'));
+      const rRow = info.find((x) => x.keys.includes('KeyR'));
+      return { rows: info, count: rows.length, hRow, rRow };
+    });
+    const ok = r.count === 9 && r.hRow && r.rRow && r.hRow.keys.length === 1 && r.rRow.keys.length === 1 &&
+      /HINT/i.test(r.hRow.act) && /RESET/i.test(r.rRow.act);
+    return {
+      pass: ok,
+      evidence: `${r.count} rows; H row=${JSON.stringify(r.hRow)}; R row=${JSON.stringify(r.rRow)}`,
+      detail: r,
+    };
+  }, 'read #hud-controls .hud-row and verify HINT and RESET are separate keycap rows');
+
+  await test('H17', 'HUD', 'trail legend sits under the minimap and hides with 360', 'P1', async () => {
+    await page.evaluate(() => {
+      const A = window.__APP__;
+      A.qa.setView('third');
+      A.qa.setSurround(true);
+    });
+    await sleep(500);
+    const on = await page.evaluate(() => {
+      const A = window.__APP__;
+      const r = A.qa.hudRects();
+      const el = document.querySelector('#hud-map-trail');
+      const b = el ? el.getBoundingClientRect() : null;
+      return {
+        rects: r,
+        exists: !!el,
+        hidden: el ? el.classList.contains('is-hidden') : null,
+        box: b ? { x: +b.x.toFixed(0), y: +b.y.toFixed(0), w: +b.width.toFixed(0), h: +b.height.toFixed(0) } : null,
+        text: el ? el.textContent.trim() : null,
+      };
+    });
+    await page.keyboard.press('KeyC');
+    await sleep(500);
+    const off = await page.evaluate(() => {
+      const el = document.querySelector('#hud-map-trail');
+      return { hidden: el ? el.classList.contains('is-hidden') : null, surround: window.__APP__.state().surround };
+    });
+    await page.keyboard.press('KeyC');
+    await sleep(500);
+    const map = on.rects.map;
+    const under = on.box && Math.abs(on.box.y - (map.y + map.h + 4)) <= 3 && Math.abs(on.box.w - map.w) <= 3;
+    const legendOk = on.exists && /TRAIL/i.test(on.text || '') && under && on.hidden === false;
+    return {
+      pass: legendOk && off.surround === false && off.hidden === true,
+      evidence: `#hud-map-trail box ${JSON.stringify(on.box)} vs map ${JSON.stringify(map)} (under=${under}); text="${on.text}"; hidden on=${on.hidden} off=${off.hidden}`,
+      detail: { on, off },
+    };
+  }, 'inspect the map trail legend position and its is-hidden state when 360 is toggled');
+
+  await test('H18', 'HUD', 'third-person camera stays inside the apartment shell', 'P1', async () => {
+    const spots = [
+      { name: 'backed-south-wall', pose: [-2.5, -3.3, Math.PI], cam: [Math.PI, 0.34, 1.75] },
+      { name: 'backed-west-wall-bedroom', pose: [-5.1, 2.4, -Math.PI / 2], cam: [-Math.PI / 2, 0.34, 1.75] },
+      { name: 'teleportNear-sofa', near: 'sofa', dist: 0.5 },
+      { name: 'teleportNear-bed', near: 'bed', dist: 0.5 },
+      { name: 'hallway-wall', pose: [-0.4, 1.1, 0], cam: [Math.PI, 0.34, 1.75] },
+    ];
+    const rows = [];
+    for (const sp of spots) {
+      await page.evaluate((s) => {
+        const A = window.__APP__;
+        A.qa.reset();
+        A.qa.setView('third');
+        if (s.near) A.qa.teleportNear(s.near, s.dist);
+        else {
+          A.qa.teleport(s.pose[0], s.pose[1], s.pose[2]);
+          A.qa.setCamera(s.cam[0], s.cam[1], s.cam[2]);
+        }
+      }, sp);
+      await sleep(1100);
+      const r = await page.evaluate(() => {
+        const A = window.__APP__;
+        const c = A.qa.cameraInfo();
+        const rp = A.state().robot.pos;
+        const main = A.qa.sampleMain({ x: 560, y: 320, w: 320, h: 260 });
+        const ray = A.qa.raycast ? A.qa.raycast() : null;
+        return {
+          pos: c.pos, robot: rp,
+          dist: Math.hypot(c.pos[0] - rp[0], c.pos[1] - rp[1], c.pos[2] - rp[2]),
+          // interior shell is x ±5.6, z ±3.8; keep the camera 0.15 m inside the inner faces
+          inside: Math.abs(c.pos[0]) <= 5.45 && Math.abs(c.pos[2]) <= 3.65 && c.pos[1] > 0.1,
+          main, ray: ray ? ray.name : null,
+        };
+      });
+      rows.push({ spot: sp.name, ...r });
+    }
+    const bad = rows.filter((r) => !r.inside || r.dist < 0.3 || !(r.main.mean > 30) || !(r.main.litRatio > 0.5));
+    return {
+      pass: bad.length === 0,
+      evidence: rows.map((r) => `${r.spot}: cam (${r.pos.map((v) => v.toFixed(2)).join(',')}) ${r.inside ? 'inside' : 'OUTSIDE SHELL'} dist ${r.dist.toFixed(2)} m, centre ray ${r.ray}, view mean ${r.main.mean.toFixed(0)}`).join(' | '),
+      detail: rows,
+    };
+  }, 'back the robot against outer walls / furniture, then check the camera stays inside the shell and the view is not a flat wall');
 
   // ================================================================ ADVERSARIAL
   await test('A1', 'ADV', 'grab while driving, release while moving', 'P1', async () => {
@@ -2064,7 +2351,7 @@ function writeReports(summary) {
   lines.push('## Numbers');
   lines.push('');
   const pick = (id) => summary.results.find((r) => r.id === id);
-  for (const id of ['P1', 'P2', 'P3', 'P4', 'W5', 'PH1', 'PH2', 'PH3', 'G8', 'G9', 'H7', 'H7b', 'H14', 'H1', 'H4']) {
+  for (const id of ['L1', 'L6', 'P1', 'P2', 'P3', 'P4', 'W5', 'PH1', 'PH2', 'PH3', 'G8', 'G9', 'G10', 'H7', 'H7b', 'H14', 'H15', 'H16', 'H17', 'H18', 'H1', 'H4']) {
     const r = pick(id);
     if (r) lines.push(`- ${id} ${r.name}: ${r.pass ? 'PASS' : 'FAIL'} — ${r.evidence}`);
   }

@@ -1005,6 +1005,19 @@ export function buildClutter(ctx) {
     }));
   }
   add(addBookStack(ctx, 'book_stack_2', -5.375, shelfYs[2] + 0.002, -0.35, { yaw: Math.PI / 2, count: 2, w: 0.2, d: 0.14, color: 0x4a6b4a, mass: 0.9 }));
+  for (let i = 0; i < 4; i++) {
+    add(addBook(ctx, `shelf_book_${23 + i}`, -5.375, shelfYs[i % 2 === 0 ? 0 : 2] + 0.002, -0.68 + i * 0.05, {
+      yaw: Math.PI / 2,
+      w: 0.04,
+      d: 0.19,
+      h: 0.24,
+      color: BOOK_COLORS[(i + 3) % BOOK_COLORS.length],
+      mass: 0.55,
+      pages: false,
+      castShadow: false,
+      room: 'living',
+    }));
+  }
   add(addVase(ctx, 'vase', -5.375, 1.862, -0.85, { room: 'living' }));
   add(addSmallPlant(ctx, 'plant_small', -5.375, 1.862, -0.35, { room: 'living' }));
 

@@ -117,7 +117,7 @@ function buildFloors(ctx) {
   const wood = new Batch(ctx, 'floor_wood');
   const tile = new Batch(ctx, 'floor_tile');
   const woodMat = variant(ctx, 'woodFloor', { repeat: [1, 1] });
-  const tileMat = variant(ctx, 'tileFloor', { repeat: [1, 1] });
+  const tileMat = variant(ctx, 'tileFloor', { color: 0xb8b3a5, repeat: [1, 1] });
   const woodRegions = [
     [IN.minX, PART.livingKitchenX - T / 2, IN.minZ, PART.frontBackZ - T / 2],
     [IN.minX, PART.bedroomHallX - T / 2, PART.frontBackZ + T / 2, IN.maxZ],
@@ -188,19 +188,23 @@ function buildCeiling(ctx) {
 function buildWalls(ctx) {
   const b = new Batch(ctx, 'walls');
   const paint = (room) => variant(ctx, 'wallPaint', { color: C.wallWarm });
+  const paintBath = () => variant(ctx, 'wallPaint', { color: 0xcac7bd });
   const trim = variant(ctx, 'woodLight', { color: 0xd6c3a5 });
 
   const runs = [
     // outer shell
     { axis: 'x', at: OUT.minZ, from: OUT.minX - T / 2, to: OUT.maxX + T / 2, sides: [1], room: 'living' },
-    { axis: 'x', at: OUT.maxZ, from: OUT.minX - T / 2, to: OUT.maxX + T / 2, sides: [-1], room: 'bedroom' },
+    { axis: 'x', at: OUT.maxZ, from: OUT.minX - T / 2, to: PART.bedroomHallX, sides: [-1], room: 'bedroom' },
+    { axis: 'x', at: OUT.maxZ, from: PART.bedroomHallX, to: PART.hallBathX, sides: [-1], room: 'hallway' },
+    { axis: 'x', at: OUT.maxZ, from: PART.hallBathX, to: PART.bathStudyX, sides: [-1], room: 'bathroom', mat: paintBath() },
+    { axis: 'x', at: OUT.maxZ, from: PART.bathStudyX, to: OUT.maxX + T / 2, sides: [-1], room: 'study' },
     { axis: 'z', at: OUT.minX, from: IN.minZ, to: IN.maxZ, sides: [1], room: 'living' },
     { axis: 'z', at: OUT.maxX, from: IN.minZ, to: IN.maxZ, sides: [-1], room: 'kitchen' },
     // interior partitions
     { axis: 'z', at: PART.livingKitchenX, from: IN.minZ, to: -1.5, sides: [1, -1], room: 'living', mat: paint() },
     { axis: 'x', at: PART.frontBackZ, from: OUT.minX + T / 2, to: OUT.maxX - T / 2, sides: [1, -1], room: 'hallway', mat: paint() },
     { axis: 'z', at: PART.bedroomHallX, from: PART.frontBackZ + T / 2, to: IN.maxZ, sides: [1, -1], room: 'bedroom', mat: paint() },
-    { axis: 'z', at: PART.hallBathX, from: PART.frontBackZ + T / 2, to: IN.maxZ, sides: [1, -1], room: 'bathroom', mat: paint() },
+    { axis: 'z', at: PART.hallBathX, from: PART.frontBackZ + T / 2, to: IN.maxZ, sides: [1, -1], room: 'bathroom', mat: paintBath() },
     { axis: 'z', at: PART.bathStudyX, from: PART.frontBackZ + T / 2, to: IN.maxZ, sides: [1, -1], room: 'study', mat: paint() },
   ];
 
@@ -253,7 +257,7 @@ function buildWalls(ctx) {
   b.box(accentClay, 0.014, IN.maxZ - (PART.frontBackZ + T / 2) - 0.02, H, [PART.bathStudyX + T / 2 + 0.007, H / 2, (PART.frontBackZ + T / 2 + IN.maxZ) / 2]);
 
   // bathroom tile wainscot (3 walls, 1.25 m)
-  const tile = variant(ctx, 'tileWall', { color: 0xa6b2ae, repeat: [2, 1] });
+  const tile = variant(ctx, 'tileWall', { color: 0x8b9793, repeat: [2, 1] });
   const bathX0 = PART.hallBathX + T / 2;
   const bathX1 = PART.bathStudyX - T / 2;
   const bathZ0 = PART.frontBackZ + T / 2;
@@ -365,8 +369,18 @@ function buildWindows(ctx) {
       addWallBox(b, frame, axis, at, u, cy, 0.04, hgt - 0.12, fd);
     }
     addWallBox(b, frame, axis, at, cu, cy, len - 0.12, 0.04, fd);
+    // frosted bathroom window gets a roller blind (upper 55%)
+    if (win.frosted) {
+      const blindMat = variant(ctx, 'fabricLinen', { color: 0xb4bcb7, repeat: [2, 2] });
+      const blindTop = y1 - 0.05;
+      const blindH = (y1 - y0) * 0.58;
+      addWallBox(b, blindMat, axis, at, cu, blindTop - blindH / 2, len - 0.06, blindH, 0.02, inward * 0.06);
+      addWallBox(b, blindMat, axis, at, cu, blindTop - blindH + 0.02, len - 0.04, 0.05, 0.035, inward * 0.06);
+      const [bw, bd, bh] = wallSize(axis, len - 0.06, blindH, 0.02);
+      b.colliderBox(bw, bd, bh, wallXform(axis, at, cu, blindTop - blindH / 2, inward * 0.06));
+    }
     // glass
-    const gm = win.frosted ? glassFrosted : glass;
+    const gm = win.frosted ? variant(ctx, 'glassFrosted', { color: 0xccd4d0, opacity: 0.62 }) : glass;
     addWallBox(b, gm, axis, at, cu, cy, len - 0.1, hgt - 0.1, 0.012);
     // interior sill
     addWallBox(b, frame, axis, at, cu, y0 - 0.022, len + 0.16, 0.04, T + 0.16, inward * 0.045);
@@ -623,6 +637,10 @@ function buildExteriorView(ctx) {
 
 export function buildApartment(ctx) {
   const objects = [];
+  // subtle cool fill so the bathroom reads normally lit rather than blown out
+  const bathroomFill = new THREE.PointLight(0xd7e5f2, 0.3, 3.6, 2);
+  bathroomFill.position.set(1.7, 2.1, 2.35);
+  ctx.scene.add(bathroomFill);
   objects.push(...buildFloors(ctx));
   objects.push(buildCeiling(ctx));
   objects.push(buildWalls(ctx));

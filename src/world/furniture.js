@@ -464,6 +464,16 @@ function buildCounter(ctx, shadows) {
   b.colliderBox(sinkW, backStrip, 0.9, [0, 0.45, sinkD / 2 + backStrip / 2]);
   b.colliderBox(sinkW, sinkD, 0.02, [0, 0.69, 0]);
   b.colliderBox(0.7, 0.34, 0.68, [-0.6, 1.9, -d / 2 + 0.17]);
+  // utensil rail on the backsplash
+  const rail = variant(ctx, 'metalBrushed', { color: 0xb6b9b8, metalness: 0.5, roughness: 0.35 });
+  b.cyl(rail, 0.008, 0.008, 0.6, [-0.35, 1.3, -d / 2 + 0.05], [0, 0, Math.PI / 2], 8);
+  for (const sx of [-0.65, -0.05]) b.box(rail, 0.02, 0.05, 0.03, [sx, 1.3, -d / 2 + 0.05]);
+  for (const [x, len] of [[-0.5, 0.3], [-0.22, 0.26]]) {
+    b.box(rail, 0.012, 0.012, 0.05, [x, 1.26, -d / 2 + 0.06]);
+    b.box(rail, 0.045, len, 0.012, [x, 1.26 - len / 2, -d / 2 + 0.06]);
+    b.box(rail, 0.07, 0.09, 0.014, [x, 1.26 - len, -d / 2 + 0.06]);
+  }
+  b.colliderBox(0.7, 0.06, 0.06, [-0.35, 1.3, -d / 2 + 0.05]);
   const obj = b.finish({
     name: 'kitchen_counter',
     pos: [(SURFACES.counter.x0 + SURFACES.counter.x1) / 2, 0, (SURFACES.counter.z0 + SURFACES.counter.z1) / 2],
@@ -871,7 +881,7 @@ function buildBedsideLamp(ctx) {
   b.colliderBox(0.26, 0.26, 0.3, [0, 0.28, 0]);
   return b.finish({
     name: 'bedside_lamp',
-    pos: [SURFACES.nightstand.x, SURFACES.nightstand.top + 0.008, SURFACES.nightstand.z],
+    pos: [SURFACES.nightstand.x, SURFACES.nightstand.top + 0.012, SURFACES.nightstand.z],
     mass: 1.8,
     material: 'metal',
     room: 'bedroom',
@@ -937,9 +947,10 @@ function buildBedroomRug(ctx) {
 
 function buildBathtub(ctx, shadows) {
   const b = new Batch(ctx, 'bathtub');
-  const ceramic = matOf(ctx, 'ceramicWhite');
+  const ceramic = variant(ctx, 'ceramicWhite', { color: 0xc4bfb3, roughness: 0.38 });
   const chrome = matOf(ctx, 'metalChrome');
   const water = matOf(ctx, 'water');
+  const curtain = variant(ctx, 'fabricLinen', { color: 0xb3bdb8, repeat: [2, 2] });
   const w = 1.7;
   const d = 0.75;
   const h = 0.66;
@@ -962,7 +973,27 @@ function buildBathtub(ctx, shadows) {
   b.cyl(chrome, 0.012, 0.012, 0.5, [0.5, 1.5, -d / 2 + 0.02], [0, 0, 0], 8);
   b.cyl(chrome, 0.012, 0.012, 0.2, [0.56, 1.75, -d / 2 + 0.08], [0, 0, Math.PI / 2.4], 8);
   b.cyl(chrome, 0.07, 0.06, 0.03, [0.68, 1.78, -d / 2 + 0.13], [0, 0, 0], 12);
+  // tiled tub skirt on the room side
+  const tubTile = variant(ctx, 'tileWall', { color: 0x8b9793, repeat: [2, 1] });
+  b.box(tubTile, w - 0.06, 0.02, h - 0.08, [0, (h - 0.06) / 2, -d / 2 - 0.008]);
+  // shower rail + partly drawn curtain on the room side of the tub
+  const rodZ = -d / 2 + 0.05;
+  b.cyl(chrome, 0.012, 0.012, w + 0.08, [0, 1.98, rodZ], [0, 0, Math.PI / 2], 10);
+  for (const sx of [-1, 1]) b.box(chrome, 0.04, 0.06, 0.04, [sx * (w / 2 + 0.02), 1.98, rodZ]);
+  const pleats = 9;
+  for (let i = 0; i < pleats; i++) {
+    const x = -w / 2 + 0.08 + (i + 0.5) * ((w * 0.62) / pleats);
+    const wave = Math.sin(i * 1.9) * 0.018;
+    b.box(curtain, 0.11, 0.022, 1.2, [x, 1.34, rodZ - 0.02 + wave]);
+  }
+  b.box(curtain, w * 0.62 + 0.04, 0.03, 0.05, [-w * 0.19, 1.94, rodZ - 0.02]);
+  b.box(curtain, w * 0.62 + 0.02, 0.05, 0.06, [-w * 0.19, 0.74, rodZ - 0.02]);
+  // folded towel on the far rim
+  b.box(curtain, 0.34, 0.22, 0.05, [w * 0.26, 0.69, d / 2 - 0.16]);
+  b.box(curtain, 0.3, 0.2, 0.04, [w * 0.26, 0.735, d / 2 - 0.16]);
   b.colliderBox(w + 0.02, d + 0.02, h, [0, h / 2, 0]);
+  b.colliderBox(w + 0.08, 0.06, 0.06, [0, 1.98, rodZ]);
+  b.colliderBox(w * 0.62, 0.06, 1.22, [-w * 0.19, 1.34, rodZ - 0.02]);
   const obj = b.finish({
     name: 'bathtub',
     pos: [SURFACES.bathtub.x, 0, SURFACES.bathtub.z],
@@ -977,7 +1008,7 @@ function buildBathtub(ctx, shadows) {
 
 function buildToilet(ctx, shadows) {
   const b = new Batch(ctx, 'toilet');
-  const ceramic = matOf(ctx, 'ceramicWhite');
+  const ceramic = variant(ctx, 'ceramicWhite', { color: 0xb9b4a8, roughness: 0.4 });
   const chrome = matOf(ctx, 'metalChrome');
   b.box(ceramic, 0.24, 0.34, 0.38, [0, 0.19, 0.02]);
   b.cyl(ceramic, 0.18, 0.2, 0.16, [0, 0.44, 0.06], [0, 0, 0], 18);
@@ -986,6 +1017,8 @@ function buildToilet(ctx, shadows) {
   b.box(ceramic, 0.36, 0.03, 0.4, [0, 0.985, -0.19]);
   b.box(chrome, 0.05, 0.02, 0.02, [0.12, 0.9, -0.08]);
   b.cyl(chrome, 0.05, 0.05, 0.015, [0, 0.55, 0.06], [0, 0, 0], 14);
+  const tankTowel = variant(ctx, 'fabricLinen', { color: 0xb3bdb8, repeat: [2, 2] });
+  b.box(tankTowel, 0.26, 0.3, 0.045, [0, 1.025, -0.19]);
   b.colliderBox(0.44, 0.72, 1.0, [0, 0.5, 0]);
   const obj = b.finish({
     name: 'toilet',
@@ -1003,10 +1036,10 @@ function buildToilet(ctx, shadows) {
 function buildVanity(ctx, shadows) {
   const b = new Batch(ctx, 'bathroom_vanity');
   const wood = variant(ctx, 'woodLight', { color: 0xcfc6b8 });
-  const ceramic = matOf(ctx, 'ceramicWhite');
-  const top = variant(ctx, 'stone', { color: 0xdedbd2 });
+  const ceramic = variant(ctx, 'ceramicWhite', { color: 0xc4bfb3, roughness: 0.38 });
+  const top = variant(ctx, 'stone', { color: 0xbcb9b0 });
   const chrome = matOf(ctx, 'metalChrome');
-  const mirror = variant(ctx, 'mirror', { color: 0xd6e0e6, metalness: 0.45, roughness: 0.12 });
+  const mirror = variant(ctx, 'mirror', { color: 0xb6c1c7, metalness: 0.35, roughness: 0.16 });
   const frame = variant(ctx, 'woodLight', { color: 0xbdb2a0 });
   const w = 0.9;
   const d = 0.5;

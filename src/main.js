@@ -31,6 +31,13 @@ const state = {
   debug: new URLSearchParams(location.search).has('debug'),
   lastPush: 0,
   pointer: { x: window.innerWidth / 2, y: window.innerHeight / 2, active: false },
+  touch: {
+    enabled:
+      (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+      (navigator.maxTouchPoints || 0) > 0,
+    joy: { id: null, ox: 0, oy: 0, x: 0, y: 0 },
+    look: { id: null, x: 0, y: 0, moved: 0 },
+  },
 };
 
 const keys = new Set();
@@ -69,11 +76,43 @@ async function init() {
 
   const hud = createHud(document.getElementById('hud'));
   hud.setSurround(state.surround);
+  hud.setTouch(state.touch.enabled);
 
   // trajectory line: layer 2 so it is rendered only by the minimap camera
   if (robot.cameras && robot.cameras.top) robot.cameras.top.layers.enable(2);
   const trail = createTrail(scene);
   let lastTrailAt = 0;
+
+  // soft contact shadow under the robot (sun shadow + point lights are not enough under furniture)
+  const shadowCanvas = document.createElement('canvas');
+  shadowCanvas.width = 128;
+  shadowCanvas.height = 128;
+  const sctx = shadowCanvas.getContext('2d');
+  const sgrad = sctx.createRadialGradient(64, 64, 2, 64, 64, 62);
+  sgrad.addColorStop(0, 'rgba(0,0,0,0.55)');
+  sgrad.addColorStop(0.5, 'rgba(0,0,0,0.28)');
+  sgrad.addColorStop(1, 'rgba(0,0,0,0)');
+  sctx.fillStyle = sgrad;
+  sctx.fillRect(0, 0, 128, 128);
+  const shadowTex = new THREE.CanvasTexture(shadowCanvas);
+  shadowTex.colorSpace = THREE.SRGBColorSpace;
+  const robotShadow = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.62, 0.62),
+    new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, toneMapped: false })
+  );
+  robotShadow.rotation.x = -Math.PI / 2;
+  robotShadow.position.y = 0.018;
+  robotShadow.renderOrder = 1;
+  scene.add(robotShadow);
+
+  // Warm up shader programs before declaring ready so the first seconds are not a 50 fps dip.
+  try {
+    renderSystem.renderer.compile(scene, camera);
+    renderSystem.renderHud(robot, hud.layout());
+    renderSystem.render();
+  } catch (err) {
+    console.warn('warmup failed', err);
+  }
 
   const marker = new THREE.Mesh(
     new THREE.RingGeometry(0.022, 0.032, 32),
@@ -360,13 +399,12 @@ async function init() {
     const boost = keys.has('ShiftLeft') || keys.has('ShiftRight');
     rig.cameraForward(forward);
     rig.cameraRight(right);
-    const mx = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0);
-    const mz = (keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0);
+    const joy = state.touch.enabled ? state.touch.joy : { x: 0, y: 0 };
+    const mx = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0) + joy.x;
+    const mz = (keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0) + joy.y;
     move.set(0, 0, 0).addScaledVector(forward, mz).addScaledVector(right, mx);
-    if (move.lengthSq() > 1e-6) {
-      move.normalize();
-      state.hintUsed = true;
-    }
+    if (move.lengthSq() > 1) move.normalize();
+    if (move.lengthSq() > 0.01) state.hintUsed = true;
 
     let ndcX = 0;
     let ndcY = 0;
@@ -412,6 +450,8 @@ async function init() {
     rig.update(dt, robot);
 
     const rs = robot.getState ? robot.getState() : null;
+    robotShadow.position.set(robot.group.position.x, 0.018, robot.group.position.z);
+    robotShadow.material.opacity = rs && rs.grounded === false ? 0.18 : 0.42;
     if (now - lastTrailAt > 110) {
       const p = robot.group.position;
       trail.add(p.x, p.z, rs ? rs.speed || 0 : 0);
@@ -494,7 +534,77 @@ async function init() {
   window.addEventListener('keyup', (e) => keys.delete(e.code));
   window.addEventListener('blur', () => keys.clear());
 
+  function touchDown(e) {
+    if (!state.touch.enabled) return;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    if (e.clientX < w * 0.5 && e.clientY > h * 0.34) {
+      state.touch.joy.id = e.pointerId;
+      state.touch.joy.ox = e.clientX;
+      state.touch.joy.oy = e.clientY;
+      state.touch.joy.x = 0;
+      state.touch.joy.y = 0;
+      hud.setStick(0, 0);
+      hud.setStickVisible(true);
+    } else {
+      state.touch.look.id = e.pointerId;
+      state.touch.look.x = e.clientX;
+      state.touch.look.y = e.clientY;
+      state.touch.look.moved = 0;
+      state.pointer.x = e.clientX;
+      state.pointer.y = e.clientY;
+      state.pointer.active = true;
+    }
+  }
+
+  function touchMove(e) {
+    if (!state.touch.enabled) return;
+    const joy = state.touch.joy;
+    if (e.pointerId === joy.id) {
+      let dx = e.clientX - joy.ox;
+      let dy = e.clientY - joy.oy;
+      const len = Math.hypot(dx, dy);
+      const max = 48;
+      if (len > max) {
+        dx = (dx / len) * max;
+        dy = (dy / len) * max;
+      }
+      joy.x = dx / max;
+      joy.y = -dy / max;
+      hud.setStick(joy.x, joy.y);
+    } else if (e.pointerId === state.touch.look.id) {
+      const dx = e.clientX - state.touch.look.x;
+      const dy = e.clientY - state.touch.look.y;
+      state.touch.look.x = e.clientX;
+      state.touch.look.y = e.clientY;
+      state.touch.look.moved += Math.abs(dx) + Math.abs(dy);
+      state.pointer.x = e.clientX;
+      state.pointer.y = e.clientY;
+      state.pointer.active = true;
+      rig.orbit(dx, dy);
+    }
+  }
+
+  function touchUp(e) {
+    if (!state.touch.enabled) return;
+    if (e.pointerId === state.touch.joy.id) {
+      state.touch.joy.id = null;
+      state.touch.joy.x = 0;
+      state.touch.joy.y = 0;
+      hud.setStick(0, 0);
+      hud.setStickVisible(false);
+    } else if (e.pointerId === state.touch.look.id) {
+      const moved = state.touch.look.moved;
+      state.touch.look.id = null;
+      if (moved < 12) action();
+    }
+  }
+
   window.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch') {
+      touchDown(e);
+      return;
+    }
     if (e.button !== 0 && e.pointerType === 'mouse') return;
     pointer.down = true;
     pointer.x = e.clientX;
@@ -505,6 +615,10 @@ async function init() {
     if (e.pointerType === 'mouse') state.pointer.active = true;
   });
   window.addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'touch') {
+      touchMove(e);
+      return;
+    }
     state.pointer.x = e.clientX;
     state.pointer.y = e.clientY;
     if (e.pointerType === 'mouse') state.pointer.active = true;
@@ -517,6 +631,10 @@ async function init() {
     rig.orbit(dx, dy);
   });
   window.addEventListener('pointerup', (e) => {
+    if (e.pointerType === 'touch') {
+      touchUp(e);
+      return;
+    }
     if (!pointer.down) return;
     pointer.down = false;
     if (pointer.moved < 6) action();
@@ -678,6 +796,28 @@ async function init() {
         state.pointer.y = y;
         state.pointer.active = true;
       },
+      setTouch(on) {
+        state.touch.enabled = !!on;
+        hud.setTouch(!!on);
+      },
+      touchJoy(x, y) {
+        state.touch.joy.x = Math.max(-1, Math.min(1, x));
+        state.touch.joy.y = Math.max(-1, Math.min(1, y));
+        hud.setStick(state.touch.joy.x, state.touch.joy.y);
+        hud.setStickVisible(true);
+      },
+      touchRelease() {
+        state.touch.joy.x = 0;
+        state.touch.joy.y = 0;
+        hud.setStick(0, 0);
+        hud.setStickVisible(false);
+      },
+      touchLook(dx, dy) {
+        rig.orbit(dx, dy);
+      },
+      touchTap() {
+        action();
+      },
       aimAtPoint(point) {
         facePoint(new THREE.Vector3(point[0], point[1], point[2]));
       },
@@ -721,6 +861,24 @@ async function init() {
         rig.state.fpYaw = yaw;
         rig.state.fpPitch = pitch;
         rig.state.initialized = false;
+      },
+      cameraProbe(x, y, z) {
+        return rig.blockedAt(x, y, z, robot);
+      },
+      cameraDebug() {
+        return {
+          state: {
+            target: rig.state.target.toArray(),
+            desired: rig.state.desired.toArray(),
+            pos: rig.state.pos.toArray(),
+            yaw: rig.state.yaw,
+            pitch: rig.state.pitch,
+            dist: rig.state.dist,
+            initialized: rig.state.initialized,
+            mode: rig.state.mode,
+          },
+          robot: robot.group.position.toArray(),
+        };
       },
       cameraInfo() {
         return {

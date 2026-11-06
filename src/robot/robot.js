@@ -26,6 +26,7 @@ const LED_COLORS = {
   move: 0x53e08a,
   boost: 0x39d7ff,
   held: 0x8ea6ff,
+  push: 0xff6a3d,
 };
 
 const _aim = new THREE.Vector3();
@@ -93,6 +94,7 @@ export function createRobot(ctx, opts = {}) {
     ctx,
     model,
     group,
+    body,
     reach: CONFIG.robot.reach ?? ROBOT_DIMS.reach,
     maxLiftKg: CONFIG.robot.maxLiftKg ?? 0.5,
   });
@@ -461,7 +463,7 @@ export function createRobot(ctx, opts = {}) {
     }
     casterSpin -= (speed / ROBOT_DIMS.casterRadius) * step;
     model.caster.rotation.z = casterSpin;
-    if (model.lidarTop) model.lidarTop.rotation.y += step * 6.0;
+    if (model.lidarTop) model.lidarTop.rotation.y += step * 7.0; // spinning LiDAR
 
     // ---- body lean (small: rigid sweeper)
     const forwardAccel = (forwardSpeed - prevForward) / step;
@@ -480,10 +482,11 @@ export function createRobot(ctx, opts = {}) {
     // ---- status LED
     let mode = 'idle';
     if (arm.held) mode = 'held';
+    else if (pushCount > 0) mode = 'push';
     else if (boosting && moving) mode = 'boost';
     else if (moving) mode = 'move';
     setLed(mode);
-    ledPulse = mode === 'held' ? 0.5 + 0.5 * Math.sin(time * 5.5) : 1;
+    ledPulse = mode === 'held' || mode === 'push' ? 0.5 + 0.5 * Math.sin(time * 5.5) : 1;
     model.ledMaterial.emissiveIntensity = 1.2 + 1.2 * ledPulse;
   }
 

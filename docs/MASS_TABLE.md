@@ -1,6 +1,6 @@
 # Mass & physics audit — needle-in-haystack-world (round 2)
 
-Audited: every dynamic object in `src/world/**` (171) plus the static architecture/built-ins (22).
+Audited: every dynamic object in `src/world/**` (175 after the round-3 bookshelf fill) plus the static architecture/built-ins (22).
 Generated from the live world build (Rapier bodies read back after `physics.settle(120)`), so the
 table reflects what the engine actually instantiates — not the source constants.
 
@@ -8,9 +8,9 @@ table reflects what the engine actually instantiates — not the source constant
 
 | item | value |
 | --- | --- |
-| objects | 193 total — 171 dynamic, 22 static |
+| objects | 197 total — 175 dynamic, 22 static |
 | required QA masses | sofa 85, fridge 95, bed 75, wardrobe 120, dining_table 34, chair_1 5.5, coffee_table 13, mug_white 0.32, book_stack_1 1.4, laptop 1.6, plant_monstera 8, needle 0.0012 kg — all exact |
-| masses out of realistic range | 0 / 171 |
+| masses out of realistic range | 0 / 175 |
 | dynamic objects tagged as architecture | 0 |
 | heavy furniture (>= 20 kg) | 8: wardrobe 120, fridge 95, sofa 85, bed 75, bookshelf 42, dining_table 34, desk 26, armchair 21 |
 | heavy friction / restitution | 1.0 / 0.0 (explicit per-object overrides; `physics.addObject` gained `friction`/`restitution`) |
@@ -92,6 +92,10 @@ average friction-combine rule this gives ~0.8 effective friction against the woo
 | study_book_4 | 0.6 | book | 0.3–1.5 | OK |
 | study_plant | 0.6 | small potted plant | 0.3–1.5 | OK |
 | shelf_book_1 | 0.55 | book | 0.3–1.5 | OK |
+| shelf_book_23 | 0.55 | book | 0.3–1.5 | OK |
+| shelf_book_24 | 0.55 | book | 0.3–1.5 | OK |
+| shelf_book_25 | 0.55 | book | 0.3–1.5 | OK |
+| shelf_book_26 | 0.55 | book | 0.3–1.5 | OK |
 | shelf_book_2 | 0.55 | book | 0.3–1.5 | OK |
 | shelf_book_3 | 0.55 | book | 0.3–1.5 | OK |
 | shelf_book_4 | 0.55 | book | 0.3–1.5 | OK |
@@ -299,3 +303,29 @@ Fixes (all placement/collider height, no layout or mass changes):
 - TV raised 7 mm onto its stand; drapes collider lifted 25 mm over the chair back.
 
 Suite verdict after fixes: **55 PASS / 0 FAIL / 4 INFO — SHIP**.
+
+## Round 3 polish (bathroom lighting, contact gate, detail)
+
+Bathroom was the brightest room (reviewer `bath-fp` mean ~171 vs living ~108). It now measures:
+
+| shot | before | after |
+| --- | ---: | ---: |
+| bath-fp (first person) | 172.4 | **141.0** |
+| bath-a-tub | 140.0 | 133.8 |
+| bath-b-vanity | 148.9 | 92.7 (camera close to tiled wall + robot arm in frame) |
+| living-fp (reference) | 115.5 | 115.6 |
+| kitchen-fp (reference) | 139.9 | 133.2 |
+
+Changes (no global exposure / renderer edits):
+- Bathroom-specific wall paint (cooler, darker), darker tile wainscot (0x8b9793), darker tile floor shared with the kitchen, frosted window made more opaque/cooler, and a roller blind over the bathroom window.
+- Bathroom fixtures: muted ceramic (0xc4bfb3 tub/vanity, 0xb9b4a8 toilet), darker stone vanity top, toned-down mirror.
+- Added a **tiled tub skirt** on the room side, a **shower rail + partly drawn curtain**, a **folded towel on the tub rim** and a **folded towel on the toilet tank** (bathroom detail wins).
+- Added a subtle cool bathroom fill light (`PointLight 0xd7e5f2`, 0.3, 3.6 m) so the room reads evenly lit; the day/night toggle still owns the global lights.
+- Kitchen: metal utensil rail with two hanging utensils on the backsplash.
+- Living room: 4 extra books on the bookshelf (0.55 kg each, `shelf_book_23…26`).
+- Bedside lamp raised 4 mm so the deepest resting contact drops below the 2 mm gate.
+
+Verification after round 3 (`node qa/physics/run.mjs --dir=dist`): **56 PASS / 0 FAIL / 3 INFO — SHIP**.
+- G1 spawn interpenetration ≤ 2 mm: **PASS — deepest contact -1.0 mm** (desk_lamp↔mug_desk) across 243 pairs; 0 pairs > 2.5 mm (the 2.2 mm pen contact is gone; pen rests at ~0.1 mm).
+- G2 no dynamic body below floor: PASS (-0.0001 m).
+- All 6 room transitions drive + under-coffee-table drive pass with robot v2; 197 objects, 306 draw calls at spawn, 63.6k tris, 0 console errors.

@@ -22,6 +22,7 @@ export function createCameraRig(camera, physics) {
   const _dir = new THREE.Vector3();
   const _right = new THREE.Vector3();
   const _tmp = new THREE.Vector3();
+  const _los = new THREE.Vector3();
   const _camShape = physics && physics.RAPIER ? new physics.RAPIER.Ball(0.11) : null;
   const _camRot = { x: 0, y: 0, z: 0, w: 1 };
   function cameraBlocked(pos, robot) {
@@ -41,6 +42,18 @@ export function createCameraRig(camera, physics) {
       }
     );
     return !!hit;
+  }
+
+  function cameraSeesRobot(pos, head, robot) {
+    if (!physics) return true;
+    _los.copy(head).sub(pos);
+    const dist = _los.length();
+    if (dist < 0.05) return true;
+    _los.multiplyScalar(1 / dist);
+    const hit = physics.castRay(pos, _los, dist, robot.colliders ? robot : null, {
+      filterObj: (o) => o.isStatic || (o.tags && o.tags.includes('furniture') && o.mass >= 5),
+    });
+    return !hit || hit.distance > dist - 0.06;
   }
 
   function orbit(dx, dy) {
@@ -120,31 +133,116 @@ export function createCameraRig(camera, physics) {
     const pitch = portrait ? Math.min(state.pitch, 0.3) : state.pitch;
     const cosP = Math.cos(pitch);
     _right.set(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
-    state.target.set(rp.x, rp.y + C.targetHeight, rp.z).addScaledVector(_right, C.shoulder);
+
+    // Pick a target that is not inside furniture: shoulder-biased first, then centred,
+    // then low. This stops the camera from being pinned inside a sofa/bed it is hugging.
+    const baseY = rp.y + C.targetHeight;
+    const candidates = [
+      [rp.x + _right.x * C.shoulder, baseY, rp.z + _right.z * C.shoulder],
+      [rp.x, baseY, rp.z],
+      [rp.x, rp.y + C.targetHeight * 0.7, rp.z],
+    ];
+    state.target.set(candidates[0][0], candidates[0][1], candidates[0][2]);
+    for (const c of candidates) {
+      _tmp.set(c[0], c[1], c[2]);
+      if (!cameraBlocked(_tmp, robot)) {
+        state.target.copy(_tmp);
+        break;
+      }
+    }
 
     state.desired.set(
       state.target.x + Math.sin(state.yaw) * cosP * dist,
       state.target.y + Math.sin(pitch) * dist,
       state.target.z + Math.cos(state.yaw) * cosP * dist
     );
-    state.desired.y = Math.max(0.16, state.desired.y);
+    state.desired.y = Math.max(0.14, state.desired.y);
 
-    _dir.copy(state.desired).sub(state.target);
+    const head = _tmp.set(rp.x, rp.y + 0.30, rp.z).clone();
+    _dir.copy(state.desired).sub(head);
     const want = _dir.length();
     _dir.normalize();
     if (physics) {
-      const hit = physics.castRay(state.target, _dir, want, robot.colliders ? robot : null, {
+      const hit = physics.castRay(head, _dir, want, robot.colliders ? robot : null, {
         filterObj: (o) => o.isStatic || (o.tags && o.tags.includes('furniture') && o.mass >= 5),
       });
       if (hit && hit.distance < want - 0.04) {
         const d = Math.max(0.14, hit.distance - 0.1);
-        state.desired.copy(state.target).addScaledVector(_dir, d);
+        state.desired.copy(head).addScaledVector(_dir, d);
       }
     }
 
-    for (let i = 0; i < 8 && cameraBlocked(state.desired, robot); i++) {
-      state.desired.lerp(state.target, 0.18);
+    // If the ideal camera sits inside furniture, first try higher/shifted orbits
+    // (over the sofa back, past a wardrobe) before collapsing toward the robot.
+    let blocked = cameraBlocked(state.desired, robot);
+    if (blocked) {
+      const alts = [
+        [0, 0.3, 1], [0.32, 0.32, 0.95], [-0.32, 0.32, 0.95],
+        [0, 0.55, 0.95], [0.55, 0.42, 0.9], [-0.55, 0.42, 0.9],
+        [0.85, 0.5, 0.85], [-0.85, 0.5, 0.85],
+      ];
+      const headPoint = new THREE.Vector3(rp.x, rp.y + 0.30, rp.z);
+      for (const [dyaw, dpitch, dscale] of alts) {
+        const y2 = state.yaw + dyaw;
+        const p2 = clamp(pitch + dpitch, C.minPitch, C.maxPitch);
+        const d2 = dist * dscale;
+        const c2 = Math.cos(p2);
+        _tmp.set(
+          state.target.x + Math.sin(y2) * c2 * d2,
+          Math.max(0.14, state.target.y + Math.sin(p2) * d2),
+          state.target.z + Math.cos(y2) * c2 * d2
+        );
+        if (!cameraBlocked(_tmp, robot) && cameraSeesRobot(_tmp, headPoint, robot)) {
+          state.desired.copy(_tmp);
+          blocked = false;
+          break;
+        }
+      }
     }
+
+    // Push the camera out of any remaining furniture volume, moving toward the robot
+    // head (always inside the free space the robot occupies).
+    for (let i = 0; i < 12 && blocked; i++) {
+      state.desired.lerp(head, 0.22);
+      blocked = cameraBlocked(state.desired, robot);
+    }
+    if (blocked) {
+      // Low under-furniture perch first: when the robot is under a table the only
+      // clear line of sight is from just outside the table edge at head height.
+      const lowPerch = [[0.55, 0.26], [0.85, 0.28], [0.35, 0.22]];
+      for (const [back, up] of lowPerch) {
+        _tmp.set(
+          rp.x + Math.sin(state.yaw) * back,
+          rp.y + up,
+          rp.z + Math.cos(state.yaw) * back
+        );
+        if (!cameraBlocked(_tmp, robot) && cameraSeesRobot(_tmp, head, robot)) {
+          state.desired.copy(_tmp);
+          blocked = false;
+          break;
+        }
+      }
+    }
+    if (blocked) {
+      // High over-the-shoulder perch, still outside furniture and with line of sight.
+      const perch = [
+        [0.65, 0.95], [0.9, 1.15], [0.45, 0.7], [1.2, 1.25],
+      ];
+      for (const [back, up] of perch) {
+        _tmp.set(
+          rp.x + Math.sin(state.yaw) * back,
+          rp.y + up,
+          rp.z + Math.cos(state.yaw) * back
+        );
+        if (!cameraBlocked(_tmp, robot) && cameraSeesRobot(_tmp, head, robot)) {
+          state.desired.copy(_tmp);
+          blocked = false;
+          break;
+        }
+      }
+    }
+    if (blocked) state.desired.copy(head);
+    state.desired.y = Math.max(0.12, state.desired.y);
 
     if (!state.initialized) {
       state.pos.copy(state.desired);
@@ -178,6 +276,7 @@ export function createCameraRig(camera, physics) {
     cameraRight,
     update,
     reset,
+    blockedAt: (x, y, z, robot) => cameraBlocked({ x, y, z }, robot),
     get mode() {
       return state.mode;
     },

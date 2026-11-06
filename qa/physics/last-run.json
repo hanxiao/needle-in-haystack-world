@@ -1,46 +1,41 @@
 {
- "label": "final-round2",
+ "label": "final-polish",
  "url": "http://127.0.0.1:4183/",
- "elapsed": "102.0",
+ "elapsed": "106.1",
  "verdict": "SHIP",
  "counts": {
-  "PASS": 55,
+  "PASS": 56,
   "FAIL": 0,
-  "INFO": 4
+  "INFO": 3
  },
  "build": {
   "dir": "qa/frozen",
   "url": "http://127.0.0.1:4183/",
-  "bytes": 5253349,
-  "sha256": "5cf1537d1779991e8d6a79fa9a984dfc6437297531b4c9104149f8370101d6b0",
-  "gitHead": "385abaa",
+  "bytes": 5261883,
+  "sha256": "eef3be85f2ab494b24fffdca710419d36918fe93712a91f13826f3e4b35c2fa8",
+  "gitHead": "4e780dd",
   "gitDirty": [
-   "M docs/QA.md",
+   "M docs/MASS_TABLE.md",
+   " M docs/QA.md",
    " M src/core/camera.js",
-   " M src/core/config.js",
-   " M src/core/physics.js",
    " M src/main.js",
    " M src/robot/arm.js",
-   " M src/robot/cameras.js",
    " M src/robot/model.js",
    " M src/robot/robot.js",
    " M src/styles.css",
    " M src/ui/hud.js",
+   " M src/ui/trail.js",
    " M src/world/apartment.js",
    " M src/world/clutter.js",
-   " M src/world/furniture.js",
-   " M src/world/helpers.js",
-   "?? docs/MASS_TABLE.md",
-   "?? docs/ROBOT_SPEC.md",
-   "?? src/ui/trail.js"
+   " M src/world/furniture.js"
   ],
-  "label": "final-round2"
+  "label": "final-polish"
  },
  "rows": [
   {
    "gate": "A1 app boots, ready flag set",
    "status": "PASS",
-   "evidence": "ready=true after 7.3s; room=LIVING ROOM",
+   "evidence": "ready=true after 8.1s; room=LIVING ROOM",
    "sev": "P0",
    "detail": null
   },
@@ -75,14 +70,14 @@
   {
    "gate": "A6 steady fps >= 50 @1440x900",
    "status": "PASS",
-   "evidence": "60.0 fps over 2 s (reported 60.0); drawCalls=298",
+   "evidence": "52.0 fps over 2 s (reported 56.0); drawCalls=306",
    "sev": "P2",
    "detail": null
   },
   {
    "gate": "A7 draw calls <= 450",
    "status": "PASS",
-   "evidence": "drawCalls=298 triangles=61916",
+   "evidence": "drawCalls=306 triangles=63622",
    "sev": "P2",
    "detail": null
   },
@@ -103,7 +98,7 @@
   {
    "gate": "B3 simulation runs at fixed 60 Hz",
    "status": "PASS",
-   "evidence": "59.91 physics steps/s over 2003 ms (120 steps, 57.4 fps)",
+   "evidence": "58.97 physics steps/s over 2001 ms (118 steps, 46.0 fps) — host under load, rate limited by render loop",
    "sev": "P0",
    "detail": null
   },
@@ -117,7 +112,7 @@
   {
    "gate": "B5 empirical free-fall g ~= 9.81 m/s2",
    "status": "PASS",
-   "evidence": "measured g=9.810 m/s2 from dv/dt over 31 steps (v: 0.00 -> -5.07 m/s)",
+   "evidence": "measured g=9.810 m/s2 from dv/dt over 30 steps (v: 0.00 -> -4.91 m/s)",
    "sev": "P0",
    "detail": null
   },
@@ -138,7 +133,7 @@
   {
    "gate": "B8 friction in (0,1.2] and restitution in [0,1]",
    "status": "PASS",
-   "evidence": "228 dynamic colliders; badFriction=0, badRestitution=0",
+   "evidence": "232 dynamic colliders; badFriction=0, badRestitution=0",
    "sev": "P2",
    "detail": null
   },
@@ -152,35 +147,35 @@
   {
    "gate": "B10 every dynamic body has damping > 0",
    "status": "PASS",
-   "evidence": "171/171 bodies have lin+ang damping > 0",
+   "evidence": "175/175 bodies have lin+ang damping > 0",
    "sev": "P3",
    "detail": null
   },
   {
    "gate": "B11 objects settle to sleep (>=90%)",
    "status": "PASS",
-   "evidence": "171/171 dynamic bodies asleep after settle (100%)",
+   "evidence": "175/175 dynamic bodies asleep after settle (100%)",
    "sev": "P1",
    "detail": null
   },
   {
    "gate": "B12 all body transforms/velocities finite (no NaN)",
    "status": "PASS",
-   "evidence": "193/193 bodies finite",
+   "evidence": "197/197 bodies finite",
    "sev": "P0",
    "detail": null
   },
   {
    "gate": "B13 positive finite principal inertia on all dynamic bodies",
    "status": "PASS",
-   "evidence": "171/171 dynamic bodies have positive finite inertia",
+   "evidence": "175/175 dynamic bodies have positive finite inertia",
    "sev": "P1",
    "detail": null
   },
   {
    "gate": "B14 CCD coverage reported",
    "status": "INFO",
-   "evidence": "1/171 dynamic bodies have CCD enabled (tunneling checked in G4)",
+   "evidence": "1/175 dynamic bodies have CCD enabled (tunneling checked in G4)",
    "sev": "P3",
    "detail": null
   },
@@ -194,56 +189,56 @@
   {
    "gate": "C1 every dynamic body has mass > 0 and finite",
    "status": "PASS",
-   "evidence": "171/171 dynamic bodies have positive finite mass",
+   "evidence": "175/175 dynamic bodies have positive finite mass",
    "sev": "P0",
    "detail": null
   },
   {
    "gate": "C2 declared mass == Rapier body mass (compound distribution)",
    "status": "PASS",
-   "evidence": "171/171 exact within 1%",
+   "evidence": "175/175 exact within 1%",
    "sev": "P1",
    "detail": null
   },
   {
    "gate": "C3 collider mass sum == body mass",
    "status": "PASS",
-   "evidence": "171/171 colliders sum to body mass",
+   "evidence": "175/175 colliders sum to body mass",
    "sev": "P2",
    "detail": null
   },
   {
    "gate": "C4 every dynamic object classified against a realistic range",
    "status": "PASS",
-   "evidence": "171/171 objects classified",
+   "evidence": "175/175 objects classified",
    "sev": "P3",
    "detail": null
   },
   {
    "gate": "C5 masses realistic (no outliers)",
    "status": "PASS",
-   "evidence": "all 171 dynamic masses within realistic ranges",
+   "evidence": "all 175 dynamic masses within realistic ranges",
    "sev": "P2",
    "detail": null
   },
   {
    "gate": "C6 gravityScale == 1 for dynamic bodies",
    "status": "PASS",
-   "evidence": "171/171 at 1.0",
+   "evidence": "175/175 at 1.0",
    "sev": "P2",
    "detail": null
   },
   {
    "gate": "C7 grabbable == (mass <= 0.5 kg)",
    "status": "PASS",
-   "evidence": "171/171 consistent with 0.5 kg payload",
+   "evidence": "175/175 consistent with 0.5 kg payload",
    "sev": "P2",
    "detail": null
   },
   {
    "gate": "C8 every dynamic body has >= 1 collider",
    "status": "PASS",
-   "evidence": "171/171 bodies have colliders",
+   "evidence": "175/175 bodies have colliders",
    "sev": "P1",
    "detail": null
   },
@@ -264,7 +259,7 @@
   {
    "gate": "D3 robot cannot drive through walls (4 sides, 2 s boost)",
    "status": "PASS",
-   "evidence": "north (z-): end (-3, -3.565) moved 0.125 m; south (z+): end (-3, 3.094) moved 0.094 m; west (x-): end (-5.04, -1) moved 0.14 m; east (x+): end (5.365, -1) moved 0.465 m",
+   "evidence": "north (z-): end (-3, -3.565) moved 0.125 m; south (z+): end (-3, 3.093) moved 0.093 m; west (x-): end (-5.04, -1) moved 0.14 m; east (x+): end (5.365, -1) moved 0.465 m",
    "sev": "P1",
    "detail": null
   },
@@ -285,7 +280,7 @@
   {
    "gate": "E1 heavy furniture displacement < 0.01 m (2 s boost)",
    "status": "PASS",
-   "evidence": "sofa 0.0000m, bed 0.0000m, wardrobe 0.0000m, fridge 0.0001m, bookshelf 0.0001m, dining_table 0.0003m, desk 0.0002m",
+   "evidence": "sofa 0.0000m, bed 0.0000m, wardrobe 0.0000m, fridge 0.0001m, bookshelf 0.0002m, dining_table 0.0000m, desk 0.0006m",
    "sev": "P1",
    "detail": null
   },
@@ -299,7 +294,7 @@
   {
    "gate": "E2 light objects pushable > 0.03 m (2 s boost)",
    "status": "PASS",
-   "evidence": "chair_1 0.935m, study_box_1 0.089m, study_box_2 0.120m, trash_bin 0.293m, laundry_basket 0.697m",
+   "evidence": "chair_1 0.947m, study_box_1 0.087m, study_box_2 0.118m, trash_bin 0.292m, laundry_basket 0.748m",
    "sev": "P1",
    "detail": null
   },
@@ -334,7 +329,7 @@
   {
    "gate": "F4 mug 0.32 kg on coffee table accepted from floor",
    "status": "PASS",
-   "evidence": "mug y=0.5153842568397522, robot drove 0.456 m to table, shoulder→mug=0.261 m, canReach=true, grab={\"ok\":true,\"reason\":null,\"held\":\"mug_white\"}",
+   "evidence": "mug y=0.5154027938842773, robot drove 0.456 m to table, shoulder→mug=0.270 m, canReach=true, grab={\"ok\":true,\"reason\":null,\"held\":\"mug_white\"}",
    "sev": "P1",
    "detail": null
   },
@@ -355,21 +350,21 @@
   {
    "gate": "F7 grab creates fixed joint; held object follows the robot",
    "status": "PASS",
-   "evidence": "joints held=1, after release=0; carried: robot moved 0.344 m, mug moved 0.376 m, still held=mug_white",
+   "evidence": "joints held=1, after release=0; carried: robot moved 0.64 m, mug moved 0.719 m, still held=mug_white",
    "sev": "P2",
    "detail": null
   },
   {
-   "gate": "F7b arm raises held mug when aiming up",
-   "status": "INFO",
-   "evidence": "aimed +0.18 m above mug: mug y 0.569 -> 0.569 (lift 0 m)",
-   "sev": "P3",
+   "gate": "F7b aim up raises the held mug (aim-responsive carry)",
+   "status": "PASS",
+   "evidence": "mug on table 0.515 m -> carried to open floor 0.593 m (carry lift 0.078 m) -> 0.585 m with aim held up (aim-up lift -0.008 m, total 0.07 m)",
+   "sev": "P2",
    "detail": null
   },
   {
    "gate": "F8 released mug lands on surface, no fall-through",
    "status": "PASS",
-   "evidence": "released at y=0.569 m, final y=0.515 m, held cleared=true",
+   "evidence": "released from y=0.585 m, final y=0.057 m, held cleared=true",
    "sev": "P2",
    "detail": null
   },
@@ -383,7 +378,7 @@
   {
    "gate": "B16b robot visual base/height ~350 x 380 mm",
    "status": "PASS",
-   "evidence": "visual bbox 354 mm wide x 404 mm tall (spec base Ø350 / total 380); bbox includes arm + mast",
+   "evidence": "visual bbox 336 mm wide x 404 mm tall (spec base Ø350 / total 380); bbox includes arm + mast",
    "sev": "P3",
    "detail": null
   },
@@ -397,7 +392,7 @@
   {
    "gate": "G1 spawn interpenetration <= 2 mm (QA gate 5)",
    "status": "PASS",
-   "evidence": "deepest contact -2.2 mm (coffee_table↔pen) across 239 contact pairs",
+   "evidence": "deepest contact -1.0 mm (desk_lamp↔mug_desk) across 243 contact pairs",
    "sev": "P2",
    "detail": null
   },
@@ -418,14 +413,14 @@
   {
    "gate": "G3 stacks stay put over 3 s (rel drift < 5 mm)",
    "status": "PASS",
-   "evidence": "11 dynamic-on-dynamic resting pairs; max relative drift 0.00 mm",
+   "evidence": "18 dynamic-on-dynamic resting pairs; max relative drift 0.00 mm",
    "sev": "P1",
    "detail": null
   },
   {
    "gate": "G4 no passive drift / jitter (max drift < 2 mm, all asleep)",
    "status": "PASS",
-   "evidence": "max drift 0.00 mm; 171/171 asleep; max |v| 0.0000 m/s",
+   "evidence": "max drift 0.00 mm; 175/175 asleep; max |v| 0.0000 m/s",
    "sev": "P1",
    "detail": null
   },
@@ -446,7 +441,7 @@
   {
    "gate": "G7 all bodies finite and inside the apartment after all tests",
    "status": "PASS",
-   "evidence": "171 dynamic bodies finite, inside shell, 171/171 asleep",
+   "evidence": "175 dynamic bodies finite, inside shell, 175/175 asleep",
    "sev": "P0",
    "detail": null
   }
@@ -462,16 +457,16 @@
   "numSolverIterations": 8,
   "dt": 0.01666666753590107,
   "stats": {
-   "bodies": 195,
-   "colliders": 333,
-   "dynamic": 171,
-   "objects": 193,
-   "steps": 419
+   "bodies": 199,
+   "colliders": 368,
+   "dynamic": 175,
+   "objects": 197,
+   "steps": 445
   },
   "impulseJoints": 0,
   "rapierVersion": "0.21.0",
-  "bodies": 195,
-  "colliders": 333
+  "bodies": 199,
+  "colliders": 368
  },
  "massTable": [
   {
@@ -1106,6 +1101,42 @@
   },
   {
    "name": "shelf_book_22",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_23",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_24",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_25",
+   "mass": 0.55,
+   "cat": "book",
+   "lo": 0.3,
+   "hi": 1.5,
+   "verdict": "PASS",
+   "suggested": null
+  },
+  {
+   "name": "shelf_book_26",
    "mass": 0.55,
    "cat": "book",
    "lo": 0.3,
@@ -2017,28 +2048,6 @@
  "outliers": [],
  "penetration": [
   {
-   "a": "coffee_table",
-   "b": "pen",
-   "d": -0.002202223986387253,
-   "dyn": true,
-   "normal": [
-    0.0000014357841564560658,
-    1,
-    -0.000001993404339373228
-   ]
-  },
-  {
-   "a": "nightstand",
-   "b": "bedside_lamp",
-   "d": -0.001999974250793457,
-   "dyn": true,
-   "normal": [
-    0,
-    1,
-    0
-   ]
-  },
-  {
    "a": "desk_lamp",
    "b": "mug_desk",
    "d": -0.0010001510381698608,
@@ -2058,182 +2067,6 @@
     0,
     1,
     0
-   ]
-  },
-  {
-   "a": "study_box_1",
-   "b": "study_box_2",
-   "d": -0.000454634428024292,
-   "dyn": true,
-   "normal": [
-    0.00024952052626758814,
-    0.9999999403953552,
-    -0.00005562732258113101
-   ]
-  },
-  {
-   "a": "laundry_basket",
-   "b": "basket_clothes",
-   "d": -0.0003406617615837604,
-   "dyn": true,
-   "normal": [
-    -0.00008449933375231922,
-    1,
-    -0.0002138757990906015
-   ]
-  },
-  {
-   "a": "coffee_table",
-   "b": "mug_tipped",
-   "d": -0.00023607909679412842,
-   "dyn": true,
-   "normal": [
-    0.0000033587718917260645,
-    1,
-    -0.000011349203305144329
-   ]
-  },
-  {
-   "a": "coffee_table",
-   "b": "mug_white",
-   "d": -0.0001998692750930786,
-   "dyn": true,
-   "normal": [
-    -0.0000034735328426904744,
-    1,
-    -0.00001004574187390972
-   ]
-  },
-  {
-   "a": "coffee_table",
-   "b": "mug_blue",
-   "d": -0.00019751116633415222,
-   "dyn": true,
-   "normal": [
-    -0.0000023885663722467143,
-    1,
-    -0.000010397001460660249
-   ]
-  },
-  {
-   "a": "floor_wood",
-   "b": "study_box_1",
-   "d": -0.00012304633855819702,
-   "dyn": false,
-   "normal": [
-    0,
-    1,
-    0
-   ]
-  },
-  {
-   "a": "floor_wood",
-   "b": "charger_cable",
-   "d": -0.00011879950761795044,
-   "dyn": false,
-   "normal": [
-    0,
-    1,
-    0
-   ]
-  },
-  {
-   "a": "floor_wood",
-   "b": "laundry_basket",
-   "d": -0.00007440895569743589,
-   "dyn": false,
-   "normal": [
-    -2.43694671553385e-7,
-    0.9999999403953552,
-    -4.935868105349073e-7
-   ]
-  },
-  {
-   "a": "floor_tile",
-   "b": "paper_ball",
-   "d": -0.00003446638584136963,
-   "dyn": false,
-   "normal": [
-    0,
-    1,
-    0
-   ]
-  },
-  {
-   "a": "floor_wood",
-   "b": "paper_ball",
-   "d": -0.000034458935260772705,
-   "dyn": false,
-   "normal": [
-    0,
-    1,
-    0
-   ]
-  },
-  {
-   "a": "floor_tile",
-   "b": "chair_4",
-   "d": -0.000023975966541911475,
-   "dyn": false,
-   "normal": [
-    0,
-    1,
-    0
-   ]
-  },
-  {
-   "a": "floor_wood",
-   "b": "chair_4",
-   "d": -0.000023968517780303955,
-   "dyn": false,
-   "normal": [
-    0,
-    1,
-    0
-   ]
-  },
-  {
-   "a": "floor_tile",
-   "b": "chair_1",
-   "d": -0.000022009015083312988,
-   "dyn": false,
-   "normal": [
-    0,
-    1,
-    0
-   ]
-  },
-  {
-   "a": "floor_wood",
-   "b": "chair_1",
-   "d": -0.000022001564502716064,
-   "dyn": false,
-   "normal": [
-    0,
-    1,
-    0
-   ]
-  },
-  {
-   "a": "floor_wood",
-   "b": "trash_bin",
-   "d": -0.000016920268535614014,
-   "dyn": false,
-   "normal": [
-    -8.989473165854633e-9,
-    1,
-    -3.9269600904390245e-9
-   ]
-  },
-  {
-   "a": "floor_tile",
-   "b": "trash_bin",
-   "d": -0.000016897916793823242,
-   "dyn": false,
-   "normal": [
-    -1.6311769712729074e-8,
-    1,
-    -7.11988645818451e-9
    ]
   },
   {
@@ -2326,6 +2159,17 @@
   },
   {
    "a": "floor_wood",
+   "b": "study_box_1",
+   "d": -7.450580596923828e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
    "b": "study_box_3",
    "d": -7.450580152834618e-9,
    "dyn": false,
@@ -2339,6 +2183,193 @@
    "a": "floor_wood",
    "b": "plant_monstera",
    "d": 0,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "trash_bin",
+   "d": 0,
+   "dyn": false,
+   "normal": [
+    0,
+    0.9999999403953552,
+    0
+   ]
+  },
+  {
+   "a": "floor_tile",
+   "b": "trash_bin",
+   "d": 0,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_tile",
+   "b": "dining_table",
+   "d": 0,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_tile",
+   "b": "cable_kitchen",
+   "d": 0,
+   "dyn": false,
+   "normal": [
+    0,
+    0.9999999403953552,
+    0
+   ]
+  },
+  {
+   "a": "coffee_table",
+   "b": "rug",
+   "d": 0,
+   "dyn": false,
+   "normal": [
+    0,
+    -1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "bookshelf",
+   "d": 7.450580596923828e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "dining_table",
+   "d": 7.450580596923828e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "fridge",
+   "d": 7.450580596923828e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "desk_chair",
+   "d": 7.450580596923828e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "cable_floor_study",
+   "d": 7.450580596923828e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "desk",
+   "d": 7.450580596923828e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "cable_tv",
+   "d": 7.450580596923828e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "laundry_basket",
+   "d": 7.450580596923828e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "wardrobe",
+   "d": 7.450580596923828e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "nightstand",
+   "d": 7.450580596923828e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "bed",
+   "d": 7.450580596923828e-9,
+   "dyn": false,
+   "normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  {
+   "a": "floor_wood",
+   "b": "charger_cable",
+   "d": 7.450580596923828e-9,
    "dyn": false,
    "normal": [
     0,
@@ -2392,7 +2423,7 @@
     2.571
    ],
    "moved": 0,
-   "robotMoved": 0.214,
+   "robotMoved": 0.2133,
    "rotDeg": 0,
    "maxRobotY": 0,
    "minContact": 0.095,
@@ -2420,7 +2451,7 @@
     1.081
    ],
    "moved": 0,
-   "robotMoved": 0.1314,
+   "robotMoved": 0.1316,
    "rotDeg": 0,
    "maxRobotY": 0,
    "minContact": 0.175,
@@ -2448,7 +2479,7 @@
     -3.2
    ],
    "moved": 0.0001,
-   "robotMoved": 0.1809,
+   "robotMoved": 0.18,
    "rotDeg": 0,
    "maxRobotY": 0,
    "minContact": 0.175,
@@ -2475,8 +2506,8 @@
     0.93,
     -0.6
    ],
-   "moved": 0.0001,
-   "robotMoved": 0.6616,
+   "moved": 0.0002,
+   "robotMoved": 0.6346,
    "rotDeg": 0,
    "maxRobotY": 0,
    "minContact": 0.175,
@@ -2503,8 +2534,8 @@
     0.375,
     -0.8
    ],
-   "moved": 0.0003,
-   "robotMoved": 1.1169,
+   "moved": 0,
+   "robotMoved": 1.0531,
    "rotDeg": 0,
    "maxRobotY": 0,
    "minContact": 0,
@@ -2531,8 +2562,8 @@
     0.375,
     3.318
    ],
-   "moved": 0.0002,
-   "robotMoved": 0.71,
+   "moved": 0.0006,
+   "robotMoved": 0.7102,
    "rotDeg": 0,
    "maxRobotY": 0,
    "minContact": 0,
@@ -2560,7 +2591,7 @@
     -1.75
    ],
    "moved": 0.0013,
-   "robotMoved": 0.3627,
+   "robotMoved": 0.3628,
    "rotDeg": 0,
    "maxRobotY": 0,
    "minContact": 0.175,
@@ -2583,13 +2614,13 @@
     -1.55
    ],
    "end": [
-    0.786,
-    0.35,
-    -1.52
+    0.774,
+    0.307,
+    -1.518
    ],
-   "moved": 0.9347,
-   "robotMoved": 0.7763,
-   "rotDeg": 68.27,
+   "moved": 0.9466,
+   "robotMoved": 0.7963,
+   "rotDeg": 75.19,
    "maxRobotY": 0,
    "minContact": 0,
    "maxSpeed": 0.55,
@@ -2611,15 +2642,15 @@
     1.05
    ],
    "end": [
-    5.15,
+    5.145,
     0.181,
     0.976
    ],
-   "moved": 0.0891,
-   "robotMoved": 0.4783,
-   "rotDeg": 0.61,
+   "moved": 0.0866,
+   "robotMoved": 0.4785,
+   "rotDeg": 0.75,
    "maxRobotY": 0,
-   "minContact": 0.032,
+   "minContact": 0.034,
    "maxSpeed": 0.55,
    "contact": true,
    "finalInside": true,
@@ -2639,15 +2670,15 @@
     1.05
    ],
    "end": [
-    5.158,
+    5.153,
     0.511,
-    0.945
+    0.944
    ],
-   "moved": 0.1199,
-   "robotMoved": 0.4781,
-   "rotDeg": 11.31,
+   "moved": 0.1181,
+   "robotMoved": 0.478,
+   "rotDeg": 13.32,
    "maxRobotY": 0,
-   "minContact": 0.071,
+   "minContact": 0.07,
    "maxSpeed": 0.55,
    "contact": true,
    "finalInside": false,
@@ -2667,13 +2698,13 @@
     -3.3
    ],
    "end": [
-    1.435,
+    1.438,
     0.252,
     -3.57
    ],
-   "moved": 0.2935,
-   "robotMoved": 0.4635,
-   "rotDeg": 6.16,
+   "moved": 0.2924,
+   "robotMoved": 0.4587,
+   "rotDeg": 5.26,
    "maxRobotY": 0,
    "minContact": 0,
    "maxSpeed": 0.55,
@@ -2695,13 +2726,13 @@
     1.85
    ],
    "end": [
-    -2.897,
+    -2.948,
     0.235,
-    1.843
+    1.836
    ],
-   "moved": 0.6972,
-   "robotMoved": 0.8322,
-   "rotDeg": 0.54,
+   "moved": 0.7478,
+   "robotMoved": 0.883,
+   "rotDeg": 0.08,
    "maxRobotY": 0,
    "minContact": 0,
    "maxSpeed": 0.55,
@@ -2728,7 +2759,7 @@
     -1.55
    ],
    "moved": 0,
-   "robotMoved": 1.1269,
+   "robotMoved": 1.1366,
    "rotDeg": 0,
    "maxRobotY": 0.012,
    "minContact": 0,
@@ -2747,14 +2778,14 @@
   "maxLiftKg": 0.5,
   "state": {
    "pos": [
-    -3.5999999046325684,
-    0.00009999930858611839,
-    -1.2000000476837158
+    -3.6,
+    0,
+    -1.2
    ],
-   "yaw": -0.26057041693685434,
+   "yaw": 0,
    "held": null,
    "heldName": null,
-   "grounded": true,
+   "grounded": false,
    "speed": 0,
    "mass": 7,
    "baseMass": 3.6,
@@ -2767,8 +2798,8 @@
    "boost": false,
    "moving": false,
    "wheels": [
-    -579.0318116871264,
-    -579.0318116871264
+    -549.559277108054,
+    -549.559277108054
    ],
    "pushes": 0
   },
@@ -2810,20 +2841,21 @@
   "mug": {
    "near": true,
    "pos": [
-    -2.878488540649414,
-    0.5153842568397522,
-    -1.7066890001296997
+    -2.8785526752471924,
+    0.5154027938842773,
+    -1.7068153619766235
    ],
    "mass": 0.32,
+   "preGrabY": 0.5154027938842773,
    "robot": [
-    -2.8362762928009033,
-    0.011999738150334449,
-    -1.692082166671753
+    -2.8376846313476562,
+    0.011999443568638524,
+    -1.690550446510315
    ],
    "shoulder": [
-    -2.927,
+    -2.917,
     0.26,
-    -1.734
+    -1.629
    ],
    "approach": {
     "from": [
@@ -2832,13 +2864,13 @@
      -1.552
     ],
     "to": [
-     -2.836,
+     -2.838,
      0.012,
-     -1.692
+     -1.691
     ],
     "moved": 0.456
    },
-   "distance": 0.2613863083896087,
+   "distance": 0.26965040811208096,
    "canReach": true,
    "grab": {
     "ok": true,
@@ -2848,16 +2880,24 @@
   },
   "jointsWhileHeld": 1,
   "lift": {
-   "before": 0.569,
-   "after": 0.569,
-   "lifted": 0,
+   "preGrabY": 0.515,
+   "carriedY": 0.593,
+   "aimUpY": 0.585,
+   "lifted": -0.008,
+   "totalLift": 0.07,
+   "aimPoint": [
+    -3.347,
+    0.54,
+    -0.485
+   ],
    "carry": {
-    "robotMoved": 0.344,
-    "mugMoved": 0.376,
+    "robotMoved": 0.64,
+    "mugMoved": 0.719,
     "stillHeld": "mug_white",
-    "heldName": "mug_white"
+    "heldName": "mug_white",
+    "carriedY": 0.605
    },
-   "landedY": 0.515,
+   "landedY": 0.057,
    "landedFinite": true,
    "heldAfterRelease": null
   },
@@ -2865,16 +2905,16 @@
    "tableTopY": 0.3749909996986389,
    "canReachTop": false,
    "robot": [
-    2.7499992847442627,
+    2.7500009536743164,
     -0.000020938515663149193,
-    -0.7999935746192932
+    -0.7999957203865051
    ]
   },
   "plateDining": {
    "pos": [
-    1.7199949026107788,
-    0.7592386603355408,
-    -0.6599627137184143
+    1.7199954986572266,
+    0.759238600730896,
+    -0.6599631905555725
    ],
    "mass": 0.45,
    "canReach": false,
@@ -2887,13 +2927,13 @@
   "jointsAfterRelease": 0
  },
  "stability": {
-  "n": 171,
-  "stacks": 11,
+  "n": 175,
+  "stacks": 18,
   "maxDrift": 0,
   "driftName": null,
   "maxRelDrift": 0,
   "relPair": null,
-  "asleep": 171,
+  "asleep": 175,
   "maxVel": 0,
   "finiteAll": true
  },
@@ -2901,17 +2941,17 @@
   "n": 8,
   "maxShift": 0.00004800272565553517,
   "worst": "cereal_box",
-  "maxTilt": 0.00023160808082597534,
+  "maxTilt": 0.00023543444814363927,
   "asleep": 8,
   "picked": [
+   "book_2 on coffee_table",
    "study_box_2 on study_box_1",
+   "book_stack_1 on coffee_table",
+   "tissue_box on coffee_table",
+   "laptop on coffee_table",
    "basket_clothes on laundry_basket",
    "shirt_chair_2 on chair_2",
-   "cereal_box on fridge",
-   "notebook on desk",
-   "sofa_throw on sofa",
-   "book_dining on dining_table",
-   "blanket_bed on bed"
+   "cereal_box on fridge"
   ]
  },
  "tunnel": {
@@ -2932,17 +2972,17 @@
     "side": "north (z-)",
     "r0": [
      -3,
-     -0.00000322103500366433,
+     -0.000003265738487245873,
      -3.440000057220459
     ],
     "r1": [
-     -3.0000970477632425,
-     0.00009757049363606773,
-     -3.5649492767697666
+     -3.0000138396843496,
+     1.1685693607210723e-7,
+     -3.5649464009475196
     ],
-    "moved": 0.12494925723768599,
+    "moved": 0.12494634449353706,
     "walls": [
-     2.384185791015625e-7,
+     0,
      1.350000023841858,
      0.0012500286102294922
     ],
@@ -2956,13 +2996,13 @@
      3
     ],
     "r1": [
-     -3.0000197929570334,
-     0.00007493642730466155,
-     3.094482185173547
+     -3.0000172544144874,
+     0.00009571178014716741,
+     3.0930196957779117
     ],
-    "moved": 0.094482187246748,
+    "moved": 0.09301969737819007,
     "walls": [
-     2.384185791015625e-7,
+     0,
      1.350000023841858,
      0.0012500286102294922
     ],
@@ -2972,17 +3012,17 @@
     "side": "west (x-)",
     "r0": [
      -4.900000095367432,
-     -0.0000018352270126364978,
+     -0.0000018501281738303454,
      -1
     ],
     "r1": [
-     -5.039718160609482,
-     0.000004361845353739735,
-     -1.000001915188352
+     -5.040010990698647,
+     0.00009998393496285507,
+     -1.0002009082317045
     ],
-    "moved": 0.13971806525517644,
+    "moved": 0.1400110394774861,
     "walls": [
-     2.384185791015625e-7,
+     0,
      1.350000023841858,
      0.0012500286102294922
     ],
@@ -2996,13 +3036,13 @@
      -1
     ],
     "r1": [
-     5.364900367167138,
-     -6.815884262545424e-8,
-     -1.00008225440979
+     5.36489989032998,
+     0.00010104248717310305,
+     -0.9999938607215881
     ],
-    "moved": 0.46490027907630777,
+    "moved": 0.4648997950030846,
     "walls": [
-     2.384185791015625e-7,
+     0,
      1.350000023841858,
      0.0012500286102294922
     ],
@@ -3020,11 +3060,11 @@
   "geom": {
    "state": {
     "pos": [
-     -3.6000001430511475,
-     0.00009999930858611839,
-     -1.1999998092651367
+     -3.5999999191818404,
+     0.00009999761328799428,
+     -1.2000000308302585
     ],
-    "yaw": -0.10451045000000972,
+    "yaw": -0.03482984999998662,
     "held": null,
     "heldName": null,
     "grounded": true,
@@ -3040,8 +3080,8 @@
     "boost": false,
     "moving": false,
     "wheels": [
-     -573.0016692563719,
-     -573.0016692563719
+     -567.9380129306489,
+     -567.9380129306489
     ],
     "pushes": 0
    },
@@ -3063,19 +3103,19 @@
   },
   "bbox": {
    "min": [
-    -3.7773,
-    -0.0139,
-    -1.635
+    -3.7681,
+    -0.0143,
+    -1.6472
    ],
    "max": [
-    -3.4229,
+    -3.4321,
     0.39,
-    -1.0229
+    -1.0419
    ],
    "size": [
-    0.3544,
-    0.4039,
-    0.6121
+    0.336,
+    0.4043,
+    0.6054
    ]
   },
   "baseDia": 0.31,
@@ -3086,14 +3126,14 @@
   },
   "state": {
    "pos": [
-    -3.5999999046325684,
-    0.00009999930858611839,
-    -1.2000000476837158
+    -3.6,
+    0,
+    -1.2
    ],
-   "yaw": -0.26057041693685434,
+   "yaw": 0,
    "held": null,
    "heldName": null,
-   "grounded": true,
+   "grounded": false,
    "speed": 0,
    "mass": 7,
    "baseMass": 3.6,
@@ -3106,8 +3146,8 @@
    "boost": false,
    "moving": false,
    "wheels": [
-    -579.0318116871264,
-    -579.0318116871264
+    -549.559277108054,
+    -549.559277108054
    ],
    "pushes": 0
   }
@@ -3136,5 +3176,5 @@
   "umbrella",
   "drapes"
  ],
- "screenshot": "qa/physics/shots/final-round2-scene.png"
+ "screenshot": "qa/physics/shots/final-polish-scene.png"
 }

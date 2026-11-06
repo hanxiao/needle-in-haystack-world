@@ -3,8 +3,8 @@ import * as THREE from 'three';
 // Colour-coded robot trajectory, drawn only by the minimap camera:
 // both meshes live on layer 2, which the top camera enables.
 const MAX_POINTS = 720;
-const WIDTH = 0.075; // metres (coloured core)
-const OUTLINE = 0.042; // extra metres each side
+const WIDTH = 0.13; // metres (coloured core)
+const OUTLINE = 0.06; // extra metres each side
 const Y = 0.035;
 const COLORS = [new THREE.Color(0x00e5ff), new THREE.Color(0xffd166), new THREE.Color(0xff3d81)];
 

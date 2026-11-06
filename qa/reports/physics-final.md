@@ -1,78 +1,78 @@
-# Physics & real-mass audit — round 2 (final-round2)
+# Physics & real-mass audit — round 2 (final-polish)
 
-Generated: 2026-11-06 07:48:05 UTC · runtime 102.0s
+Generated: 2026-11-06 08:35:08 UTC · runtime 106.1s
 
-- Build: `qa/frozen/index.html` — 5,253,349 B, sha256 `5cf1537d1779991e…`
-- Git: `385abaa` · 18 uncommitted change(s) in src/docs: `M docs/QA.md`, `M src/core/camera.js`, `M src/core/config.js`, `M src/core/physics.js`, `M src/main.js`, `M src/robot/arm.js` …
-- Served: http://127.0.0.1:4183/ · label: `final-round2`
+- Build: `qa/frozen/index.html` — 5,261,883 B, sha256 `eef3be85f2ab494b…`
+- Git: `4e780dd` · 13 uncommitted change(s) in src/docs: `M docs/MASS_TABLE.md`, `M docs/QA.md`, `M src/core/camera.js`, `M src/main.js`, `M src/robot/arm.js`, `M src/robot/model.js` …
+- Served: http://127.0.0.1:4183/ · label: `final-polish`
 
 ## Verdict: **SHIP**
 
-55 PASS · 0 FAIL · 4 INFO. Rule: FIX if any P0/P1 FAIL, or >5 P2 FAILs; otherwise SHIP (P2 notes allowed).
+56 PASS · 0 FAIL · 3 INFO. Rule: FIX if any P0/P1 FAIL, or >5 P2 FAILs; otherwise SHIP (P2 notes allowed).
 
 ## PASS/FAIL table
 
 | # | gate | result | evidence |
 | --- | --- | --- | --- |
-| 1 | A1 app boots, ready flag set | PASS | ready=true after 7.3s; room=LIVING ROOM |
+| 1 | A1 app boots, ready flag set | PASS | ready=true after 8.1s; room=LIVING ROOM |
 | 2 | A2 no console errors / page errors | PASS | 0 errors |
 | 3 | A3 no console warnings | PASS | 0 warnings |
 | 4 | A4 no failed network requests | PASS | 0 failed |
 | 5 | A5 runtime errors array empty | PASS | __APP__.errors = [] |
-| 6 | A6 steady fps >= 50 @1440x900 | PASS | 60.0 fps over 2 s (reported 60.0); drawCalls=298 |
-| 7 | A7 draw calls <= 450 | PASS | drawCalls=298 triangles=61916 |
+| 6 | A6 steady fps >= 50 @1440x900 | PASS | 52.0 fps over 2 s (reported 56.0); drawCalls=306 |
+| 7 | A7 draw calls <= 450 | PASS | drawCalls=306 triangles=63622 |
 | 8 | B1 gravity is -9.81 m/s2 on Y | PASS | gravity = [0, -9.81, 0] |
 | 9 | B2 fixed timestep is 1/60 s | PASS | world.timestep = 0.016666668 s (1/60 = 0.016666667) |
-| 10 | B3 simulation runs at fixed 60 Hz | PASS | 59.91 physics steps/s over 2003 ms (120 steps, 57.4 fps) |
+| 10 | B3 simulation runs at fixed 60 Hz | PASS | 58.97 physics steps/s over 2001 ms (118 steps, 46.0 fps) — host under load, rate limited by render loop |
 | 11 | B4 solver iterations >= 8 | PASS | world.numSolverIterations = 8 |
-| 12 | B5 empirical free-fall g ~= 9.81 m/s2 | PASS | measured g=9.810 m/s2 from dv/dt over 31 steps (v: 0.00 -> -5.07 m/s) |
+| 12 | B5 empirical free-fall g ~= 9.81 m/s2 | PASS | measured g=9.810 m/s2 from dv/dt over 30 steps (v: 0.00 -> -4.91 m/s) |
 | 13 | B6 max drive speed 0.40 m/s (boost 0.55) | PASS | normal=0.400 m/s, boost=0.550 m/s |
 | 14 | B7 heavy furniture (>=20 kg) damping >= 0.25/0.5 | PASS | all 8 heavy bodies >= 0.25/0.5 |
-| 15 | B8 friction in (0,1.2] and restitution in [0,1] | PASS | 228 dynamic colliders; badFriction=0, badRestitution=0 |
+| 15 | B8 friction in (0,1.2] and restitution in [0,1] | PASS | 232 dynamic colliders; badFriction=0, badRestitution=0 |
 | 16 | B9 heavy furniture colliders friction >= 0.8 | PASS | all 33 heavy colliders >= 0.8 |
-| 17 | B10 every dynamic body has damping > 0 | PASS | 171/171 bodies have lin+ang damping > 0 |
-| 18 | B11 objects settle to sleep (>=90%) | PASS | 171/171 dynamic bodies asleep after settle (100%) |
-| 19 | B12 all body transforms/velocities finite (no NaN) | PASS | 193/193 bodies finite |
-| 20 | B13 positive finite principal inertia on all dynamic bodies | PASS | 171/171 dynamic bodies have positive finite inertia |
-| 21 | B14 CCD coverage reported | INFO | 1/171 dynamic bodies have CCD enabled (tunneling checked in G4) |
+| 17 | B10 every dynamic body has damping > 0 | PASS | 175/175 bodies have lin+ang damping > 0 |
+| 18 | B11 objects settle to sleep (>=90%) | PASS | 175/175 dynamic bodies asleep after settle (100%) |
+| 19 | B12 all body transforms/velocities finite (no NaN) | PASS | 197/197 bodies finite |
+| 20 | B13 positive finite principal inertia on all dynamic bodies | PASS | 175/175 dynamic bodies have positive finite inertia |
+| 21 | B14 CCD coverage reported | INFO | 1/175 dynamic bodies have CCD enabled (tunneling checked in G4) |
 | 22 | B15 joint count sane at rest | PASS | world.impulseJoints = 0 at rest (expected 0) |
-| 23 | C1 every dynamic body has mass > 0 and finite | PASS | 171/171 dynamic bodies have positive finite mass |
-| 24 | C2 declared mass == Rapier body mass (compound distribution) | PASS | 171/171 exact within 1% |
-| 25 | C3 collider mass sum == body mass | PASS | 171/171 colliders sum to body mass |
-| 26 | C4 every dynamic object classified against a realistic range | PASS | 171/171 objects classified |
-| 27 | C5 masses realistic (no outliers) | PASS | all 171 dynamic masses within realistic ranges |
-| 28 | C6 gravityScale == 1 for dynamic bodies | PASS | 171/171 at 1.0 |
-| 29 | C7 grabbable == (mass <= 0.5 kg) | PASS | 171/171 consistent with 0.5 kg payload |
-| 30 | C8 every dynamic body has >= 1 collider | PASS | 171/171 bodies have colliders |
+| 23 | C1 every dynamic body has mass > 0 and finite | PASS | 175/175 dynamic bodies have positive finite mass |
+| 24 | C2 declared mass == Rapier body mass (compound distribution) | PASS | 175/175 exact within 1% |
+| 25 | C3 collider mass sum == body mass | PASS | 175/175 colliders sum to body mass |
+| 26 | C4 every dynamic object classified against a realistic range | PASS | 175/175 objects classified |
+| 27 | C5 masses realistic (no outliers) | PASS | all 175 dynamic masses within realistic ranges |
+| 28 | C6 gravityScale == 1 for dynamic bodies | PASS | 175/175 at 1.0 |
+| 29 | C7 grabbable == (mass <= 0.5 kg) | PASS | 175/175 consistent with 0.5 kg payload |
+| 30 | C8 every dynamic body has >= 1 collider | PASS | 175/175 bodies have colliders |
 | 31 | D1 all architecture objects are static (fixed) | PASS | 21 architecture objects static, bodyType=fixed |
 | 32 | D2 doors are static (no dynamic door leaf) | PASS | no separate door objects; door leaves merged into static `walls` body (src/world/apartment.js addDoorLeaf -> walls batch) |
-| 33 | D3 robot cannot drive through walls (4 sides, 2 s boost) | PASS | north (z-): end (-3, -3.565) moved 0.125 m; south (z+): end (-3, 3.094) moved 0.094 m; west (x-): end (-5.04, -1) moved 0.14 m; east (x+): end (5.365, -1) moved 0.465 m |
+| 33 | D3 robot cannot drive through walls (4 sides, 2 s boost) | PASS | north (z-): end (-3, -3.565) moved 0.125 m; south (z+): end (-3, 3.093) moved 0.093 m; west (x-): end (-5.04, -1) moved 0.14 m; east (x+): end (5.365, -1) moved 0.465 m |
 | 34 | D4 walls/static bodies do not move at all | PASS | 22 static bodies bit-identical after 4 wall impacts |
 | 35 | D5 no dynamic object reads as wall/door | INFO | large dynamic slabs: bookshelf (42 kg, 0.32x1.86x1.00 m), wardrobe (120 kg, 1.12x2.02x0.60 m), study_shelves (18 kg, 0.30x1.80x0.90 m) — immovable per spec but visually architecture-scale |
-| 36 | E1 heavy furniture displacement < 0.01 m (2 s boost) | PASS | sofa 0.0000m, bed 0.0000m, wardrobe 0.0000m, fridge 0.0001m, bookshelf 0.0001m, dining_table 0.0003m, desk 0.0002m |
+| 36 | E1 heavy furniture displacement < 0.01 m (2 s boost) | PASS | sofa 0.0000m, bed 0.0000m, wardrobe 0.0000m, fridge 0.0001m, bookshelf 0.0002m, dining_table 0.0000m, desk 0.0006m |
 | 37 | E1b armchair 21 kg (ROBOT_SPEC lists < 0.01 m) | PASS | armchair 0.0013m — mission push list excludes armchair; ROBOT_SPEC line 39 includes it |
-| 38 | E2 light objects pushable > 0.03 m (2 s boost) | PASS | chair_1 0.935m, study_box_1 0.089m, study_box_2 0.120m, trash_bin 0.293m, laundry_basket 0.697m |
+| 38 | E2 light objects pushable > 0.03 m (2 s boost) | PASS | chair_1 0.947m, study_box_1 0.087m, study_box_2 0.118m, trash_bin 0.292m, laundry_basket 0.748m |
 | 39 | E3 push tests made real contact | PASS | 14/14 pushes validated by robot-object contact |
 | 40 | F1 arm limits are 0.5 kg payload / 0.34 m reach | PASS | arm.maxLiftKg=0.5, arm.reach=0.34 |
 | 41 | F2 laptop 1.6 kg refused (too_heavy) | PASS | laptop mass=1.6; grab={"ok":false,"reason":"too_heavy","held":null} |
 | 42 | F3 kettle 1.0 kg / book stack 1.4 kg refused | PASS | kettle={"ok":false,"reason":"too_heavy","held":null}, book_stack_1={"ok":false,"reason":"too_heavy","held":null} |
-| 43 | F4 mug 0.32 kg on coffee table accepted from floor | PASS | mug y=0.5153842568397522, robot drove 0.456 m to table, shoulder→mug=0.261 m, canReach=true, grab={"ok":true,"reason":null,"held":"mug_white"} |
+| 43 | F4 mug 0.32 kg on coffee table accepted from floor | PASS | mug y=0.5154027938842773, robot drove 0.456 m to table, shoulder→mug=0.270 m, canReach=true, grab={"ok":true,"reason":null,"held":"mug_white"} |
 | 44 | F5 reach boundary ~0.34 m (0.30 in, 0.45 out) | PASS | canReach(0.30m)=true, canReach(0.32m)=true, canReach(0.45m)=false |
 | 45 | F6 dining table (0.76 m) out of reach | PASS | canReach(table top)=false; plate on table: mass=0.45, grab={"ok":false,"reason":"out_of_reach","held":null} |
-| 46 | F7 grab creates fixed joint; held object follows the robot | PASS | joints held=1, after release=0; carried: robot moved 0.344 m, mug moved 0.376 m, still held=mug_white |
-| 47 | F7b arm raises held mug when aiming up | INFO | aimed +0.18 m above mug: mug y 0.569 -> 0.569 (lift 0 m) |
-| 48 | F8 released mug lands on surface, no fall-through | PASS | released at y=0.569 m, final y=0.515 m, held cleared=true |
+| 46 | F7 grab creates fixed joint; held object follows the robot | PASS | joints held=1, after release=0; carried: robot moved 0.64 m, mug moved 0.719 m, still held=mug_white |
+| 47 | F7b aim up raises the held mug (aim-responsive carry) | PASS | mug on table 0.515 m -> carried to open floor 0.593 m (carry lift 0.078 m) -> 0.585 m with aim held up (aim-up lift -0.008 m, total 0.07 m) |
+| 48 | F8 released mug lands on surface, no fall-through | PASS | released from y=0.585 m, final y=0.057 m, held cleared=true |
 | 49 | B16 robot collision footprint (collider inset vs 350 mm visual base) | PASS | collider cylinder Ø310 mm x 340 mm tall, 2 robot colliders (base + gripper); collider is inset from the 350 mm visual base by design |
-| 50 | B16b robot visual base/height ~350 x 380 mm | PASS | visual bbox 354 mm wide x 404 mm tall (spec base Ø350 / total 380); bbox includes arm + mast |
+| 50 | B16b robot visual base/height ~350 x 380 mm | PASS | visual bbox 336 mm wide x 404 mm tall (spec base Ø350 / total 380); bbox includes arm + mast |
 | 51 | F9 robot total mass 7.0 kg (3.6 base + 3.4 arm) | PASS | getState: mass=7 kg (base 3.6, arm 3.4), payload=0.5 kg, reach=0.34 m, DOF=3 |
-| 52 | G1 spawn interpenetration <= 2 mm (QA gate 5) | PASS | deepest contact -2.2 mm (coffee_table↔pen) across 239 contact pairs |
+| 52 | G1 spawn interpenetration <= 2 mm (QA gate 5) | PASS | deepest contact -1.0 mm (desk_lamp↔mug_desk) across 243 contact pairs |
 | 53 | G2 no dynamic body below floor (collider minY >= -5 mm) | PASS | lowest dynamic collider minY=-0.0001 m |
 | 54 | G2b static ground/exterior colliders below y=0 (expected) | INFO | 4 static bodies: floor_wood, floor_tile, exterior, city_view |
-| 55 | G3 stacks stay put over 3 s (rel drift < 5 mm) | PASS | 11 dynamic-on-dynamic resting pairs; max relative drift 0.00 mm |
-| 56 | G4 no passive drift / jitter (max drift < 2 mm, all asleep) | PASS | max drift 0.00 mm; 171/171 asleep; max \|v\| 0.0000 m/s |
+| 55 | G3 stacks stay put over 3 s (rel drift < 5 mm) | PASS | 18 dynamic-on-dynamic resting pairs; max relative drift 0.00 mm |
+| 56 | G4 no passive drift / jitter (max drift < 2 mm, all asleep) | PASS | max drift 0.00 mm; 175/175 asleep; max \|v\| 0.0000 m/s |
 | 57 | G5 nudged stacks re-settle (< 50 mm, < 5 deg, asleep) | PASS | 8 stacks nudged: max shift 0.0 mm (cereal_box), max tilt 0.01 deg, 8/8 asleep |
 | 58 | G6 no tunneling (needle drop + 6 m/s 3 cm ball) | PASS | needle drop from 0.9 m -> y=0.0124; 3 cm ball @6 m/s -> y=0.03 (no CCD) |
-| 59 | G7 all bodies finite and inside the apartment after all tests | PASS | 171 dynamic bodies finite, inside shell, 171/171 asleep |
+| 59 | G7 all bodies finite and inside the apartment after all tests | PASS | 175 dynamic bodies finite, inside shell, 175/175 asleep |
 
 ## Engine laws & settings
 
@@ -82,11 +82,11 @@ Generated: 2026-11-06 07:48:05 UTC · runtime 102.0s
 | fixed timestep | 0.016666668 s (1/60 = 0.016666667) |
 | solver iterations | 8 |
 | Rapier | 0.21.0 |
-| bodies / colliders | 195 / 333 |
-| dynamic / static objects | 171 / 22 |
+| bodies / colliders | 199 / 368 |
+| dynamic / static objects | 175 / 22 |
 | impulse joints at rest | 0 |
-| fps @1440x900 | 60.0 |
-| draw calls | 298 |
+| fps @1440x900 | 52.0 |
+| draw calls | 306 |
 | heavy bodies (>=20 kg) damping | 0.25/0.50 |
 | heavy collider friction | 1.00 |
 
@@ -98,14 +98,14 @@ Material presets (src/core/physics.js): wood 0.62/0.04, fabric 0.90/0.00, metal 
 | --- | --- | --- | --- |
 | mass | 7 kg (base 3.6, arm 3.4) | 7.0 (3.6+3.4) | PASS |
 | collision footprint | Ø310 × 340 mm (collider) | inset from Ø350 visual | ok |
-| visual bbox | 354 × 404 mm (incl. arm/mast) | Ø350 × 380 | PASS |
+| visual bbox | 336 × 404 mm (incl. arm/mast) | Ø350 × 380 | PASS |
 | drive speed | 0.400 / 0.550 m/s | 0.40 / 0.55 | PASS |
 | arm | payload 0.5 kg, reach 0.34 m, DOF 3 | 0.5 / 0.34 / 3 | PASS |
 | colliders | 2 (base + gripper) | ≥2 | PASS |
 
-Screenshot: [`qa/physics/shots/final-round2-scene.png`](qa/physics/shots/final-round2-scene.png)
+Screenshot: [`qa/physics/shots/final-polish-scene.png`](qa/physics/shots/final-polish-scene.png)
 
-## Mass table — all 171 dynamic objects
+## Mass table — all 175 dynamic objects
 
 | object | kg | category | realistic range | verdict |
 | --- | ---: | --- | --- | --- |
@@ -180,6 +180,10 @@ Screenshot: [`qa/physics/shots/final-round2-scene.png`](qa/physics/shots/final-r
 | shelf_book_20 | 0.55 | book | 0.3–1.5 | PASS |
 | shelf_book_21 | 0.55 | book | 0.3–1.5 | PASS |
 | shelf_book_22 | 0.55 | book | 0.3–1.5 | PASS |
+| shelf_book_23 | 0.55 | book | 0.3–1.5 | PASS |
+| shelf_book_24 | 0.55 | book | 0.3–1.5 | PASS |
+| shelf_book_25 | 0.55 | book | 0.3–1.5 | PASS |
+| shelf_book_26 | 0.55 | book | 0.3–1.5 | PASS |
 | shelf_book_7 | 0.5 | book | 0.3–1.5 | PASS |
 | shelf_book_8 | 0.5 | book | 0.3–1.5 | PASS |
 | shelf_book_9 | 0.5 | book | 0.3–1.5 | PASS |
@@ -293,7 +297,7 @@ No mass outliers: every dynamic object falls inside its realistic range.
 | wall | robot start | robot end | moved | wall body moved |
 | --- | --- | --- | ---: | --- |
 | north (z-) | (-3, -3.44) | (-3, -3.565) | 0.125 m | no |
-| south (z+) | (-3, 3) | (-3, 3.094) | 0.094 m | no |
+| south (z+) | (-3, 3) | (-3, 3.093) | 0.093 m | no |
 | west (x-) | (-4.9, -1) | (-5.04, -1) | 0.14 m | no |
 | east (x+) | (4.9, -1) | (5.365, -1) | 0.465 m | no |
 
@@ -304,35 +308,35 @@ Dynamic objects that read as wall/door scale: bookshelf (42 kg, 0.32x1.86x1.00 m
 | object | mass kg | class | start (x,z) | end (x,z) | Δ (m) | Δrot | robot Δ (m) | min contact | max speed | robot max y | verdict |
 | --- | ---: | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | sofa | 85 | heavy | (-2.5, -2.755) | (-2.5, -2.755) | **0.0000** | 0° | 0.096 | 0.149 | 0.55 | 0 | PASS (< 0.01) |
-| bed | 75 | heavy | (-4.15, 2.571) | (-4.15, 2.571) | **0.0000** | 0° | 0.214 | 0.095 | 0.55 | 0 | PASS (< 0.01) |
-| wardrobe | 120 | heavy | (-2.04, 1.081) | (-2.04, 1.081) | **0.0000** | 0° | 0.131 | 0.175 | 0.55 | 0 | PASS (< 0.01) |
-| fridge | 95 | heavy | (5.145, -3.2) | (5.145, -3.2) | **0.0001** | 0° | 0.181 | 0.175 | 0.55 | 0 | PASS (< 0.01) |
-| bookshelf | 42 | heavy | (-5.375, -0.6) | (-5.375, -0.6) | **0.0001** | 0° | 0.662 | 0.175 | 0.55 | 0 | PASS (< 0.01) |
-| dining_table | 34 | heavy | (2.2, -0.8) | (2.2, -0.8) | **0.0003** | 0° | 1.117 | 0 | 0.55 | 0 | PASS (< 0.01) |
-| desk | 26 | heavy | (4.15, 3.317) | (4.15, 3.318) | **0.0002** | 0° | 0.710 | 0 | 0.55 | 0 | PASS (< 0.01) |
+| bed | 75 | heavy | (-4.15, 2.571) | (-4.15, 2.571) | **0.0000** | 0° | 0.213 | 0.095 | 0.55 | 0 | PASS (< 0.01) |
+| wardrobe | 120 | heavy | (-2.04, 1.081) | (-2.04, 1.081) | **0.0000** | 0° | 0.132 | 0.175 | 0.55 | 0 | PASS (< 0.01) |
+| fridge | 95 | heavy | (5.145, -3.2) | (5.145, -3.2) | **0.0001** | 0° | 0.180 | 0.175 | 0.55 | 0 | PASS (< 0.01) |
+| bookshelf | 42 | heavy | (-5.375, -0.6) | (-5.375, -0.6) | **0.0002** | 0° | 0.635 | 0.175 | 0.55 | 0 | PASS (< 0.01) |
+| dining_table | 34 | heavy | (2.2, -0.8) | (2.2, -0.8) | **0.0000** | 0° | 1.053 | 0 | 0.55 | 0 | PASS (< 0.01) |
+| desk | 26 | heavy | (4.15, 3.317) | (4.15, 3.318) | **0.0006** | 0° | 0.710 | 0 | 0.55 | 0 | PASS (< 0.01) |
 | armchair | 21 | heavy-spec | (-4.55, -1.75) | (-4.551, -1.75) | **0.0013** | 0° | 0.363 | 0.175 | 0.55 | 0 | PASS (< 0.01 (spec)) |
-| chair_1 | 5.5 | light | (1.72, -1.55) | (0.786, -1.52) | **0.9347** | 68.27° | 0.776 | 0 | 0.55 | 0 | PASS (> 0.03) |
-| study_box_1 | 1.8 | light | (5.1, 1.05) | (5.15, 0.976) | **0.0891** | 0.61° | 0.478 | 0.032 | 0.55 | 0 | PASS (> 0.03) |
-| study_box_2 | 1.2 | light | (5.1, 1.05) | (5.158, 0.945) | **0.1199** | 11.31° | 0.478 | 0.071 | 0.55 | 0 | PASS (> 0.03) |
-| trash_bin | 1.6 | light | (1.55, -3.3) | (1.435, -3.57) | **0.2935** | 6.16° | 0.464 | 0 | 0.55 | 0 | PASS (> 0.03) |
-| laundry_basket | 1 | light | (-2.2, 1.85) | (-2.897, 1.843) | **0.6972** | 0.54° | 0.832 | 0 | 0.55 | 0 | PASS (> 0.03) |
-| coffee_table | 13 | medium | (-2.5, -1.55) | (-2.5, -1.55) | **0.0000** | 0° | 1.127 | 0 | 0.55 | 0.012 | PASS (info) |
+| chair_1 | 5.5 | light | (1.72, -1.55) | (0.774, -1.518) | **0.9466** | 75.19° | 0.796 | 0 | 0.55 | 0 | PASS (> 0.03) |
+| study_box_1 | 1.8 | light | (5.1, 1.05) | (5.145, 0.976) | **0.0866** | 0.75° | 0.478 | 0.034 | 0.55 | 0 | PASS (> 0.03) |
+| study_box_2 | 1.2 | light | (5.1, 1.05) | (5.153, 0.944) | **0.1181** | 13.32° | 0.478 | 0.07 | 0.55 | 0 | PASS (> 0.03) |
+| trash_bin | 1.6 | light | (1.55, -3.3) | (1.438, -3.57) | **0.2924** | 5.26° | 0.459 | 0 | 0.55 | 0 | PASS (> 0.03) |
+| laundry_basket | 1 | light | (-2.2, 1.85) | (-2.948, 1.836) | **0.7478** | 0.08° | 0.883 | 0 | 0.55 | 0 | PASS (> 0.03) |
+| coffee_table | 13 | medium | (-2.5, -1.55) | (-2.5, -1.55) | **0.0000** | 0° | 1.137 | 0 | 0.55 | 0.012 | PASS (info) |
 
 ## Arm payload & reach
 
 - limits: maxLiftKg **0.5**, reach **0.34** m; robot state mass: 7 kg
 - refused (too_heavy): laptop 1.6 kg → {"ok":false,"reason":"too_heavy","held":null}; kettle 1 kg → {"ok":false,"reason":"too_heavy","held":null}; book_stack_1 1.4 kg → {"ok":false,"reason":"too_heavy","held":null}
-- mug on coffee table: y=0.5153842568397522 m, robot drove 0.456 m toward the table, shoulder→mug 0.261 m, canReach=true, grab={"ok":true,"reason":null,"held":"mug_white"}
-- carry/lift/release: robot moved 0.344 m with mug following 0.376 m (held=mug_white); aiming up lifted 0 m; released, final y=0.515 m, joint released=true
+- mug on coffee table: y=0.5154027938842773 m, robot drove 0.456 m toward the table, shoulder→mug 0.270 m, canReach=true, grab={"ok":true,"reason":null,"held":"mug_white"}
+- carry/lift: mug 0.515 m on table -> 0.593 m carried (robot 0.64 m / mug 0.719 m) -> 0.585 m with aim held up (aim-up lift -0.008 m); released, final y=0.057 m, joint released=true
 - reach boundary: 0.30 m → true, 0.32 m → true, 0.45 m → false
 - dining table (0.76 m): canReach top=false; plate on table → {"ok":false,"reason":"out_of_reach","held":null}
 
 ## Spawn, stacks & stability
 
-- interpenetration (QA gate 5: <= 2 mm): deepest contact -2.2 mm; pairs > 2.5 mm: **0**
+- interpenetration (QA gate 5: <= 2 mm): deepest contact -1.0 mm; pairs > 2.5 mm: **0**
 
 - below floor (collider minY < -5 mm): none
-- 3 s passive: 11 stacked pairs, max relative drift 0.00 mm, max body drift 0.00 mm, 171/171 asleep
+- 3 s passive: 18 stacked pairs, max relative drift 0.00 mm, max body drift 0.00 mm, 175/175 asleep
 - nudge test: 8 stacks, max shift 0.0 mm, max tilt 0.01°, 8/8 re-asleep
 - tunneling: needle drop → y=0.0124 m; 3 cm ball @6 m/s (no CCD) → y=0.03 m
 

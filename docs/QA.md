@@ -62,6 +62,17 @@ shoulder at 0.26 m. Coffee-table objects are reachable by driving under the tabl
 objects are intentionally out of reach. Heavy furniture must move <0.01 m under a 2 s boost push; walls never move.
 See `docs/ROBOT_SPEC.md` and `docs/MASS_TABLE.md`.
 
+## Touch controls (mobile)
+
+On coarse-pointer devices the HUD hides the keyboard panel and shows a left virtual stick (drive, analog),
+right-side drag (look), and tap (grab/place/push). Hint reads `LEFT STICK DRIVE · DRAG LOOK · TAP GRAB`.
+`qa.setTouch(true)`, `qa.touchJoy(x,y)`, `qa.touchLook(dx,dy)`, `qa.touchTap()` are available for tests.
+
+## Camera
+
+Third-person camera avoids furniture by trying higher/shifted orbit candidates before collapsing toward the robot;
+it never sits inside static or large dynamic furniture. First-person remains at head height 0.30 m.
+
 ## Targeting model (v3)
 
 Third person is pointer-based: the mouse cursor aims, the highlight ring/target label follows the pointer, and the

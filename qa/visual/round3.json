@@ -1,0 +1,991 @@
+{
+ "readyMs": 997,
+ "logs": [],
+ "requests": [
+  "http://127.0.0.1:4182/"
+ ],
+ "shots": {
+  "spawn-default": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -3.419999904632569,
+     0.6903075736986853,
+     0.07271922761670988
+    ],
+    "quat": [
+     -0.16226182004367856,
+     -3.443054542474343e-16,
+     -5.661794540870842e-17,
+     0.9867477396762117
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     -3.5999999046325684,
+     0.00009999930858611839,
+     -1.1999995708465576
+    ],
+    "yaw": -0.26057021909679995,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "NOTEBOOK SHELF · 280 g · OUT OF REACH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 306,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "cam-sofa": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -2.680002145748843,
+     1.111285261213426,
+     -1.9529553299087683
+    ],
+    "quat": [
+     -2.927427440600387e-12,
+     0.9431384130643811,
+     0.3324002614355185,
+     8.306158541408261e-12
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     -2.500002145767212,
+     0.011930463314056394,
+     -0.9100918173789978
+    ],
+    "yaw": 2.6522528207641956,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 349,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "cam-bed": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -2.4715963873511817,
+     1.4042443293766806,
+     2.5255895922596547
+    ],
+    "quat": [
+     -0.3597336085725012,
+     0.5954816464171736,
+     0.33795118635430266,
+     0.6338630256494049
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     -3.16489839553833,
+     -1.7285346987083727e-8,
+     2.662607431411743
+    ],
+    "yaw": 1.5083775167989393,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "hud": {
+    "room": "BEDROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 285,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "cam-wardrobe": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -2.0406943236860773,
+     0.702190332531268,
+     2.4280817828849477
+    ],
+    "quat": [
+     -0.15266286322568207,
+     0.33479804829041987,
+     0.05506434448651223,
+     0.9282091547808249
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     -2.9916741847991943,
+     0.011902434229850767,
+     1.5633001327514648
+    ],
+    "yaw": 0.46232264070609314,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "hud": {
+    "room": "BEDROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 367,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "cam-under-table": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -2.3200000000000007,
+     0.7021381718183383,
+     -0.27728115385301655
+    ],
+    "quat": [
+     -0.16226182004497686,
+     -3.4430545424735974e-16,
+     -5.661794540916143e-17,
+     0.9867477396759983
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     -2.5,
+     0.011930597424507139,
+     -1.5499999523162842
+    ],
+    "yaw": -0.27428268592523153,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "SOCK 2 · 60 g · OUT OF REACH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 304,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "bath-fp-tub": {
+   "cam": {
+    "mode": "first",
+    "pos": [
+     1.1483987740776878,
+     0.29998464941978453,
+     1.4313679886706796
+    ],
+    "quat": [
+     0.004389050262773173,
+     -0.9841574835199128,
+     0.024609064190003804,
+     0.17552543356800399
+    ],
+    "fov": 62,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     1.100000023841858,
+     -0.000015350580215456322,
+     1.2999999523162842
+    ],
+    "yaw": -2.788602265762883,
+    "held": null,
+    "mode": "first",
+    "grounded": true
+   },
+   "hud": {
+    "room": "BATHROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 230,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "bath-fp-vanity": {
+   "cam": {
+    "mode": "first",
+    "pos": [
+     2.0707692784529463,
+     0.3000999993085861,
+     2.5538461538461537
+    ],
+    "quat": [
+     -0.013866060419010673,
+     0.8317902921630663,
+     0.02079909062851601,
+     0.5545268614420442
+    ],
+    "fov": 62,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     2.200000047683716,
+     0.00009999930858611839,
+     2.5
+    ],
+    "yaw": 1.965587446494658,
+    "held": null,
+    "mode": "first",
+    "grounded": true
+   },
+   "hud": {
+    "room": "BATHROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 265,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "bath-tp": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     1.2537615140872802,
+     0.9560414556549329,
+     1.0812986504431406
+    ],
+    "quat": [
+     0.027203643241979256,
+     0.8973360294286403,
+     0.4369519294454208,
+     -0.055866120659389513
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     1.5,
+     -2.384185793236071e-9,
+     1.6000001430511475
+    ],
+    "yaw": -3.0520675090430336,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "hud": {
+    "room": "BATHROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 278,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "kitchen-rail": {
+   "cam": {
+    "mode": "first",
+    "pos": [
+     2.4456387910321484,
+     0.2999999529123306,
+     -2.132352217427678
+    ],
+    "quat": [
+     0.049291890531808255,
+     -0.1650614500665633,
+     0.008259956948274519,
+     0.9850161421727749
+    ],
+    "fov": 62,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     2.4000000953674316,
+     -4.708766937477904e-8,
+     -2
+    ],
+    "yaw": -0.33205946754288546,
+    "held": null,
+    "mode": "first",
+    "grounded": true
+   },
+   "hud": {
+    "room": "KITCHEN / DINING",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 216,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "bookshelf": {
+   "cam": {
+    "mode": "first",
+    "pos": [
+     -4.338094958601637,
+     0.2999966597557068,
+     -0.4230158343808921
+    ],
+    "quat": [
+     0.007630072655366027,
+     0.6463425776547113,
+     -0.006463641232691247,
+     0.762981831791526
+    ],
+    "fov": 62,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     -4.199999809265137,
+     -0.000003340244293215111,
+     -0.3999999761581421
+    ],
+    "yaw": 1.4056476493802699,
+    "held": null,
+    "mode": "first",
+    "grounded": true
+   },
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "BOOKSHELF · 42 kg · OUT OF REACH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 179,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "trail-main": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -3.2091715865280155,
+     0.7008030264813017,
+     -0.6427845488579025
+    ],
+    "quat": [
+     -0.1622618154362807,
+     -2.0523700685465783e-8,
+     -3.374938493631895e-9,
+     0.9867477404338568
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     -3.2091715335845947,
+     0.010595453381538389,
+     -1.9155033826828003
+    ],
+    "yaw": -0.701541531201021,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "SOFA · 85 kg · PUSH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 296,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "carry-idle": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -1.6927618595925589,
+     1.1039826535346844,
+     -1.0677813067075619
+    ],
+    "quat": [
+     -0.3214391662236713,
+     0.4234182508920404,
+     0.1637814356552304,
+     0.8310051074233346
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     -2.538499116897583,
+     0.01193420350551605,
+     -1.459753155708313
+    ],
+    "yaw": 0.9424779527635303,
+    "held": "mug_white",
+    "mode": "third",
+    "grounded": true
+   },
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "LAPTOP · 1.6 kg · OUT OF REACH",
+    "held": "HOLDING · MUG WHITE · 320 g · CLICK TO PLACE",
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 310,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "carry-aim-low": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -2.4181225477516226,
+     0.8332975458910901,
+     -2.46096549369208
+    ],
+    "quat": [
+     -0.03793512412819827,
+     0.9562521149803495,
+     0.25175536111745034,
+     0.14409044764178114
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     -2.538499116897583,
+     0.01193420350551605,
+     -1.459753155708313
+    ],
+    "yaw": 0.9424779527635303,
+    "held": "mug_white",
+    "mode": "third",
+    "grounded": true
+   },
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "COFFEE TABLE · 13 kg · PUSH",
+    "held": "HOLDING · MUG WHITE · 320 g · CLICK TO PLACE",
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 376,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "carry-aim-high": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -1.7156469688737797,
+     0.457818168249065,
+     -0.6626169583432409
+    ],
+    "quat": [
+     -0.07715549680828443,
+     0.3151802005400624,
+     0.02571849893609479,
+     0.9455406016201879
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     -2.538499116897583,
+     0.011934158802032468,
+     -1.459753155708313
+    ],
+    "yaw": -0.029724693089301344,
+    "held": "mug_white",
+    "mode": "third",
+    "grounded": true
+   },
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "SOFA · 85 kg · OUT OF REACH",
+    "held": "HOLDING · MUG WHITE · 320 g · CLICK TO PLACE",
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 307,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "carry-aim-floor": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -2.358499116897582,
+     0.4578181682490621,
+     -0.32833290900197376
+    ],
+    "quat": [
+     -0.08132903463867562,
+     3.9120572569211696e-16,
+     3.1922132236627824e-17,
+     0.9966873070952298
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     -2.538499116897583,
+     0.011934158802032468,
+     -1.459753155708313
+    ],
+    "yaw": -0.029724693089301344,
+    "held": "mug_white",
+    "mode": "third",
+    "grounded": true
+   },
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "SOFA · 85 kg · OUT OF REACH",
+    "held": "HOLDING · MUG WHITE · 320 g · CLICK TO PLACE",
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 305,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  },
+  "shadow-vignette": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -2.358499116897583,
+     1.9752533599824962,
+     -0.09221122551285132
+    ],
+    "quat": [
+     -0.43240134318438406,
+     0,
+     0,
+     0.901681251004112
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "robot": {
+    "pos": [
+     -2.538499116897583,
+     0.011934158802032468,
+     -1.459753155708313
+    ],
+    "yaw": -0.029724693089301344,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "LAPTOP · 1.6 kg · OUT OF REACH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "draw": 312,
+   "fps": 60,
+   "night": false,
+   "surround": true
+  }
+ },
+ "cam": {
+  "sofa": {
+   "obj": "sofa",
+   "cam": [
+    -2.680002145748843,
+    1.111285261213426,
+    -1.9529553299087683
+   ],
+   "bbox": {
+    "min": [
+     -3.53,
+     -0.02,
+     -3.24
+    ],
+    "max": [
+     -1.46,
+     0.87,
+     -2.27
+    ]
+   },
+   "inside": false
+  },
+  "bed": {
+   "obj": "bed",
+   "cam": [
+    -2.4715963873511817,
+    1.4042443293766806,
+    2.5255895922596547
+   ],
+   "bbox": {
+    "min": [
+     -5.04,
+     -0.18,
+     1.51
+    ],
+    "max": [
+     -3.26,
+     1.18,
+     3.63
+    ]
+   },
+   "inside": false
+  },
+  "wardrobe": {
+   "obj": "wardrobe",
+   "cam": [
+    -2.0406943236860773,
+    0.702190332531268,
+    2.4280817828849477
+   ],
+   "bbox": {
+    "min": [
+     -2.6,
+     0,
+     0.76
+    ],
+    "max": [
+     -1.48,
+     2.02,
+     1.4
+    ]
+   },
+   "inside": false
+  },
+  "underTable": {
+   "obj": "coffee_table",
+   "cam": [
+    -2.3200000000000007,
+    0.7021381718183383,
+    -0.27728115385301655
+   ],
+   "bbox": {
+    "min": [
+     -3.1,
+     0.01,
+     -1.86
+    ],
+    "max": [
+     -1.9,
+     0.47,
+     -1.24
+    ]
+   },
+   "inside": false
+  }
+ },
+ "physics": {
+  "grab": {
+   "ok": true,
+   "reason": null,
+   "held": "mug_white"
+  }
+ },
+ "hud": {
+  "desktop": {
+   "controls": {
+    "x": 1188,
+    "y": 690,
+    "w": 236,
+    "h": 194,
+    "display": "flex",
+    "text": "CONTROL\nARM 500 g · 0.34 M\nW\nA\nS\nD\nMOVE\nSHIFT\nBOOST\nMOUSE\nLOOK\nCLICK\nSPACE\nGRAB\nV\nVIEW THIRD\nC\n360 ON\nL\nLIGHT DAY\nH\nHINT\nR\nRESET"
+   },
+   "map": {
+    "x": 1244,
+    "y": 16,
+    "w": 180,
+    "h": 180,
+    "display": "block",
+    "text": "SURROUND"
+   },
+   "trailLegend": {
+    "x": 1244,
+    "y": 200,
+    "w": 180,
+    "h": 10,
+    "display": "flex",
+    "text": "TRAIL"
+   },
+   "hint": {
+    "x": 570.4,
+    "y": 864,
+    "w": 299.2,
+    "h": 14,
+    "display": "block",
+    "text": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "touch": {
+    "x": 0,
+    "y": 0,
+    "w": 0,
+    "h": 0,
+    "display": "none",
+    "text": "\n      \n    "
+   },
+   "stick": {
+    "x": 0,
+    "y": 0,
+    "w": 0,
+    "h": 0,
+    "display": "block",
+    "text": ""
+   },
+   "samples": {
+    "front": {
+     "litRatio": 0.9776536312849162,
+     "mean": 129.7889880207899,
+     "w": 179,
+     "h": 134
+    },
+    "right": {
+     "litRatio": 0.983740515300592,
+     "mean": 131.0606742822202,
+     "w": 179,
+     "h": 134
+    },
+    "left": {
+     "litRatio": 0.996664721087301,
+     "mean": 128.577656410684,
+     "w": 179,
+     "h": 134
+    },
+    "back": {
+     "litRatio": 0.9997498540815476,
+     "mean": 116.26885127435449,
+     "w": 179,
+     "h": 134
+    },
+    "map": {
+     "litRatio": 0.9997222222222222,
+     "mean": 119.38584362139918,
+     "w": 180,
+     "h": 180
+    }
+   },
+   "mapHTML": "<span class=\"hud-tag\">SURROUND</span><div class=\"hud-map-dot\" id=\"hud-map-dot\" style=\"transform: translate(-50%, -50%) rotate(0.261rad);\"></div>"
+  },
+  "trail": {
+   "controls": {
+    "x": 1188,
+    "y": 690,
+    "w": 236,
+    "h": 194,
+    "display": "flex",
+    "text": "CONTROL\nARM 500 g · 0.34 M\nW\nA\nS\nD\nMOVE\nSHIFT\nBOOST\nMOUSE\nLOOK\nCLICK\nSPACE\nGRAB\nV\nVIEW THIRD\nC\n360 ON\nL\nLIGHT DAY\nH\nHINT\nR\nRESET"
+   },
+   "map": {
+    "x": 1244,
+    "y": 16,
+    "w": 180,
+    "h": 180,
+    "display": "block",
+    "text": "SURROUND"
+   },
+   "trailLegend": {
+    "x": 1244,
+    "y": 200,
+    "w": 180,
+    "h": 10,
+    "display": "flex",
+    "text": "TRAIL"
+   },
+   "hint": {
+    "x": 570.4,
+    "y": 864,
+    "w": 299.2,
+    "h": 14,
+    "display": "block",
+    "text": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "touch": {
+    "x": 0,
+    "y": 0,
+    "w": 0,
+    "h": 0,
+    "display": "none",
+    "text": "\n      \n    "
+   },
+   "stick": {
+    "x": 0,
+    "y": 0,
+    "w": 0,
+    "h": 0,
+    "display": "block",
+    "text": ""
+   },
+   "samples": {
+    "front": {
+     "litRatio": 0.9970399399649795,
+     "mean": 117.6218766502682,
+     "w": 179,
+     "h": 134
+    },
+    "right": {
+     "litRatio": 0.9799049445509881,
+     "mean": 126.92390005280858,
+     "w": 179,
+     "h": 134
+    },
+    "left": {
+     "litRatio": 0.9996247811223213,
+     "mean": 110.80583117929903,
+     "w": 179,
+     "h": 134
+    },
+    "back": {
+     "litRatio": 0.9703993996497957,
+     "mean": 127.40723755524056,
+     "w": 179,
+     "h": 134
+    },
+    "map": {
+     "litRatio": 0.9995679012345678,
+     "mean": 123.62359053497943,
+     "w": 180,
+     "h": 180
+    }
+   },
+   "mapHTML": "<span class=\"hud-tag\">SURROUND</span><div class=\"hud-map-dot\" id=\"hud-map-dot\" style=\"transform: translate(-50%, -50%) rotate(0.702rad);\"></div>"
+  },
+  "mobile": {
+   "controls": {
+    "x": 0,
+    "y": 0,
+    "w": 0,
+    "h": 0,
+    "display": "none",
+    "text": "\n      CONTROLARM 500 g · 0.34 M\n      WASDMOVE\n      SHIFTBOOST\n      MOUSELOOK\n      CLICKSPACEGRAB\n      VVIEW THIRD\n      C360 ON\n      LLIGHT DAY\n      HHINT\n      RRESET\n    "
+   },
+   "map": {
+    "x": 262,
+    "y": 10,
+    "w": 118,
+    "h": 118,
+    "display": "block",
+    "text": "SURROUND"
+   },
+   "trailLegend": {
+    "x": 262,
+    "y": 132,
+    "w": 118,
+    "h": 10,
+    "display": "flex",
+    "text": "TRAIL"
+   },
+   "hint": {
+    "x": 71.7,
+    "y": 623,
+    "w": 246.6,
+    "h": 13,
+    "display": "block",
+    "text": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "touch": {
+    "x": 0,
+    "y": 0,
+    "w": 0,
+    "h": 0,
+    "display": "none",
+    "text": "\n      \n    "
+   },
+   "stick": {
+    "x": 0,
+    "y": 0,
+    "w": 0,
+    "h": 0,
+    "display": "block",
+    "text": ""
+   },
+   "scrollW": 390,
+   "inner": [
+    390,
+    844
+   ],
+   "touchText": "\n      \n    "
+  },
+  "wide": {
+   "controls": {
+    "x": 1668,
+    "y": 870,
+    "w": 236,
+    "h": 194
+   },
+   "map": {
+    "x": 1724,
+    "y": 16,
+    "w": 180,
+    "h": 180
+   },
+   "trailLegend": {
+    "x": 1724,
+    "y": 200,
+    "w": 180,
+    "h": 10
+   },
+   "hint": {
+    "x": 810.4,
+    "y": 1044,
+    "w": 299.2,
+    "h": 14
+   }
+  }
+ },
+ "carry": {
+  "held": "mug_white",
+  "hud": {
+   "room": "LIVING ROOM",
+   "target": "SOFA · 85 kg · OUT OF REACH",
+   "held": "HOLDING · MUG WHITE · 320 g · CLICK TO PLACE",
+   "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+  }
+ },
+ "final": {
+  "fps": 2,
+  "draw": 312,
+  "tri": 64470,
+  "errors": []
+ }
+}

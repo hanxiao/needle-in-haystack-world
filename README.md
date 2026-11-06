@@ -34,7 +34,7 @@ Live: <https://hanxiao.io/needle-in-haystack-world/>
 
 The robot is a 7 kg sweeper base (350 mm, 2 driven 70 mm wheels + caster, 0.40 m/s, 0.55 boost) with a 3-DOF arm: 0.5 kg payload, 0.34 m reach, 320°/s joints. It can lift a mug/book/plate but not a laptop or kettle; heavy furniture (sofa 85 kg, fridge 95, wardrobe 120) is effectively immovable — 2 s of boost pushing moves it <1 mm, while a 5.5 kg chair slides ~0.45 m. The arm reaches coffee-table height, not the dining table. A sewing needle (1.2 g) is hidden somewhere.
 
-The mouse cursor targets objects in third person; the 360° surround view (front/right/left/back + top-down minimap with robot heading) is always live, and the minimap draws a colour-coded trajectory (cyan slow → amber → pink fast). A live control panel highlights pressed keys and current modes. `V` toggles a clean first-person view.
+The mouse cursor targets objects in third person; the 360° surround view (front/right/left/back + top-down minimap with robot heading) is always live, and the minimap draws a colour-coded trajectory (cyan slow → amber → pink fast) with a legend under the map. A live control panel highlights pressed keys and current modes. On touch devices: left stick drive, drag to look, tap to grab/place. `V` toggles a clean first-person view.
 
 ## Develop
 

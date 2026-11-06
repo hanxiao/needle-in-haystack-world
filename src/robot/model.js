@@ -157,9 +157,13 @@ export function buildRobotModel(ctx) {
   lidarCap.position.y = 0.006;
   addShadows(lidarCap);
   lidarTop.add(lidarCap);
-  const lidarNotch = new THREE.Mesh(rounded(0.018, 0.008, 0.014, 2, 0.003), mats.accent);
+  const lidarNotch = new THREE.Mesh(rounded(0.026, 0.007, 0.012, 2, 0.003), mats.accent);
   lidarNotch.position.set(0, 0.014, -0.03);
   lidarTop.add(lidarNotch);
+  const lidarNotch2 = new THREE.Mesh(rounded(0.026, 0.007, 0.012, 2, 0.003), mats.accent);
+  lidarNotch2.position.set(0.03, 0.014, 0);
+  lidarNotch2.rotation.y = Math.PI / 2;
+  lidarTop.add(lidarNotch2);
 
   // ---------------------------------------------------------------- camera mast + head
   const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.019, 0.062, 12), mats.metalDark);

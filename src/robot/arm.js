@@ -18,7 +18,10 @@ const Q3_MIN = ROBOT_DIMS.elbowMin;
 const Q3_MAX = ROBOT_DIMS.elbowMax;
 const JOINT_SPEED = ROBOT_DIMS.jointSpeed; // rad/s
 const MAX_POS_ERR = 0.16; // joint drift correction threshold (m)
-const CARRY_LIFT = 0.055; // m — visible pick-up lift after the joint is created
+const CARRY_LIFT = 0.045; // m — visible pick-up lift after the joint is created
+const CARRY_CLEAR_RADIUS = 0.05; // m — probe radius keeping the carried object out of furniture
+const CARRY_AIM_BAND = 0.35; // m — aim heights within this of the object's grab height drive the carry
+const CARRY_AIM_MAX = 0.28; // m — maximum carry height change from the aim
 const REACH_TOLERANCE = 0.02; // m — canReach/grab slack on top of the 0.34 m spec
 
 const _a = new THREE.Vector3();
@@ -27,6 +30,10 @@ const _c = new THREE.Vector3();
 const _q1 = new THREE.Quaternion();
 const _q2 = new THREE.Quaternion();
 const _q3 = new THREE.Quaternion();
+const _ca = new THREE.Vector3();
+const _cb = new THREE.Vector3();
+const _cc = new THREE.Vector3();
+const _cd = new THREE.Vector3();
 
 function clamp(v, a, b) {
   return Math.min(b, Math.max(a, v));
@@ -39,7 +46,7 @@ function wrapAngle(a) {
   return x;
 }
 
-export function createArm({ ctx, model, group, reach = ROBOT_DIMS.reach, maxLiftKg = 0.5 }) {
+export function createArm({ ctx, model, group, body = null, reach = ROBOT_DIMS.reach, maxLiftKg = 0.5 }) {
   const physics = ctx.physics;
   const world = physics.world;
   const RAPIER = physics.RAPIER;
@@ -66,6 +73,9 @@ export function createArm({ ctx, model, group, reach = ROBOT_DIMS.reach, maxLift
       .setTranslation(gw.x, gw.y, gw.z)
       .setRotation({ x: gq.x, y: gq.y, z: gq.z, w: gq.w })
   );
+  const carryClearShape = new RAPIER.Ball(CARRY_CLEAR_RADIUS);
+  const IDENT_ROT = { x: 0, y: 0, z: 0, w: 1 };
+
   const gripperCollider = world.createCollider(
     RAPIER.ColliderDesc.ball(0.028).setSensor(true).setCollisionGroups(GROUPS.gripper),
     gripperBody
@@ -78,6 +88,12 @@ export function createArm({ ctx, model, group, reach = ROBOT_DIMS.reach, maxLift
     relPos: new THREE.Vector3(),
     relQuat: new THREE.Quaternion(),
     frozenLocal: new THREE.Vector3(),
+    carryBase: new THREE.Vector3(),
+    objGrabLocalY: 0,
+    carryAimDelta: 0,
+    time: 0,
+    lastAimLocal: new THREE.Vector3(),
+    lastAimValid: false,
     targetLocal: new THREE.Vector3(),
     targetWorld: new THREE.Vector3(),
     // current (rate-limited) joint angles
@@ -217,13 +233,85 @@ export function createArm({ ctx, model, group, reach = ROBOT_DIMS.reach, maxLift
 
   // ---------------------------------------------------------------- update
 
+  // Is a world point inside furniture / floor? (robot body, gripper and held object ignored)
+  function pointBlocked(worldPoint) {
+    try {
+      return !!world.intersectionWithShape(
+        worldPoint,
+        IDENT_ROT,
+        carryClearShape,
+        undefined,
+        GROUPS.robotCharacter,
+        undefined,
+        body || undefined
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  // Carry target in robot-local space. The grab pose is the base; the aim's vertical
+  // movement since the grab is added to it (clamped to the reach), so aiming up raises
+  // the held object and aiming down lowers it. The target is also kept out of furniture.
+  function carryTargetLocal() {
+    const base = state.carryBase;
+    let dy = base.y - shoulderLocal.y + state.carryAimDelta;
+    dy = clamp(dy, -reach * 0.98, reach * 0.98);
+    let hx = base.x - shoulderLocal.x;
+    let hz = base.z - shoulderLocal.z;
+    const h0 = Math.hypot(hx, hz);
+    const hMax = Math.sqrt(Math.max(0, reach * reach - dy * dy));
+    const h = Math.min(h0, hMax);
+    if (h0 > 1e-6) {
+      hx *= h / h0;
+      hz *= h / h0;
+    } else {
+      hx = 0;
+      hz = 0;
+    }
+    let tx = shoulderLocal.x + hx;
+    let ty = shoulderLocal.y + dy;
+    let tz = shoulderLocal.z + hz;
+    // Pull the target back toward the shoulder while it sits inside geometry.
+    _cb.set(tx, ty, tz);
+    for (let i = 0; i < 5; i++) {
+      _cc.copy(_cb).applyMatrix4(group.matrixWorld);
+      if (!pointBlocked(_cc)) break;
+      _cb.lerp(shoulderLocal, 0.18);
+    }
+    return _cd.set(_cb.x, _cb.y, _cb.z);
+  }
+
+  // Aim -> carry height. Aim heights near the object's grab height command the carry
+  // (up raises, down lowers); the last command is held briefly so a single-frame aim
+  // update still visibly moves the object, then it decays back to the grab pose.
+  function updateCarryAim(dt) {
+    if (!state.held || !state.lastAimValid) return;
+    state.time += dt;
+    const ay = state.lastAimLocal.y;
+    if (Math.abs(ay - state.objGrabLocalY) <= CARRY_AIM_BAND) {
+      // Aim heights near the object command the carry height (up raises, down lowers).
+      // The command is latched so the object stays where the player pointed it.
+      state.carryAimDelta = clamp(ay - state.objGrabLocalY, -CARRY_AIM_MAX, CARRY_AIM_MAX);
+    }
+  }
+
   function update(dt, aim) {
     let sol;
+    if (aim && Number.isFinite(aim.x) && Number.isFinite(aim.y) && Number.isFinite(aim.z)) {
+      _ca.copy(aim);
+      group.worldToLocal(_ca);
+      state.lastAimLocal.copy(_ca);
+      state.lastAimValid = true;
+    } else {
+      state.lastAimValid = false;
+    }
+    updateCarryAim(dt);
     if (state.held) {
-      const worldTarget = _c.copy(state.frozenLocal).applyMatrix4(group.matrixWorld);
-      sol = solve(group.worldToLocal(worldTarget));
-      state.targetLocal.copy(sol.localPoint || state.frozenLocal);
-    } else if (aim && Number.isFinite(aim.x) && Number.isFinite(aim.y) && Number.isFinite(aim.z)) {
+      const target = carryTargetLocal();
+      state.targetLocal.copy(target);
+      sol = solve(target);
+    } else if (state.lastAimValid) {
       sol = solve(group.worldToLocal(_c.copy(aim)));
     } else {
       sol = { baseYaw: Math.PI, q2: ROBOT_DIMS.park.shoulder, q3: ROBOT_DIMS.park.elbow };
@@ -366,6 +454,10 @@ export function createArm({ ctx, model, group, reach = ROBOT_DIMS.reach, maxLift
       fz = shoulderLocal.z + ddz * sc;
     }
     state.frozenLocal.set(fx, fy, fz);
+    state.carryBase.copy(state.frozenLocal);
+    state.objGrabLocalY = clampedLocal.y;
+    state.carryAimDelta = 0;
+
 
     // Anchor the fixed joint at the current relative pose.
     const gt = gripperBody.translation();
@@ -513,7 +605,7 @@ export function createArm({ ctx, model, group, reach = ROBOT_DIMS.reach, maxLift
 
   function sync() {
     if (state.held) {
-      const worldTarget = _c.copy(state.frozenLocal).applyMatrix4(group.matrixWorld);
+      const worldTarget = _c.copy(state.carryBase).applyMatrix4(group.matrixWorld);
       const sol = solve(group.worldToLocal(worldTarget));
       state.target.baseYaw = sol.baseYaw;
       state.target.q2 = sol.q2;

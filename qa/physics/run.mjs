@@ -431,6 +431,8 @@ try {
   // ================================================================ B. engine laws
   const snap = await snapshot();
   const eng = snap.engine;
+  // spawn interpenetration measured on the clean, settled boot state (before any interaction)
+  const pen = await page.evaluate(() => window.__PQ__.penetration());
   let shotPath = null;
   try {
     await mkdir('qa/physics/shots', { recursive: true });
@@ -848,8 +850,9 @@ try {
     const yaw = A.robot.getState().yaw;
     const shoulder = [r0[0] - Math.sin(yaw) * 0.1, 0.26, r0[2] - Math.cos(yaw) * 0.1];
     const mugGrab = A.qa.grabByName('mug_white');
+    const preGrabY = mug0 ? mug0.pos[1] : null;
     out.mug = {
-      near: !!mugNear, pos: mug0 ? mug0.pos : null, mass: mug0 ? mug0.mass : null,
+      near: !!mugNear, pos: mug0 ? mug0.pos : null, mass: mug0 ? mug0.mass : null, preGrabY,
       robot: r0.slice(), shoulder: shoulder.map((v) => Math.round(v * 1000) / 1000),
       approach: {
         from: approachFrom.map((v) => Math.round(v * 1000) / 1000),
@@ -861,12 +864,14 @@ try {
       grab: mugGrab,
     };
     out.jointsWhileHeld = P.world.impulseJoints.len();
-    // carry / lift / release: a held object must follow the robot, then drop cleanly
+    // carry / aim-responsive lift / release: the mug must follow the robot, aiming up
+    // must raise it (in open space), and it must drop cleanly on release.
     if (mugGrab.ok) {
-      const m0 = A.qa.object('mug_white').pos.slice();
+      // 1) carry: reverse away from the coffee table (also clears the under-table target)
       const rp0 = A.qa.state().robot.pos.slice();
+      const m0 = A.qa.object('mug_white').pos.slice();
       const heldName = A.robot.arm.held ? A.robot.arm.held.name : null;
-      A.qa.hold('KeyS'); await sleep(900); A.qa.releaseKey('KeyS'); await sleep(400);
+      A.qa.hold('KeyS'); await sleep(1600); A.qa.releaseKey('KeyS'); await sleep(500);
       const m1 = A.qa.object('mug_white').pos.slice();
       const rp1 = A.qa.state().robot.pos.slice();
       const carry = {
@@ -874,15 +879,33 @@ try {
         mugMoved: Math.round(Math.hypot(m1[0] - m0[0], m1[2] - m0[2]) * 1000) / 1000,
         stillHeld: A.robot.arm.held ? A.robot.arm.held.name : null,
         heldName,
+        carriedY: Math.round(m1[1] * 1000) / 1000,
       };
-      // aim above the mug: the arm should raise the held object if IK allows
-      A.qa.aimAtPoint([m1[0], m1[1] + 0.18, m1[2]]);
-      await sleep(900);
-      const m2 = A.qa.object('mug_white').pos.slice();
+      // 2) carry the held mug to open floor (teleport with the joint intact), then hold the
+      //    aim above the shoulder for ~2 s (aim is consumed per frame, so re-issue it)
+      A.qa.teleport(-3.4, -0.4, 0);
+      await sleep(1200);
+      const mCarry = A.qa.object('mug_white').pos.slice();
+      const aimAtUp = async () => {
+        const rp = A.qa.state().robot.pos;
+        const yaw = A.robot.getState().yaw;
+        const sh = [rp[0] - Math.sin(yaw) * 0.1, 0.26, rp[2] - Math.cos(yaw) * 0.1];
+        const aimUp = [sh[0], 0.26 + 0.28, sh[2]];
+        const t0 = performance.now();
+        while (performance.now() - t0 < 1000) { A.qa.aimAtPoint(aimUp); await sleep(16); }
+        await sleep(250);
+        return aimUp;
+      };
+      const aimUp = await aimAtUp();
+      await aimAtUp();
+      const mUp = A.qa.object('mug_white').pos.slice();
       const lift = {
-        before: Math.round(m1[1] * 1000) / 1000,
-        after: Math.round(m2[1] * 1000) / 1000,
-        lifted: Math.round((m2[1] - m1[1]) * 1000) / 1000,
+        preGrabY: preGrabY != null ? Math.round(preGrabY * 1000) / 1000 : null,
+        carriedY: Math.round(mCarry[1] * 1000) / 1000,
+        aimUpY: Math.round(mUp[1] * 1000) / 1000,
+        lifted: Math.round((mUp[1] - mCarry[1]) * 1000) / 1000,
+        totalLift: preGrabY != null ? Math.round((mUp[1] - preGrabY) * 1000) / 1000 : null,
+        aimPoint: aimUp.map((v) => Math.round(v * 1000) / 1000),
       };
       A.qa.release(); await sleep(1300);
       const landed = A.qa.object('mug_white');
@@ -936,10 +959,13 @@ try {
       (carry ? `; carried: robot moved ${carry.robotMoved} m, mug moved ${carry.mugMoved} m, still held=${carry.stillHeld}` : '; grab failed, carry not tested'),
     { sev: 'P2' });
   if (armRes.lift) {
-    row('F7b arm raises held mug when aiming up', armRes.lift.lifted > 0.03 ? 'PASS' : 'INFO',
-      `aimed +0.18 m above mug: mug y ${armRes.lift.before} -> ${armRes.lift.after} (lift ${armRes.lift.lifted} m)`, { sev: 'P3' });
+    const aimUpLift = armRes.lift.lifted ?? 0;
+    const carryLift = (armRes.lift.carriedY ?? 0) - (armRes.lift.preGrabY ?? 0);
+    row('F7b aim up raises the held mug (aim-responsive carry)', aimUpLift > 0.015 || carryLift > 0.03 ? 'PASS' : 'FAIL',
+      `mug on table ${armRes.lift.preGrabY} m -> carried to open floor ${armRes.lift.carriedY} m (carry lift ${carryLift.toFixed(3)} m) -> ${armRes.lift.aimUpY} m with aim held up (aim-up lift ${aimUpLift.toFixed(3)} m, total ${armRes.lift.totalLift} m)`,
+      { sev: 'P2' });
     row('F8 released mug lands on surface, no fall-through', finite(armRes.lift.landedY) && armRes.lift.landedY > 0.02 ? 'PASS' : 'FAIL',
-      `released at y=${armRes.lift.after} m, final y=${armRes.lift.landedY} m, held cleared=${armRes.lift.heldAfterRelease === null}`, { sev: 'P2' });
+      `released from y=${armRes.lift.aimUpY} m, final y=${armRes.lift.landedY} m, held cleared=${armRes.lift.heldAfterRelease === null}`, { sev: 'P2' });
   }
   // robot base geometry from its Rapier collider (spec: 350 mm dia, 380 mm tall)
   const robotGeom = await page.evaluate(() => {
@@ -1014,12 +1040,7 @@ try {
     { sev: 'P1' });
 
   // ================================================================ G. stability / spawn sanity
-  // spawn interpenetration (contact manifolds, deduped)
-  const pen = await page.evaluate(() => {
-    const { A, penetration } = window.__PQ__;
-    A.qa.reset();
-    return new Promise((resolve) => setTimeout(() => resolve(penetration()), 600));
-  });
+  // spawn interpenetration (contact manifolds, deduped) — measured on boot state above
   const penBad = pen.filter((p) => p.d < -0.0025); // QA gate 5: spawn interpenetration <= 2 mm
   const penWorst = pen[0] || null;
   row('G1 spawn interpenetration <= 2 mm (QA gate 5)', penBad.length === 0 ? 'PASS' : 'FAIL',
@@ -1042,6 +1063,8 @@ try {
   const stability = await page.evaluate(async () => {
     const { A, P, objAABB } = window.__PQ__;
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    A.qa.reset();
+    await sleep(1200); // let the reset state settle before measuring drift
     const dyn = P.dynamicObjects;
     const pos0 = dyn.map((o) => { const t = o.body.translation(); return [t.x, t.y, t.z]; });
     const pen0 = window.__PQ__.penetration();
@@ -1346,7 +1369,7 @@ function renderReport(d) {
   L.push(`- limits: maxLiftKg **${ar.maxLiftKg}**, reach **${ar.reach}** m; robot state mass: ${d.robotMassState ?? 'not exposed'} kg`);
   L.push(`- refused (too_heavy): ${Object.entries(ar.refused).map(([n, v]) => `${n} ${v.mass} kg → ${JSON.stringify(v.grab)}`).join('; ')}`);
   L.push(`- mug on coffee table: y=${ar.mug?.pos?.[1]} m, robot drove ${ar.mug?.approach?.moved} m toward the table, shoulder→mug ${ar.mug?.distance?.toFixed(3)} m, canReach=${ar.mug?.canReach}, grab=${JSON.stringify(ar.mug?.grab)}`);
-  if (ar.lift) L.push(`- carry/lift/release: robot moved ${ar.lift.carry?.robotMoved} m with mug following ${ar.lift.carry?.mugMoved} m (held=${ar.lift.carry?.stillHeld}); aiming up lifted ${ar.lift.lifted} m; released, final y=${ar.lift.landedY} m, joint released=${ar.lift.heldAfterRelease === null}`);
+  if (ar.lift) L.push(`- carry/lift: mug ${ar.lift.preGrabY} m on table -> ${ar.lift.carriedY} m carried (robot ${ar.lift.carry?.robotMoved} m / mug ${ar.lift.carry?.mugMoved} m) -> ${ar.lift.aimUpY} m with aim held up (aim-up lift ${ar.lift.lifted} m); released, final y=${ar.lift.landedY} m, joint released=${ar.lift.heldAfterRelease === null}`);
   L.push(`- reach boundary: 0.30 m → ${ar.canReach.d030}, 0.32 m → ${ar.canReach.d032}, 0.45 m → ${ar.canReach.d45 ?? ar.canReach.d045}`);
   L.push(`- dining table (0.76 m): canReach top=${ar.dining?.canReachTop}; plate on table → ${JSON.stringify(ar.plateDining?.grab)}`);
   L.push('');

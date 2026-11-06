@@ -23,6 +23,7 @@ export function createHud(root) {
       <span class="hud-needle" id="hud-needle" hidden>NEEDLE FOUND</span>
     </div>
     <div class="hud-map" id="hud-map"><span class="hud-tag">SURROUND</span><div class="hud-map-dot" id="hud-map-dot"></div></div>
+    <div class="hud-map-trail" id="hud-map-trail"><span>TRAIL</span><i></i></div>
     <div class="hud-cam" data-cam="front"><span class="hud-cam-label">F</span></div>
     <div class="hud-cam" data-cam="right"><span class="hud-cam-label">R</span></div>
     <div class="hud-cam" data-cam="left"><span class="hud-cam-label">L</span></div>
@@ -41,8 +42,11 @@ export function createHud(root) {
       <div class="hud-row"><span class="hud-keys"><kbd data-key="KeyV">V</kbd></span><span class="hud-act">VIEW <b id="hud-view">THIRD</b></span></div>
       <div class="hud-row"><span class="hud-keys"><kbd data-key="KeyC">C</kbd></span><span class="hud-act">360 <b id="hud-360">ON</b></span></div>
       <div class="hud-row"><span class="hud-keys"><kbd data-key="KeyL">L</kbd></span><span class="hud-act">LIGHT <b id="hud-light">DAY</b></span></div>
-      <div class="hud-row"><span class="hud-keys"><kbd data-key="KeyH">H</kbd><kbd data-key="KeyR">R</kbd></span><span class="hud-act">HINT · RESET</span></div>
-      <div class="hud-trail"><span>TRAIL</span><i></i><span>SLOW · FAST</span></div>
+      <div class="hud-row"><span class="hud-keys"><kbd data-key="KeyH">H</kbd></span><span class="hud-act">HINT</span></div>
+      <div class="hud-row"><span class="hud-keys"><kbd data-key="KeyR">R</kbd></span><span class="hud-act">RESET</span></div>
+    </div>
+    <div class="hud-touch" id="hud-touch">
+      <div class="hud-stick" id="hud-stick"><i id="hud-stick-knob"></i></div>
     </div>
     <div class="hud-hint" id="hud-hint">WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L</div>
     <div class="hud-toast" id="hud-toast" hidden></div>
@@ -54,6 +58,10 @@ export function createHud(root) {
     needle: root.querySelector('#hud-needle'),
     map: root.querySelector('#hud-map'),
     mapDot: root.querySelector('#hud-map-dot'),
+    mapTrail: root.querySelector('#hud-map-trail'),
+    touch: root.querySelector('#hud-touch'),
+    stick: root.querySelector('#hud-stick'),
+    stickKnob: root.querySelector('#hud-stick-knob'),
     surroundTag: root.querySelector('#hud-surround-tag'),
     cross: root.querySelector('#hud-cross'),
     cursor: root.querySelector('#hud-cursor'),
@@ -119,6 +127,12 @@ export function createHud(root) {
       width: `${layout.map.w}px`,
       height: `${layout.map.h}px`,
     });
+    Object.assign(els.mapTrail.style, {
+      left: `${layout.map.x}px`,
+      top: `${layout.map.y + layout.map.h + 4}px`,
+      width: `${layout.map.w}px`,
+      height: '10px',
+    });
     Object.assign(els.surroundTag.style, {
       left: `${layout.surroundTag.x}px`,
       top: `${layout.surroundTag.y}px`,
@@ -138,7 +152,21 @@ export function createHud(root) {
   function setSurround(on) {
     for (const key of CAM_ORDER) cams[key].classList.toggle('is-hidden', !on);
     els.map.classList.toggle('is-hidden', !on);
+    els.mapTrail.classList.toggle('is-hidden', !on);
     els.surroundTag.classList.toggle('is-hidden', !on);
+  }
+
+  let touchEnabled = false;
+  function setTouch(on) {
+    touchEnabled = !!on;
+    els.touch.classList.toggle('is-on', touchEnabled);
+  }
+  function setStick(x, y) {
+    const r = 34;
+    els.stickKnob.style.transform = `translate(${(x * r).toFixed(1)}px, ${(y * r).toFixed(1)}px)`;
+  }
+  function setStickVisible(on) {
+    els.stick.classList.toggle('is-active', !!on);
   }
 
   function showToast(text, tone = 'info') {
@@ -249,7 +277,9 @@ export function createHud(root) {
       els.mapDot.style.transform = `translate(-50%, -50%) rotate(${(-yaw).toFixed(3)}rad)`;
     }
     els.hint.classList.toggle('is-faded', !s.hint);
-    els.hint.textContent = s.hintText || 'WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L';
+    els.hint.textContent = touchEnabled
+      ? 'LEFT STICK DRIVE · DRAG LOOK · TAP GRAB'
+      : s.hintText || 'WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L';
     els.fps.hidden = !s.debug;
     if (s.debug) setText(els.fps, `${s.fps} FPS · ${s.drawCalls} CALLS · ${s.dynamic} DYN`);
   }
@@ -260,6 +290,9 @@ export function createHud(root) {
     layout,
     update,
     setSurround,
+    setTouch,
+    setStick,
+    setStickVisible,
     showToast,
     els,
   };
