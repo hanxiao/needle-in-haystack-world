@@ -1,3 +1,17 @@
+# round 3c — camera shell clamp + push HUD — 2026-11-06
+
+**Build:** `qa/frozen/index.html` — sha256 `5e2c72c6e1c9f818…`, 5,263,156 B. Spot-check of the camera shell clamp and heavy-push HUD reach on top of `6f8adfa23859`.
+**Method:** `qa/visual/camera7.mjs`; shots `qa/visual/shots/c7-*.png`.
+
+| check | result | evidence |
+|---|---|---|
+| Camera stays inside shell (x ±5.42, z ±3.62, y 0.12–2.58) | **PASS** | 8 poses, 0 violations; wall-backed poses clamp at x −5.22 / +5.41, z −3.62 / +3.62 (`camera7.json → shellViolations = []`) |
+| No regression: sofa / bed / under-table | **PASS** | cameras outside furniture bboxes (sofa y 1.06, bed y 1.03, table y 0.70 above top 0.47), robot visible — `c7-sofa.png`, `c7-bed.png`, `c7-under-table.png` |
+| Heavy-push HUD reach at closest range | **PASS** | at 0.30 m from the sofa the target label reads `SOFA · 85 kg · PUSH` (no longer OUT OF REACH) — `c7-push-hud.png` |
+| HUD/360/robot unchanged | **PASS** | samples litRatio 0.98–1.0, mean 116–131; 326 draw calls; 0 console errors |
+
+Note: backed against an outer wall the clamped camera necessarily sits close to the robot (tight close-up, robot partly out of frame on the west/north poses) — expected consequence of the clamp, not a regression; the previous behaviour put the camera outside the shell.
+
 # round 3b FINAL — visual QA — 2026-11-06
 
 **Build:** `qa/frozen/index.html` — sha256 `6f8adfa238593c7c…`, 5,262,758 B (served `PORT=4182 node tools/serve.mjs qa/frozen`). Camera P2 re-check on top of `eef3be85f2ab` (same physics/HUD/robot).

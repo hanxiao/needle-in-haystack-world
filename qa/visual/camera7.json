@@ -1,0 +1,327 @@
+{
+ "readyMs": 1816,
+ "logs": [],
+ "poses": {
+  "spawn": {
+   "cam": [
+    -3.42,
+    0.69,
+    0.07
+   ],
+   "inside": null,
+   "bbox": null,
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "NOTEBOOK SHELF · 280 g · OUT OF REACH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "robot": {
+    "pos": [
+     -3.5999999046325684,
+     0.00009999930858611839,
+     -1.1999995708465576
+    ],
+    "yaw": -0.26057021909679995,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "draw": 306
+  },
+  "sofa": {
+   "cam": [
+    -2.68,
+    1.06,
+    -2.02
+   ],
+   "inside": false,
+   "bbox": {
+    "min": [
+     -3.53,
+     -0.02,
+     -3.24
+    ],
+    "max": [
+     -1.46,
+     0.87,
+     -2.27
+    ]
+   },
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "robot": {
+    "pos": [
+     -2.500004291534424,
+     0.011930537819862364,
+     -0.9362033009529114
+    ],
+    "yaw": 2.6936114497409296,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "draw": 355
+  },
+  "bed": {
+   "cam": [
+    -2.17,
+    1.03,
+    2.22
+   ],
+   "inside": false,
+   "bbox": {
+    "min": [
+     -5.04,
+     -0.18,
+     1.51
+    ],
+    "max": [
+     -3.26,
+     1.18,
+     3.63
+    ]
+   },
+   "hud": {
+    "room": "BEDROOM",
+    "target": "BED · 75 kg · PUSH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "robot": {
+    "pos": [
+     -3.164897918701172,
+     -0.000005709528923036888,
+     2.6620607376098633
+    ],
+    "yaw": 1.4787147326815646,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "draw": 296
+  },
+  "under-table": {
+   "cam": [
+    -2.32,
+    0.7,
+    -0.28
+   ],
+   "inside": false,
+   "bbox": {
+    "min": [
+     -3.1,
+     0.01,
+     -1.86
+    ],
+    "max": [
+     -1.9,
+     0.47,
+     -1.24
+    ]
+   },
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "SOCK 2 · 60 g · OUT OF REACH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "robot": {
+    "pos": [
+     -2.5,
+     0.011930597424507139,
+     -1.5499999523162842
+    ],
+    "yaw": -0.27428268592523153,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "draw": 304
+  },
+  "wall-west": {
+   "cam": [
+    -5.22,
+    0.35,
+    -0.42
+   ],
+   "inside": null,
+   "bbox": null,
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "BOOKSHELF · 42 kg · PUSH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "robot": {
+    "pos": [
+     -5.215147972106934,
+     0.04887756466865539,
+     -0.415147989988327
+    ],
+    "yaw": -1.5359664767948948,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "draw": 228
+  },
+  "wall-east": {
+   "cam": [
+    5.41,
+    0.31,
+    -0.51
+   ],
+   "inside": null,
+   "bbox": null,
+   "hud": {
+    "room": "KITCHEN / DINING",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "robot": {
+    "pos": [
+     5.300000190734863,
+     -2.384185793236071e-9,
+     -0.5
+    ],
+    "yaw": 0.4939692721299352,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "draw": 311
+  },
+  "wall-north": {
+   "cam": [
+    -1.01,
+    0.31,
+    -3.62
+   ],
+   "inside": null,
+   "bbox": null,
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": "SOFA · 85 kg · OUT OF REACH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "robot": {
+    "pos": [
+     -1,
+     -0.000002699494361879662,
+     -3.549999952316284
+    ],
+    "yaw": 2.0582214881204357,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "draw": 318
+  },
+  "wall-south": {
+   "cam": [
+    -0.82,
+    1,
+    3.62
+   ],
+   "inside": null,
+   "bbox": null,
+   "hud": {
+    "room": "HALLWAY",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   },
+   "robot": {
+    "pos": [
+     -1,
+     0.01599529147148132,
+     3.549999952316284
+    ],
+    "yaw": 0.03482985000000182,
+    "held": null,
+    "mode": "third",
+    "grounded": true
+   },
+   "draw": 270
+  }
+ },
+ "hud": {
+  "front": {
+   "litRatio": 0.9776536312849162,
+   "mean": 129.7889880207899,
+   "w": 179,
+   "h": 134
+  },
+  "right": {
+   "litRatio": 0.983740515300592,
+   "mean": 131.0606742822202,
+   "w": 179,
+   "h": 134
+  },
+  "left": {
+   "litRatio": 0.996664721087301,
+   "mean": 128.577656410684,
+   "w": 179,
+   "h": 134
+  },
+  "back": {
+   "litRatio": 0.9997498540815476,
+   "mean": 116.26885127435449,
+   "w": 179,
+   "h": 134
+  },
+  "map": {
+   "litRatio": 0.9997222222222222,
+   "mean": 119.38584362139918,
+   "w": 180,
+   "h": 180
+  }
+ },
+ "pushHud": {
+  "hud": {
+   "room": "LIVING ROOM",
+   "target": "SOFA · 85 kg · PUSH",
+   "held": null,
+   "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+  },
+  "robot": {
+   "pos": [
+    -2.604910373687744,
+    -3.2186508180931384e-8,
+    -3.4570822715759277
+   ],
+   "yaw": -2.99327427516097,
+   "held": null,
+   "mode": "third",
+   "grounded": true
+  },
+  "sofa": {
+   "name": "sofa",
+   "mass": 85,
+   "static": false,
+   "pos": [
+    -2.4999899864196777,
+    0.42599669098854065,
+    -2.7548773288726807
+   ],
+   "tags": [
+    "furniture",
+    "seat"
+   ],
+   "room": "living",
+   "grabbable": false
+  }
+ },
+ "final": {
+  "fps": 51,
+  "draw": 326,
+  "errors": []
+ }
+}

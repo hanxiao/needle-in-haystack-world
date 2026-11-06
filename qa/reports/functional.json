@@ -1,16 +1,16 @@
 {
-  "round": 8,
-  "date": "2026-11-06T08:34:30.001Z",
+  "round": 12,
+  "date": "2026-11-06T08:49:54.184Z",
   "build": {
     "path": "/Users/hanxiao/Documents/needle-in-haystack-world/qa/frozen/index.html",
     "dir": "/Users/hanxiao/Documents/needle-in-haystack-world/qa/frozen",
-    "size": 5261883,
-    "sha256": "eef3be85f2ab494b24fffdca710419d36918fe93712a91f13826f3e4b35c2fa8",
-    "mtime": "2026-11-06T08:21:05.678Z",
+    "size": 5263156,
+    "sha256": "5e2c72c6e1c9f818793f9e9f22fda2861dfaca0380eb68b618955e5de4e6740f",
+    "mtime": "2026-11-06T08:38:12.660Z",
     "loadavg": [
-      3.09765625,
-      4.5419921875,
-      4.4697265625
+      3.80078125,
+      3.74169921875,
+      4.158203125
     ],
     "cpus": 8
   },
@@ -41,210 +41,33 @@
       "fail": 0
     },
     "PHYS": {
-      "pass": 5,
-      "fail": 1
+      "pass": 6,
+      "fail": 0
     },
     "HUD360": {
       "pass": 6,
       "fail": 0
     },
     "HUD": {
-      "pass": 12,
-      "fail": 2
+      "pass": 14,
+      "fail": 0
     },
     "ADV": {
       "pass": 7,
       "fail": 0
     }
   },
-  "failures": [
-    {
-      "id": "PH3",
-      "group": "PHYS",
-      "name": "trash bin / laundry basket push > 0.03 m",
-      "sev": "P1",
-      "pass": false,
-      "evidence": "trash_bin(1.6kg):0.3190m, laundry_basket(undefinedkg):no-hoverm — threshold >0.03 m",
-      "detail": [
-        {
-          "name": "trash_bin",
-          "found": true,
-          "mass": 1.6,
-          "robotDist": 0.4499999811776758,
-          "moved": 0.3189767737847738
-        },
-        {
-          "name": "laundry_basket",
-          "found": false
-        }
-      ],
-      "repro": "hover + qa.action() the trash bin and laundry basket from ~0.45 m, measure displacement",
-      "ms": 45565
-    },
-    {
-      "id": "H7b",
-      "group": "HUD",
-      "name": "large-furniture PUSH label (sofa at closest reachable range)",
-      "sev": "P2",
-      "pass": false,
-      "evidence": "closest approach 0.64 m, canReach(centre)=false, label \"SOFA · 85 kg · OUT OF REACH\" (expected SOFA · 85 kg · PUSH)",
-      "detail": {
-        "robot": [
-          -2.4930915321892826,
-          0.00009999785339459555,
-          -3.3996638876124052
-        ],
-        "obj": [
-          -2.500005006790161,
-          0.42599716782569885,
-          -2.755380630493164
-        ],
-        "dist": 0.64,
-        "canReachCenter": false,
-        "target": "sofa",
-        "hud": "SOFA · 85 kg · OUT OF REACH",
-        "cam": [
-          -3.4266159406392362,
-          1.0356679865494087,
-          -3.640369499713935
-        ]
-      },
-      "repro": "drive against the sofa, hover it and read the target label",
-      "ms": 3326
-    },
-    {
-      "id": "H18",
-      "group": "HUD",
-      "name": "third-person camera stays inside the apartment shell",
-      "sev": "P1",
-      "pass": false,
-      "evidence": "backed-south-wall: cam (-2.76,1.35,-4.73) OUTSIDE SHELL dist 1.92 m, centre ray windows, view mean 189 | backed-west-wall-bedroom: cam (-6.49,1.35,2.62) OUTSIDE SHELL dist 1.92 m, centre ray walls, view mean 197 | teleportNear-sofa: cam (-2.67,1.09,-4.41) OUTSIDE SHELL dist 1.44 m, centre ray windows, view mean 196 | teleportNear-bed: cam (-6.17,1.09,2.40) OUTSIDE SHELL dist 1.44 m, centre ray walls, view mean 197 | hallway-wall: cam (-0.58,0.82,-0.55) inside dist 1.85 m, centre ray walls, view mean 137",
-      "detail": [
-        {
-          "spot": "backed-south-wall",
-          "pos": [
-            -2.7648519802093467,
-            1.353936461080636,
-            -4.734532458770571
-          ],
-          "robot": [
-            -2.5848519802093506,
-            -0.000003608465194704369,
-            -3.3848519325256348
-          ],
-          "dist": 1.9202060396859955,
-          "inside": false,
-          "main": {
-            "litRatio": 1,
-            "mean": 188.56407451923076,
-            "w": 320,
-            "h": 260
-          },
-          "ray": "windows"
-        },
-        {
-          "spot": "backed-west-wall-bedroom",
-          "pos": [
-            -6.492106540191469,
-            1.3539386658212451,
-            2.6223246383667074
-          ],
-          "robot": [
-            -5.142426013946533,
-            -0.0000014030933380149158,
-            2.442324638366699
-          ],
-          "dist": 1.920206039240903,
-          "inside": false,
-          "main": {
-            "litRatio": 1,
-            "mean": 197.13669471153847,
-            "w": 320,
-            "h": 260
-          },
-          "ray": "walls"
-        },
-        {
-          "spot": "teleportNear-sofa",
-          "pos": [
-            -2.670311449777697,
-            1.0920455121433477,
-            -4.411044141120782
-          ],
-          "robot": [
-            -2.4956564903259277,
-            -0.0000029379129409812244,
-            -3.4953973293304443
-          ],
-          "dist": 1.4357866331991156,
-          "inside": false,
-          "main": {
-            "litRatio": 1,
-            "mean": 196.49225961538463,
-            "w": 320,
-            "h": 260
-          },
-          "ray": "windows"
-        },
-        {
-          "spot": "teleportNear-bed",
-          "pos": [
-            -6.165743968059842,
-            1.0920471810688541,
-            2.404268799414344
-          ],
-          "robot": [
-            -5.233827590942383,
-            -0.0000012689828872702869,
-            2.383166551589966
-          ],
-          "dist": 1.4357866331956786,
-          "inside": false,
-          "main": {
-            "litRatio": 1,
-            "mean": 197.13284054487178,
-            "w": 320,
-            "h": 260
-          },
-          "ray": "walls"
-        },
-        {
-          "spot": "hallway-wall",
-          "pos": [
-            -0.5800000059604641,
-            0.8235907263761946,
-            -0.5498206408327478
-          ],
-          "robot": [
-            -0.4000000059604645,
-            -0.000011684894561769799,
-            1.100000023841858
-          ],
-          "dist": 1.8527355875673035,
-          "inside": true,
-          "main": {
-            "litRatio": 0.9883653846153846,
-            "mean": 136.9105248397436,
-            "w": 320,
-            "h": 260
-          },
-          "ray": "walls"
-        }
-      ],
-      "repro": "back the robot against outer walls / furniture, then check the camera stays inside the shell and the view is not a flat wall",
-      "ms": 6109
-    }
-  ],
+  "failures": [],
   "counts": {
     "p0": 0,
-    "p1": 2,
-    "p2": 1
+    "p1": 0,
+    "p2": 0
   },
-  "verdict": "FIX",
+  "verdict": "SHIP",
   "total": 72,
-  "pass": 69,
+  "pass": 72,
   "perf": {
-    "fps": "rAF 56.3 fps (114 frames / 2.03 s), app counter 54",
+    "fps": "rAF 60.0 fps (121 frames / 2.02 s), app counter 60",
     "calls": "306 draw calls"
   },
   "results": [
@@ -254,10 +77,10 @@
       "name": "shader warm-up: first seconds are not a fps dip",
       "sev": "P1",
       "pass": true,
-      "evidence": "first 2 s after ready: rAF 60.1 fps (121 frames); ready in 1123 ms; machine load 3.4/8 cores",
+      "evidence": "first 2 s after ready: rAF 60.1 fps (121 frames); ready in 866 ms; machine load 3.4/8 cores",
       "detail": null,
       "repro": "measure rAF fps over the first 2 s after the ready flag (shader warm-up gate)",
-      "ms": 2015
+      "ms": 2016
     },
     {
       "id": "B1",
@@ -265,7 +88,7 @@
       "name": "dist size 3-9 MB",
       "sev": "P0",
       "pass": true,
-      "evidence": "5.02 MB (5261883 bytes)",
+      "evidence": "5.02 MB (5263156 bytes)",
       "detail": null,
       "repro": "npm run build; ls -l dist/index.html",
       "ms": 0
@@ -282,7 +105,7 @@
         "cssRefs": []
       },
       "repro": "grep the built dist/index.html for src/href/url() pointing at http(s)",
-      "ms": 20
+      "ms": 18
     },
     {
       "id": "B3",
@@ -293,7 +116,7 @@
       "evidence": "inline data:application/wasm=true, .wasm requests=0",
       "detail": null,
       "repro": "serve dist/ and watch the network for a .wasm request",
-      "ms": 15
+      "ms": 11
     },
     {
       "id": "B4",
@@ -307,7 +130,7 @@
         "pageErrors": []
       },
       "repro": "open dist/index.html via file:// in Chrome",
-      "ms": 3315
+      "ms": 2437
     },
     {
       "id": "L1",
@@ -315,7 +138,7 @@
       "name": "ready and load <= 8 s",
       "sev": "P0",
       "pass": true,
-      "evidence": "ready in 1123 ms",
+      "evidence": "ready in 866 ms",
       "detail": null,
       "repro": "fresh page load on the served build",
       "ms": 0
@@ -368,10 +191,10 @@
       "name": "fps >= 50 over 2 s (1440x900)",
       "sev": "P0",
       "pass": true,
-      "evidence": "rAF 56.3 fps (114 frames / 2.03 s), app counter 54",
+      "evidence": "rAF 60.0 fps (121 frames / 2.02 s), app counter 60",
       "detail": null,
       "repro": "run the app for 2 s at 1440x900 and count rAF frames",
-      "ms": 2053
+      "ms": 2033
     },
     {
       "id": "P2",
@@ -382,7 +205,7 @@
       "evidence": "306 draw calls",
       "detail": null,
       "repro": "read renderer.info.render.calls in the main view",
-      "ms": 1
+      "ms": 0
     },
     {
       "id": "P3",
@@ -393,7 +216,7 @@
       "evidence": "63,622 triangles",
       "detail": null,
       "repro": "read renderer.info.render.triangles",
-      "ms": 31
+      "ms": 16
     },
     {
       "id": "P4",
@@ -401,33 +224,33 @@
       "name": "10 s soak: fps >= 50, draw calls stable, no errors",
       "sev": "P0",
       "pass": true,
-      "evidence": "sustained 56.4 fps over 10 s, per-second buckets 56.6,52.1,60,56.1,54.1,55.1,57.1,57.1,57.1,59 (min 52.1); app fps 56,50,60,54,50,54,54,60,54,58; calls 306-306; errors 0; load 4.6/8 cores; 11.1 s",
+      "evidence": "sustained 60.1 fps over 10 s, per-second buckets 60.9,60,60,60,60,60,60,60,60,60 (min 60); app fps 60,60,60,60,60,60,60,60,60,60; calls 306-306; errors 0; load 3.3/8 cores; 10.9 s",
       "detail": {
         "buckets": [
-          56.6,
-          52.1,
+          60.9,
           60,
-          56.1,
-          54.1,
-          55.1,
-          57.1,
-          57.1,
-          57.1,
-          59
+          60,
+          60,
+          60,
+          60,
+          60,
+          60,
+          60,
+          60
         ],
-        "avgFps": 56.43000000000001,
+        "avgFps": 60.089999999999996,
         "retried": null,
         "appFps": [
-          56,
-          50,
           60,
-          54,
-          50,
-          54,
-          54,
           60,
-          54,
-          58
+          60,
+          60,
+          60,
+          60,
+          60,
+          60,
+          60,
+          60
         ],
         "calls": [
           306,
@@ -442,10 +265,10 @@
           306
         ],
         "errors": 0,
-        "load": 4.62646484375
+        "load": 3.275390625
       },
       "repro": "leave the app running for 10 s and sample fps/drawCalls every second",
-      "ms": 11729
+      "ms": 11550
     },
     {
       "id": "W1",
@@ -509,7 +332,7 @@
         ]
       },
       "repro": "teleport to the centre of each of the six contract rooms and read state().room",
-      "ms": 1622
+      "ms": 1600
     },
     {
       "id": "W2",
@@ -535,7 +358,7 @@
           "expect": "BATHROOM",
           "got": "BATHROOM",
           "pos": [
-            0.91,
+            0.9,
             0,
             1.4
           ],
@@ -548,7 +371,7 @@
           "pos": [
             4.05,
             0,
-            1.31
+            1.3
           ],
           "ok": true
         },
@@ -557,7 +380,7 @@
           "expect": "KITCHEN / DINING",
           "got": "KITCHEN / DINING",
           "pos": [
-            0.67,
+            0.69,
             0,
             -1.1
           ],
@@ -568,15 +391,15 @@
           "expect": "BEDROOM",
           "got": "BEDROOM",
           "pos": [
-            -1.83,
+            -1.84,
             0,
-            3.31
+            3.33
           ],
           "ok": true
         }
       ],
       "repro": "reset, teleport near each doorway, hold W with the real keyboard until the room label changes",
-      "ms": 17750
+      "ms": 17655
     },
     {
       "id": "W3",
@@ -604,7 +427,7 @@
         "needle": true
       },
       "repro": "query qa.object(name) for each name required by docs/CONTRACT.md",
-      "ms": 1
+      "ms": 0
     },
     {
       "id": "W4",
@@ -632,7 +455,7 @@
         "plant_monstera": 8
       },
       "repro": "read qa.object(name).mass and compare with the contract mass table",
-      "ms": 4
+      "ms": 1
     },
     {
       "id": "W5",
@@ -654,7 +477,7 @@
       "evidence": "all positions finite",
       "detail": [],
       "repro": "iterate qa.objects() and check every coordinate is finite",
-      "ms": 1
+      "ms": 0
     },
     {
       "id": "W7",
@@ -673,10 +496,10 @@
       "name": "real W/S/A/D move the robot in 4 directions",
       "sev": "P0",
       "pass": true,
-      "evidence": "{\"KeyW\":{\"dx\":-0.024,\"dz\":-0.746,\"moved\":0.746},\"KeyS\":{\"dx\":0,\"dz\":0.764,\"moved\":0.764},\"KeyA\":{\"dx\":-0.715,\"dz\":0.066,\"moved\":0.718},\"KeyD\":{\"dx\":0.671,\"dz\":0.094,\"moved\":0.678}} (robot v2: 0.40 m/s, 2.0 s holds)",
+      "evidence": "{\"KeyW\":{\"dx\":-0.016,\"dz\":-0.758,\"moved\":0.758},\"KeyS\":{\"dx\":0,\"dz\":0.77,\"moved\":0.77},\"KeyA\":{\"dx\":-0.722,\"dz\":0.066,\"moved\":0.725},\"KeyD\":{\"dx\":0.681,\"dz\":0.094,\"moved\":0.687}} (robot v2: 0.40 m/s, 2.0 s holds)",
       "detail": null,
       "repro": "hold each of W/A/S/D for 2.0 s with real keyboard events",
-      "ms": 10670
+      "ms": 10673
     },
     {
       "id": "I2",
@@ -684,10 +507,10 @@
       "name": "Shift boost is faster than normal",
       "sev": "P1",
       "pass": true,
-      "evidence": "normal 0.728 m / 2.0 s (0.36 m/s), boost 1.006 m (0.50 m/s), ratio 1.38",
+      "evidence": "normal 0.771 m / 2.0 s (0.39 m/s), boost 1.005 m (0.50 m/s), ratio 1.30",
       "detail": null,
       "repro": "hold W for 2.0 s with and without Shift and compare distance",
-      "ms": 5432
+      "ms": 5424
     },
     {
       "id": "I3",
@@ -698,7 +521,7 @@
       "evidence": "camera moved 1.327 m, quat delta 0.425",
       "detail": null,
       "repro": "press LMB and drag 200x96 px across the viewport",
-      "ms": 1117
+      "ms": 1106
     },
     {
       "id": "I4",
@@ -709,7 +532,7 @@
       "evidence": "camera distance 1.853 m -> 1.228 m (delta -0.624 m)",
       "detail": null,
       "repro": "scroll the wheel over the canvas and read qa.cameraInfo()",
-      "ms": 909
+      "ms": 924
     },
     {
       "id": "I5",
@@ -717,32 +540,32 @@
       "name": "real mouse click grabs a liftable object, second click places it",
       "sev": "P0",
       "pass": true,
-      "evidence": "target=mug_white @ (609,225); click1 held=mug_white; click2 held=null; settle drift 0.0000 m; shots/08-real-click-grab.png",
+      "evidence": "target=mug_white @ (618,269); click1 held=mug_white; click2 held=null; vertical rest |dy| 0.0000 m, residual roll 0.000 m; shots/08-real-click-grab.png",
       "detail": {
         "chosen": {
           "name": "mug_white",
           "screen": {
-            "x": 609.0658944855242,
-            "y": 224.94193485230764
+            "x": 618.3541034252858,
+            "y": 269.19667277513315
           },
           "hover": {
             "found": true,
             "radius": 0.28,
-            "angle": 0,
+            "angle": 1.0471975511965976,
             "robot": [
-              -2.5982863903045654,
-              0.011935723423957822,
-              -1.7066223621368408
+              -2.738286256790161,
+              0.011947808265686033,
+              -1.4641350507736206
             ],
             "obj": [
               -2.878286361694336,
               0.5152740478515625,
-              -1.7066223621368408
+              -1.7066221237182617
             ],
             "canReach": true,
             "screen": {
-              "x": 609.0658944855242,
-              "y": 224.94193485230764
+              "x": 618.3541034252858,
+              "y": 269.19667277513315
             }
           }
         },
@@ -754,30 +577,30 @@
         },
         "heldState": {
           "pos": [
-            -2.5982863903045654,
-            0.011935723423957822,
-            -1.7066223621368408
+            -2.738286256790161,
+            0.011947808265686033,
+            -1.4641350507736206
           ],
-          "yaw": 1.0616575391149963,
+          "yaw": 0.46680146896815694,
           "held": "mug_white",
           "mode": "third",
           "grounded": true
         },
         "after": {
           "pos": [
-            -2.5982863903045654,
-            0.011935723423957822,
-            -1.7066223621368408
+            -2.738286256790161,
+            0.011947808265686033,
+            -1.4641350507736206
           ],
-          "yaw": 1.0616575391149963,
+          "yaw": -0.18249886980291916,
           "held": null,
           "mode": "third",
           "grounded": true
         },
-        "settleDrift": 0
+        "settleDrift": 5.21540641784668e-8
       },
       "repro": "teleport near a liftable object, put the real mouse cursor on it, LMB click twice",
-      "ms": 4149
+      "ms": 6810
     },
     {
       "id": "I6",
@@ -785,15 +608,15 @@
       "name": "wall collision keeps the robot inside the apartment",
       "sev": "P0",
       "pass": true,
-      "evidence": "final (-3.67, -0.00, -3.56), min z -3.57, max |x| 3.67 (bounds x±5.6 z±3.8)",
+      "evidence": "final (-3.67, 0.00, -3.57), min z -3.57, max |x| 3.67 (bounds x±5.6 z±3.8)",
       "detail": {
         "final": [
-          -3.671356233340383,
-          -1.3050739655628973e-8,
-          -3.564947503458825
+          -3.67227840423584,
+          0.00009998271212680043,
+          -3.5650475098664174
         ],
-        "minZ": -3.565047480238718,
-        "maxAbsX": 3.6713621616363525,
+        "minZ": -3.5650475098664174,
+        "maxAbsX": 3.672284153528132,
         "samples": [
           [
             -3.62,
@@ -801,24 +624,34 @@
             -2.16
           ],
           [
-            -3.63,
+            -3.62,
+            0,
+            -2.17
+          ],
+          [
+            -3.64,
             0,
             -2.18
           ],
           [
             -3.65,
             0,
-            -2.21
+            -2.2
+          ],
+          [
+            -3.66,
+            0,
+            -2.23
           ],
           [
             -3.67,
             0,
-            -2.25
+            -2.28
           ],
           [
             -3.67,
             0,
-            -2.32
+            -2.34
           ],
           [
             -3.67,
@@ -828,72 +661,77 @@
           [
             -3.67,
             0,
-            -2.47
+            -2.45
           ],
           [
             -3.67,
             0,
-            -2.53
+            -2.51
           ],
           [
             -3.67,
             0,
-            -2.6
+            -2.56
           ],
           [
             -3.67,
             0,
-            -2.65
+            -2.62
           ],
           [
             -3.67,
             0,
-            -2.71
+            -2.68
           ],
           [
             -3.67,
             0,
-            -2.77
+            -2.74
           ],
           [
             -3.67,
             0,
-            -2.84
+            -2.79
           ],
           [
             -3.67,
             0,
-            -2.89
+            -2.85
           ],
           [
             -3.67,
             0,
-            -2.95
+            -2.91
           ],
           [
             -3.67,
             0,
-            -2.99
+            -2.96
           ],
           [
             -3.67,
             0,
-            -3.06
+            -3.02
           ],
           [
             -3.67,
             0,
-            -3.12
+            -3.07
           ],
           [
             -3.67,
             0,
-            -3.18
+            -3.13
           ],
           [
             -3.67,
             0,
-            -3.23
+            -3.19
+          ],
+          [
+            -3.67,
+            0,
+            -3.25
           ],
           [
             -3.67,
@@ -903,22 +741,37 @@
           [
             -3.67,
             0,
-            -3.35
+            -3.37
           ],
           [
             -3.67,
             0,
-            -3.41
+            -3.42
           ],
           [
             -3.67,
             0,
-            -3.46
+            -3.48
           ],
           [
             -3.67,
             0,
-            -3.52
+            -3.53
+          ],
+          [
+            -3.67,
+            0,
+            -3.56
+          ],
+          [
+            -3.67,
+            0,
+            -3.56
+          ],
+          [
+            -3.67,
+            0,
+            -3.56
           ],
           [
             -3.67,
@@ -939,41 +792,11 @@
             -3.67,
             0,
             -3.57
-          ],
-          [
-            -3.67,
-            0,
-            -3.57
-          ],
-          [
-            -3.67,
-            0,
-            -3.57
-          ],
-          [
-            -3.67,
-            0,
-            -3.56
-          ],
-          [
-            -3.67,
-            0,
-            -3.56
-          ],
-          [
-            -3.67,
-            0,
-            -3.56
-          ],
-          [
-            -3.67,
-            0,
-            -3.56
           ]
         ]
       },
       "repro": "boost into the south wall for 3.5 s and sample the robot position every 100 ms",
-      "ms": 4731
+      "ms": 4386
     },
     {
       "id": "I7",
@@ -984,7 +807,7 @@
       "evidence": "max x reached 5.365 m (wall interior 5.6, body radius ~0.155), final x 5.365",
       "detail": null,
       "repro": "boost at the east wall for 3.5 s and track the furthest x",
-      "ms": 4248
+      "ms": 4210
     },
     {
       "id": "I8",
@@ -995,7 +818,7 @@
       "evidence": "stopped at z=0.465 (wall interior face z=0.7), room=LIVING ROOM",
       "detail": null,
       "repro": "drive from the living room towards the solid z=0.7 partition for 3.0 s",
-      "ms": 3660
+      "ms": 3658
     },
     {
       "id": "G1",
@@ -1027,22 +850,22 @@
         "held": "mug_white",
         "robot": [
           -2.6725614070892334,
-          0.012000051736831663,
-          -1.9897772073745728
+          0.012000036835670469,
+          -1.9897773265838623
         ],
         "mugBefore": [
           -2.878286361694336,
-          0.5152742266654968,
-          -1.7066313028335571
+          0.5152745246887207,
+          -1.7066227197647095
         ],
         "mugAfter": [
-          -2.941734552383423,
-          0.24716511368751526,
-          -1.652685284614563
+          -2.941725015640259,
+          0.24716389179229736,
+          -1.6526700258255005
         ],
-        "mugY": 0.24716511368751526,
-        "robotY": 0.012000051736831663,
-        "objDist": 0.4313758761655631,
+        "mugY": 0.24716389179229736,
+        "robotY": 0.012000036835670469,
+        "objDist": 0.43138194259008833,
         "hud": {
           "room": "LIVING ROOM",
           "target": "COFFEE TABLE · 13 kg · PUSH",
@@ -1051,7 +874,7 @@
         }
       },
       "repro": "qa.reset(); qa.teleportNear(\"mug_white\", 0.33); wait 600 ms; qa.grabByName(\"mug_white\")",
-      "ms": 1007
+      "ms": 1005
     },
     {
       "id": "G2",
@@ -1076,7 +899,7 @@
         }
       },
       "repro": "grab the mug (hover + qa.grabByName) and read qa.hudText().held",
-      "ms": 913
+      "ms": 904
     },
     {
       "id": "G3",
@@ -1084,10 +907,10 @@
       "name": "held object follows the robot while driving",
       "sev": "P1",
       "pass": true,
-      "evidence": "held mug_white->mug_white; robot moved 0.591 m, mug moved 0.570 m, mug-robot distance 0.56 m",
+      "evidence": "held mug_white->mug_white; robot moved 0.593 m, mug moved 0.772 m, mug-robot distance 0.49 m",
       "detail": null,
       "repro": "grab the mug, teleport to open floor, hold W for 0.9 s and compare mug/robot positions",
-      "ms": 2968
+      "ms": 2964
     },
     {
       "id": "G4",
@@ -1095,10 +918,10 @@
       "name": "release drops the object and it settles",
       "sev": "P1",
       "pass": true,
-      "evidence": "held before=mug_white, grab={\"ok\":true}; dropped 0.28 m to y=0.060; vertical rest |dy| 0.0000 m over 1 s; residual roll 0.000 m/s (rug roll allowed)",
+      "evidence": "held before=mug_white, grab={\"ok\":true}; carry y 0.235 -> floor y 0.085 (dropped 0.15 m); vertical rest |dy| 0.0000 m over 1 s; residual roll 0.000 m/s (rug roll allowed)",
       "detail": null,
       "repro": "grab the mug, qa.release(), wait 1.4 s, compare position over 0.6 s",
-      "ms": 3915
+      "ms": 3905
     },
     {
       "id": "G5",
@@ -1109,7 +932,7 @@
       "evidence": "{\"g\":{\"ok\":false,\"reason\":\"too_heavy\",\"held\":null},\"held\":null}",
       "detail": null,
       "repro": "qa.teleportNear(\"sofa\", 0.5) then qa.grabByName(\"sofa\")",
-      "ms": 506
+      "ms": 503
     },
     {
       "id": "G6",
@@ -1131,7 +954,7 @@
       "evidence": "grab={\"ok\":true,\"reason\":null,\"held\":\"needle\"}, held=needle, needleFound=true",
       "detail": null,
       "repro": "qa.teleportNear(\"needle\", 0.35) then qa.grabByName(\"needle\")",
-      "ms": 805
+      "ms": 806
     },
     {
       "id": "G8",
@@ -1142,7 +965,7 @@
       "evidence": "laptop 1.6 kg vs arm 0.5 kg -> {\"ok\":false,\"reason\":\"too_heavy\",\"held\":null}",
       "detail": null,
       "repro": "qa.teleportNear(\"laptop\", 0.32) then qa.grabByName(\"laptop\")",
-      "ms": 805
+      "ms": 810
     },
     {
       "id": "G9",
@@ -1153,7 +976,7 @@
       "evidence": "grab={\"ok\":true,\"reason\":null,\"held\":\"mug_white\"}; mug y 0.515 -> 0.590 (rise 0.075 m)",
       "detail": null,
       "repro": "grab the mug and measure the gripper carry lift after 0.7 s",
-      "ms": 1265
+      "ms": 1267
     },
     {
       "id": "G10",
@@ -1161,10 +984,10 @@
       "name": "aim-responsive carry: held mug rises/lowers with aim",
       "sev": "P2",
       "pass": true,
-      "evidence": "grab={\"ok\":true,\"reason\":null,\"held\":\"mug_white\"}; mug y aim-high 0.588 vs aim-low 0.568 -> carry delta 0.021 m",
+      "evidence": "grab={\"ok\":true,\"reason\":null,\"held\":\"mug_white\"}; mug y aim-high 0.588 vs aim-low 0.556 -> carry delta 0.032 m",
       "detail": null,
       "repro": "grab the mug, keep aiming high then low inside the carry band and measure the carried mug height change",
-      "ms": 2971
+      "ms": 2978
     },
     {
       "id": "PH1",
@@ -1172,42 +995,42 @@
       "name": "heavy furniture push < 0.01 m (7 objects)",
       "sev": "P1",
       "pass": true,
-      "evidence": "sofa(85kg):0.0001m, bed(75kg):0.0006m, wardrobe(120kg):0.0000m, fridge(95kg):0.0001m, bookshelf(42kg):0.0003m, dining_table(34kg):0.0033m, desk(26kg):0.0037m — threshold <0.01 m",
+      "evidence": "sofa(85kg):0.0004m, bed(75kg):0.0006m, wardrobe(120kg):0.0000m, fridge(95kg):0.0001m, bookshelf(42kg):0.0002m, dining_table(34kg):0.0033m, desk(26kg):0.0037m — threshold <0.01 m",
       "detail": [
         {
           "name": "sofa",
           "found": true,
           "mass": 85,
           "robotDist": 0.7399999951716048,
-          "moved": 0.00006074576017112811
+          "moved": 0.00036407149371218387
         },
         {
           "name": "bed",
           "found": true,
           "mass": 75,
           "robotDist": 1.100000121582114,
-          "moved": 0.0005719216461787767
+          "moved": 0.0005775236229047045
         },
         {
           "name": "wardrobe",
           "found": true,
           "mass": 120,
           "robotDist": 0.4999999749932294,
-          "moved": 0.000004568998312172127
+          "moved": 0.000004199484575702795
         },
         {
           "name": "fridge",
           "found": true,
           "mass": 95,
           "robotDist": 0.6199998795362915,
-          "moved": 0.00010286787800315236
+          "moved": 0.00012899238364600887
         },
         {
           "name": "bookshelf",
           "found": true,
           "mass": 42,
-          "robotDist": 0.5000000381764685,
-          "moved": 0.00031976475933148934
+          "robotDist": 0.5000000556938295,
+          "moved": 0.00017164167317583
         },
         {
           "name": "dining_table",
@@ -1225,7 +1048,7 @@
         }
       ],
       "repro": "stand ~0.45-0.55 m from each heavy object, hover it, qa.action() once, measure displacement after 2 s",
-      "ms": 50804
+      "ms": 23255
     },
     {
       "id": "PH2",
@@ -1233,7 +1056,7 @@
       "name": "chair_1 (5.5 kg) push > 0.03 m",
       "sev": "P1",
       "pass": true,
-      "evidence": "mass 5.5 kg, robot 0.50 m away, hover=chair_1, displacement 0.1135 m",
+      "evidence": "mass 5.5 kg, robot 0.50 m away, hover=chair_1, displacement 0.1243 m",
       "detail": {
         "found": true,
         "target": "chair_1",
@@ -1248,39 +1071,42 @@
           -1.550451397895813
         ],
         "after": [
-          1.607408881187439,
+          1.5967923402786255,
           0.44247913360595703,
-          -1.5372306108474731
+          -1.5354081392288208
         ],
         "robotObjDist": 0.5,
-        "moved": 0.11351482943752901,
+        "moved": 0.12427270193574992,
         "mass": 5.5
       },
       "repro": "stand ~0.45-0.55 m from chair_1, hover it, qa.action() once, measure displacement after 2 s",
-      "ms": 2673
+      "ms": 2675
     },
     {
       "id": "PH3",
       "group": "PHYS",
       "name": "trash bin / laundry basket push > 0.03 m",
       "sev": "P1",
-      "pass": false,
-      "evidence": "trash_bin(1.6kg):0.3190m, laundry_basket(undefinedkg):no-hoverm — threshold >0.03 m",
+      "pass": true,
+      "evidence": "trash_bin(1.6kg):0.0626m, laundry_basket(1kg):0.8637m — threshold >0.03 m",
       "detail": [
         {
           "name": "trash_bin",
           "found": true,
           "mass": 1.6,
           "robotDist": 0.4499999811776758,
-          "moved": 0.3189767737847738
+          "moved": 0.06262268068220604
         },
         {
           "name": "laundry_basket",
-          "found": false
+          "found": true,
+          "mass": 1,
+          "robotDist": 0.44999885561608416,
+          "moved": 0.8637395066836585
         }
       ],
       "repro": "hover + qa.action() the trash bin and laundry basket from ~0.45 m, measure displacement",
-      "ms": 45565
+      "ms": 5359
     },
     {
       "id": "PH4",
@@ -1342,7 +1168,7 @@
         }
       ],
       "repro": "qa.reset(), wait 1.5 s, record 10 resting objects, wait 3 s, re-measure",
-      "ms": 4505
+      "ms": 4504
     },
     {
       "id": "PH5",
@@ -1394,7 +1220,7 @@
         }
       ],
       "repro": "record books on shelves + cushions on the sofa, wait 3 s, check they did not sink/fall",
-      "ms": 4207
+      "ms": 4206
     },
     {
       "id": "PH6",
@@ -1411,18 +1237,18 @@
         ],
         "mugInit": [
           -2.878286361694336,
-          0.5152752995491028,
-          -1.7066223621368408
+          0.5152748227119446,
+          -1.7066235542297363
         ],
         "disturbed": [
-          -3.997424602508545,
-          0.04795581102371216,
-          -0.8891897201538086
+          -4.0613112449646,
+          0.07060893625020981,
+          -0.9854223132133484
         ],
         "mug": [
-          -2.878286361694336,
-          0.515275239944458,
-          -1.7066220045089722
+          -2.8782858848571777,
+          0.5152739882469177,
+          -1.7066212892532349
         ],
         "robot": [
           -3.5999999046325684,
@@ -1431,11 +1257,11 @@
         ],
         "held": null,
         "robotDelta": 0,
-        "mugDelta": 3.6256089987148156e-7,
-        "disturbedDelta": 1.3858811371225463
+        "mugDelta": 0.0000024604520130813472,
+        "disturbedDelta": 1.3855248480197673
       },
       "repro": "move robot + mug, then qa.reset() and compare with spawn/initial positions",
-      "ms": 3614
+      "ms": 3620
     },
     {
       "id": "H1",
@@ -1443,7 +1269,7 @@
       "name": "4 panels + minimap show live scene (not black)",
       "sev": "P0",
       "pass": true,
-      "evidence": "panels front lit 1.00/mean 127, right lit 1.00/mean 139, left lit 1.00/mean 108, back lit 1.00/mean 125; map lit 1.00/mean 130",
+      "evidence": "panels front lit 1.00/mean 110, right lit 1.00/mean 124, left lit 1.00/mean 126, back lit 1.00/mean 139; map lit 1.00/mean 130",
       "detail": {
         "rects": {
           "panels": [
@@ -1493,39 +1319,39 @@
         },
         "panels": {
           "front": {
-            "litRatio": 0.99966647210873,
-            "mean": 126.92463659356847,
+            "litRatio": 0.9995830901359126,
+            "mean": 110.44840045582146,
             "w": 179,
             "h": 134
           },
           "right": {
-            "litRatio": 1,
-            "mean": 138.60531143166847,
+            "litRatio": 0.9995830901359126,
+            "mean": 123.72465882876122,
             "w": 179,
             "h": 134
           },
           "left": {
-            "litRatio": 0.9997915450679563,
-            "mean": 107.96382612079269,
+            "litRatio": 0.9999166180271826,
+            "mean": 125.96435420662053,
             "w": 179,
             "h": 134
           },
           "back": {
-            "litRatio": 0.9999166180271826,
-            "mean": 125.2808582784402,
+            "litRatio": 0.9999583090135913,
+            "mean": 139.37740070596737,
             "w": 179,
             "h": 134
           }
         },
         "map": {
-          "litRatio": 0.9982407407407408,
-          "mean": 130.47654320987655,
+          "litRatio": 0.9983641975308643,
+          "mean": 129.65135802469135,
           "w": 180,
           "h": 180
         }
       },
       "repro": "qa.sampleHud() each of the 4 surround panels and the minimap",
-      "ms": 910
+      "ms": 907
     },
     {
       "id": "H2",
@@ -1533,56 +1359,56 @@
       "name": "robot hidden from the HUD feeds",
       "sev": "P1",
       "pass": true,
-      "evidence": "front panel mean: normal 126.92, robot forced visible 112.63 (delta +-14.29), restored 126.92; map delta 0.15",
+      "evidence": "front panel mean: normal 106.31, robot forced visible 93.14 (delta +-13.17), restored 106.31; map delta 0.16",
       "detail": {
         "normal": {
           "map": {
-            "litRatio": 0.9982407407407408,
-            "mean": 130.47654320987655,
+            "litRatio": 0.9983024691358025,
+            "mean": 131.12512345679013,
             "w": 180,
             "h": 180
           },
           "front": {
-            "litRatio": 0.99966647210873,
-            "mean": 126.92463659356847,
+            "litRatio": 0.9999166180271826,
+            "mean": 106.30601184024015,
             "w": 179,
             "h": 134
           }
         },
         "forced": {
           "map": {
-            "litRatio": 0.9982407407407408,
-            "mean": 130.6263683127572,
+            "litRatio": 0.9983024691358025,
+            "mean": 131.28109053497943,
             "w": 180,
             "h": 180
           },
           "front": {
-            "litRatio": 0.9998749270407737,
-            "mean": 112.63147947413769,
+            "litRatio": 1,
+            "mean": 93.13682981739348,
             "w": 179,
             "h": 134
           }
         },
         "restored": {
           "map": {
-            "litRatio": 0.9982407407407408,
-            "mean": 130.47654320987655,
+            "litRatio": 0.9983024691358025,
+            "mean": 131.12512345679013,
             "w": 180,
             "h": 180
           },
           "front": {
-            "litRatio": 0.99966647210873,
-            "mean": 126.92463659356847,
+            "litRatio": 0.9999166180271826,
+            "mean": 106.30601184024015,
             "w": 179,
             "h": 134
           }
         },
-        "frontDelta": -14.293157119430774,
+        "frontDelta": -13.16918202284667,
         "restoreDelta": 0,
-        "mapDelta": 0.14982510288064077
+        "mapDelta": 0.1559670781892919
       },
       "repro": "lock robot.group.visible=true for the HUD pass and diff the feed pixels vs normal",
-      "ms": 1533
+      "ms": 1520
     },
     {
       "id": "H3",
@@ -1590,30 +1416,30 @@
       "name": "C toggles 360 HUD off (clears) and back on",
       "sev": "P1",
       "pass": true,
-      "evidence": "surround=false; .hud-cam is-hidden=[true,true,true,true]; panel mean 126.9 -> 0.0; toggled back=true",
+      "evidence": "surround=false; .hud-cam is-hidden=[true,true,true,true]; panel mean 106.3 -> 0.0; toggled back=true",
       "detail": {
         "on": {
           "front": {
-            "litRatio": 0.99966647210873,
-            "mean": 126.92463659356847,
+            "litRatio": 0.9999166180271826,
+            "mean": 106.30601184024015,
             "w": 179,
             "h": 134
           },
           "right": {
-            "litRatio": 1,
-            "mean": 138.60531143166847,
+            "litRatio": 0.9993746352038689,
+            "mean": 127.11067567191974,
             "w": 179,
             "h": 134
           },
           "left": {
-            "litRatio": 0.9997915450679563,
-            "mean": 107.96382612079269,
+            "litRatio": 0.9999166180271826,
+            "mean": 125.66529086411518,
             "w": 179,
             "h": 134
           },
           "back": {
             "litRatio": 0.9999166180271826,
-            "mean": 125.2808582784402,
+            "mean": 137.67471302704357,
             "w": 179,
             "h": 134
           }
@@ -1660,10 +1486,10 @@
       "name": "night toggle changes main luminance > 15%",
       "sev": "P1",
       "pass": true,
-      "evidence": "main mean day 134.3 -> night 101.6 (24.3% change), state.night=true",
+      "evidence": "main mean day 130.8 -> night 90.4 (30.9% change), state.night=true",
       "detail": null,
       "repro": "sample the main view, press L, sample again, press L to restore",
-      "ms": 2281
+      "ms": 2232
     },
     {
       "id": "H5",
@@ -1671,10 +1497,10 @@
       "name": "first-person camera mode works",
       "sev": "P1",
       "pass": true,
-      "evidence": "mode=first, camera 0.33 m from robot, main mean 117, back to third; shots/03-first-person.png",
+      "evidence": "mode=first, camera 0.33 m from robot, main mean 78, back to third; shots/03-first-person.png",
       "detail": null,
       "repro": "press V, check cameraInfo()/state().robot.mode, screenshot, press V again",
-      "ms": 2455
+      "ms": 2244
     },
     {
       "id": "H6",
@@ -1716,7 +1542,7 @@
         }
       ],
       "repro": "teleport into each room and read qa.hudText().room",
-      "ms": 1824
+      "ms": 1814
     },
     {
       "id": "H7",
@@ -1736,7 +1562,7 @@
             "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
           },
           "canReach": true,
-          "robotObjDist": 0.2799999713897705
+          "robotObjDist": 0.28000001771149885
         },
         "push": {
           "found": true,
@@ -1756,45 +1582,46 @@
           "hud": "SOFA · 85 kg · OUT OF REACH",
           "dist": 2.72,
           "cam": [
-            -3.965709915949049,
-            1.513174363752522,
-            0.4405997354802437
+            -0.9504193006131403,
+            1.4050220180581103,
+            0.1926668475146362
           ]
         }
       },
       "repro": "hover a mug and chair_1 from arm range, then the sofa from far away, and read qa.hudText().target",
-      "ms": 3914
+      "ms": 5661
     },
     {
       "id": "H7b",
       "group": "HUD",
       "name": "large-furniture PUSH label (sofa at closest reachable range)",
       "sev": "P2",
-      "pass": false,
-      "evidence": "closest approach 0.64 m, canReach(centre)=false, label \"SOFA · 85 kg · OUT OF REACH\" (expected SOFA · 85 kg · PUSH)",
+      "pass": true,
+      "evidence": "closest approach 0.64 m, canReach(centre)=false, nearest pointer hit 0.178 m from shoulder, label \"SOFA · 85 kg · PUSH\" (expected SOFA · 85 kg · PUSH)",
       "detail": {
         "robot": [
-          -2.4930915321892826,
-          0.00009999785339459555,
-          -3.3996638876124052
+          -2.4910309314727783,
+          -0.000003555549201339492,
+          -3.3996596336364746
         ],
         "obj": [
-          -2.500005006790161,
-          0.42599716782569885,
-          -2.755380630493164
+          -2.5000061988830566,
+          0.425997257232666,
+          -2.7553770542144775
         ],
         "dist": 0.64,
         "canReachCenter": false,
         "target": "sofa",
-        "hud": "SOFA · 85 kg · OUT OF REACH",
+        "hud": "SOFA · 85 kg · PUSH",
+        "hitDist": 0.178,
         "cam": [
-          -3.4266159406392362,
-          1.0356679865494087,
-          -3.640369499713935
+          -2.51755007117731,
+          0.3578537905940432,
+          -3.5911079953684206
         ]
       },
       "repro": "drive against the sofa, hover it and read the target label",
-      "ms": 3326
+      "ms": 3316
     },
     {
       "id": "H8",
@@ -1802,15 +1629,15 @@
       "name": "UI text is lean (no paragraphs)",
       "sev": "P2",
       "pass": true,
-      "evidence": "{\"room\":\"LIVING ROOM\",\"target\":\"SOFA · 85 kg · OUT OF REACH\",\"held\":null,\"hint\":\"WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L\"}",
+      "evidence": "{\"room\":\"LIVING ROOM\",\"target\":\"SOFA · 85 kg · PUSH\",\"held\":null,\"hint\":\"WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L\"}",
       "detail": {
         "room": "LIVING ROOM",
-        "target": "SOFA · 85 kg · OUT OF REACH",
+        "target": "SOFA · 85 kg · PUSH",
         "held": null,
         "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
       },
       "repro": "read qa.hudText() and check hint/labels are short",
-      "ms": 1
+      "ms": 9
     },
     {
       "id": "H9",
@@ -1965,11 +1792,11 @@
           {
             "cls": "hud-target",
             "id": "hud-target",
-            "hidden": true,
-            "x": 0,
-            "y": 0,
-            "w": 0,
-            "h": 0
+            "hidden": false,
+            "x": 60,
+            "y": 436,
+            "w": 134,
+            "h": 16
           },
           {
             "cls": "hud-held",
@@ -2028,7 +1855,7 @@
         ]
       },
       "repro": "resize to 390x844, move the real mouse to the centre, read qa.hudRects() + DOM rects, screenshot",
-      "ms": 1700
+      "ms": 1711
     },
     {
       "id": "H9b",
@@ -2036,7 +1863,7 @@
       "name": "mobile DPR 2: viewport units + canvas sizes stay 1:1",
       "sev": "P1",
       "pass": true,
-      "evidence": "dpr=2 viewport 390x844; canvas [780,1688] vs css*dpr [780,1688]; hudCanvas [780,1688] (1x ok); feed overflow=0; #hud overflow=0; front feed lit=0.99/mean 121",
+      "evidence": "dpr=2 viewport 390x844; canvas [780,1688] vs css*dpr [780,1688]; hudCanvas [780,1688] (1x ok); feed overflow=0; #hud overflow=0; front feed lit=0.99/mean 59",
       "detail": {
         "vw": 390,
         "vh": 844,
@@ -2213,11 +2040,11 @@
           },
           {
             "id": "hud-target",
-            "hidden": true,
-            "x": 0,
-            "y": 0,
-            "w": 0,
-            "h": 0
+            "hidden": false,
+            "x": 60,
+            "y": 436,
+            "w": 134.0625,
+            "h": 16
           },
           {
             "id": "hud-held",
@@ -2270,15 +2097,15 @@
         ],
         "feeds": {
           "front": {
-            "litRatio": 0.9911233547597184,
-            "mean": 121.38025031459375,
+            "litRatio": 0.9917355371900827,
+            "mean": 59.37996122844608,
             "w": 162,
             "h": 121
           }
         }
       },
       "repro": "setViewport 390x844 @ DPR 2 and check viewport units, canvas backing store and HUD overflow",
-      "ms": 1562
+      "ms": 1530
     },
     {
       "id": "H10",
@@ -2286,7 +2113,7 @@
       "name": "resize back to 1440x900 restores the layout",
       "sev": "P1",
       "pass": true,
-      "evidence": "viewport 1440x900; map x=1244 y=16 180x180; panels bottom-left=true; rAF fps 58.6/58.6; app fps 56; drawCalls 290; shots/07-resize-back-1440.png",
+      "evidence": "viewport 1440x900; map x=1244 y=16 180x180; panels bottom-left=true; rAF fps 60.0/60.4; app fps 60; drawCalls 339; shots/07-resize-back-1440.png",
       "detail": {
         "rects": {
           "panels": [
@@ -2337,25 +2164,25 @@
         "vw": 1440,
         "vh": 900,
         "stats": {
-          "calls": 290,
-          "triangles": 62132,
+          "calls": 339,
+          "triangles": 64254,
           "points": 0,
           "lines": 0
         },
-        "fps": 56,
+        "fps": 60,
         "fps1": {
-          "fps": 58.59536188883264,
-          "frames": 71,
-          "seconds": 1.211699999988079
+          "fps": 60.044004854049106,
+          "frames": 73,
+          "seconds": 1.2157749999761582
         },
         "fps2": {
-          "fps": 58.566563306378455,
+          "fps": 60.44822774701999,
           "frames": 73,
-          "seconds": 1.2464449999928475
+          "seconds": 1.2076450000405312
         }
       },
       "repro": "setViewport back to 1440x900, re-read qa.hudRects(), measure sustained fps, screenshot",
-      "ms": 4513
+      "ms": 4170
     },
     {
       "id": "H11",
@@ -2399,7 +2226,7 @@
       "evidence": "W keycap: before=false held=true released=false; active keycaps while W held=[\"KeyW\"]; Shift held=true released=false",
       "detail": null,
       "repro": "hold W and Shift with the real keyboard and read the kbd.is-on classes",
-      "ms": 1221
+      "ms": 1215
     },
     {
       "id": "H13",
@@ -2443,7 +2270,7 @@
         }
       },
       "repro": "press V, C, L with the real keyboard and read #hud-view/#hud-360/#hud-light",
-      "ms": 2265
+      "ms": 2223
     },
     {
       "id": "H14",
@@ -2451,9 +2278,9 @@
       "name": "trajectory trail renders only on the minimap camera",
       "sev": "P1",
       "pass": true,
-      "evidence": "trail points 0 -> 14; mesh layer2=true, outline layer2=true; top cam layer2=true, front/back/left/right layer2=false/false/false/false",
+      "evidence": "trail points 0 -> 13; mesh layer2=true, outline layer2=true; top cam layer2=true, front/back/left/right layer2=false/false/false/false",
       "detail": {
-        "points": 14,
+        "points": 13,
         "meshMask": 4,
         "outlineMask": 4,
         "meshOnLayer2": true,
@@ -2466,7 +2293,7 @@
         "mainCamera": "third"
       },
       "repro": "drive 1.5 s and inspect window.__APP__.trail.points + layer masks on trail meshes and 360 cameras",
-      "ms": 2439
+      "ms": 2417
     },
     {
       "id": "H15",
@@ -2474,7 +2301,7 @@
       "name": "touch controls: stick drives, drag looks, tap grabs",
       "sev": "P1",
       "pass": true,
-      "evidence": "hud-touch on=true, hint \"LEFT STICK DRIVE · DRAG LOOK · TAP GRAB\"; stick moved robot 0.66 m (active=true, knob=\"translate(0px, 34px)\"), stop drift 0.001 m; drag-look camera moved 0.95 m; tap grab held=mug_white, second tap held=null",
+      "evidence": "hud-touch on=true, hint \"LEFT STICK DRIVE · DRAG LOOK · TAP GRAB\"; stick moved robot 0.69 m (active=true, knob=\"translate(0px, 34px)\"), stop drift 0.003 m; drag-look camera moved 0.95 m; tap grab held=mug_white, second tap held=null",
       "detail": {
         "setup": {
           "hint": "LEFT STICK DRIVE · DRAG LOOK · TAP GRAB",
@@ -2482,16 +2309,16 @@
         },
         "stick": {
           "pos": [
-            -3.6203646870562807,
-            0.007261027537653175,
-            -1.8584917299449444
+            -3.6129376849276014,
+            0.007416678678603406,
+            -1.89484121510759
           ],
           "active": true,
           "knob": "translate(0px, 34px)"
         },
-        "moved": 0.6588065117850521,
-        "stopDrift": 0.0005220132933660546,
-        "camMoved": 0.9508749278610638,
+        "moved": 0.6949616062099653,
+        "stopDrift": 0.003190644574771908,
+        "camMoved": 0.9506975437410168,
         "tap": {
           "found": true,
           "held": "mug_white",
@@ -2500,7 +2327,7 @@
         }
       },
       "repro": "enable touch mode, drive with qa.touchJoy, look with qa.touchLook, grab/place with qa.touchTap",
-      "ms": 5521
+      "ms": 7330
     },
     {
       "id": "H16",
@@ -2585,7 +2412,7 @@
         }
       },
       "repro": "read #hud-controls .hud-row and verify HINT and RESET are separate keycap rows",
-      "ms": 7
+      "ms": 1
     },
     {
       "id": "H17",
@@ -2658,121 +2485,121 @@
         }
       },
       "repro": "inspect the map trail legend position and its is-hidden state when 360 is toggled",
-      "ms": 1509
+      "ms": 1512
     },
     {
       "id": "H18",
       "group": "HUD",
       "name": "third-person camera stays inside the apartment shell",
       "sev": "P1",
-      "pass": false,
-      "evidence": "backed-south-wall: cam (-2.76,1.35,-4.73) OUTSIDE SHELL dist 1.92 m, centre ray windows, view mean 189 | backed-west-wall-bedroom: cam (-6.49,1.35,2.62) OUTSIDE SHELL dist 1.92 m, centre ray walls, view mean 197 | teleportNear-sofa: cam (-2.67,1.09,-4.41) OUTSIDE SHELL dist 1.44 m, centre ray windows, view mean 196 | teleportNear-bed: cam (-6.17,1.09,2.40) OUTSIDE SHELL dist 1.44 m, centre ray walls, view mean 197 | hallway-wall: cam (-0.58,0.82,-0.55) inside dist 1.85 m, centre ray walls, view mean 137",
+      "pass": true,
+      "evidence": "backed-south-wall: cam (-2.61,0.36,-3.59) inside dist 0.42 m, centre ray sofa, view mean 33 | backed-west-wall-bedroom: cam (-5.38,0.37,2.47) inside dist 0.44 m, centre ray bed, view mean 100 | teleportNear-sofa: cam (-2.51,0.34,-3.61) inside dist 0.36 m, centre ray sofa, view mean 69 | teleportNear-bed: cam (-5.40,0.36,2.38) inside dist 0.40 m, centre ray bed, view mean 100 | hallway-wall: cam (-0.58,0.82,-0.55) inside dist 1.85 m, centre ray walls, view mean 137",
       "detail": [
         {
           "spot": "backed-south-wall",
           "pos": [
-            -2.7648519802093467,
-            1.353936461080636,
-            -4.734532458770571
+            -2.6070073241845377,
+            0.3644477283495224,
+            -3.5879205120992044
           ],
           "robot": [
             -2.5848519802093506,
-            -0.000003608465194704369,
+            -2.384185793236071e-9,
             -3.3848519325256348
           ],
-          "dist": 1.9202060396859955,
-          "inside": false,
+          "dist": 0.41779164150762454,
+          "inside": true,
           "main": {
-            "litRatio": 1,
-            "mean": 188.56407451923076,
+            "litRatio": 0.7753245192307693,
+            "mean": 33.33404647435898,
             "w": 320,
             "h": 260
           },
-          "ray": "windows"
+          "ray": "sofa"
         },
         {
           "spot": "backed-west-wall-bedroom",
           "pos": [
-            -6.492106540191469,
-            1.3539386658212451,
-            2.6223246383667074
+            -5.378586774652513,
+            0.37494875473519595,
+            2.468090430878138
           ],
           "robot": [
             -5.142426013946533,
-            -0.0000014030933380149158,
+            -0.0000014179944992087634,
             2.442324638366699
           ],
-          "dist": 1.920206039240903,
-          "inside": false,
+          "dist": 0.4438731947200663,
+          "inside": true,
           "main": {
             "litRatio": 1,
-            "mean": 197.13669471153847,
+            "mean": 100.11795272435897,
             "w": 320,
             "h": 260
           },
-          "ray": "walls"
+          "ray": "bed"
         },
         {
           "spot": "teleportNear-sofa",
           "pos": [
-            -2.670311449777697,
-            1.0920455121433477,
-            -4.411044141120782
+            -2.513454052424897,
+            0.3438321999042141,
+            -3.6137587411061056
           ],
           "robot": [
-            -2.4956564903259277,
-            -0.0000029379129409812244,
-            -3.4953973293304443
+            -2.495656728744507,
+            -0.0000029230117797873767,
+            -3.495396614074707
           ],
-          "dist": 1.4357866331991156,
-          "inside": false,
+          "dist": 0.36407269822967797,
+          "inside": true,
           "main": {
-            "litRatio": 1,
-            "mean": 196.49225961538463,
+            "litRatio": 0.8146754807692308,
+            "mean": 69.29271634615385,
             "w": 320,
             "h": 260
           },
-          "ray": "windows"
+          "ray": "sofa"
         },
         {
           "spot": "teleportNear-bed",
           "pos": [
-            -6.165743968059842,
-            1.0920471810688541,
-            2.404268799414344
+            -5.399409616402399,
+            0.3606491455998081,
+            2.3804186419926068
           ],
           "robot": [
-            -5.233827590942383,
-            -0.0000012689828872702869,
-            2.383166551589966
+            -5.233828544616699,
+            -6.19888305686267e-8,
+            2.383166790008545
           ],
-          "dist": 1.4357866331956786,
-          "inside": false,
+          "dist": 0.39685324061361965,
+          "inside": true,
           "main": {
             "litRatio": 1,
-            "mean": 197.13284054487178,
+            "mean": 99.52417868589744,
             "w": 320,
             "h": 260
           },
-          "ray": "walls"
+          "ray": "bed"
         },
         {
           "spot": "hallway-wall",
           "pos": [
-            -0.5800000059604641,
-            0.8235907263761946,
-            -0.5498206408327478
+            -0.5800000059604647,
+            0.823590711480434,
+            -0.549820640832748
           ],
           "robot": [
             -0.4000000059604645,
-            -0.000011684894561769799,
+            -0.000011699795722963646,
             1.100000023841858
           ],
-          "dist": 1.8527355875673035,
+          "dist": 1.8527355875697045,
           "inside": true,
           "main": {
-            "litRatio": 0.9883653846153846,
-            "mean": 136.9105248397436,
+            "litRatio": 0.9883052884615384,
+            "mean": 136.96101762820513,
             "w": 320,
             "h": 260
           },
@@ -2780,7 +2607,7 @@
         }
       ],
       "repro": "back the robot against outer walls / furniture, then check the camera stays inside the shell and the view is not a flat wall",
-      "ms": 6109
+      "ms": 5570
     },
     {
       "id": "A1",
@@ -2788,7 +2615,7 @@
       "name": "grab while driving, release while moving",
       "sev": "P1",
       "pass": true,
-      "evidence": "grab={\"ok\":true,\"reason\":null,\"held\":\"mug_white\"}; after drive+release held=null, robot (-2.89, 0.01, -1.55), mug y=0.084, errors=0",
+      "evidence": "grab={\"ok\":true,\"reason\":null,\"held\":\"mug_white\"}; after drive+release held=null, robot (-3.22, 0.01, -1.44), mug y=0.082, errors=0",
       "detail": null,
       "repro": "grab the mug, boost forward while clicking to release",
       "ms": 3267
@@ -2802,7 +2629,7 @@
       "evidence": "target before click=null, held after=null, errors 0->0",
       "detail": null,
       "repro": "first-person mode, look at the ceiling, click the centre of the screen",
-      "ms": 1008
+      "ms": 1013
     },
     {
       "id": "A3",
@@ -2810,10 +2637,10 @@
       "name": "spam grab/place 12x does not break physics",
       "sev": "P1",
       "pass": true,
-      "evidence": "held=null, mug (-2.63, 0.52, -1.75), NaN=0, errors=0, dynamic=175",
+      "evidence": "held=null, mug (-2.77, 0.52, -1.53), NaN=0, errors=0, dynamic=175",
       "detail": null,
       "repro": "qa.action() 12 times in quick succession while hovering the mug",
-      "ms": 2416
+      "ms": 4176
     },
     {
       "id": "A4",
@@ -2821,10 +2648,10 @@
       "name": "repeated heavy pushes keep the sofa in the apartment",
       "sev": "P2",
       "pass": true,
-      "evidence": "sofa (-2.50, 0.43, -2.76) -> (-2.50, 0.43, -2.76), moved 0.000 m, errors=0",
+      "evidence": "sofa (-2.50, 0.43, -2.76) -> (-2.50, 0.43, -2.75), moved 0.001 m, errors=0",
       "detail": null,
       "repro": "push the sofa 3 times from 0.9 m away and check it stays inside the shell",
-      "ms": 3373
+      "ms": 3359
     },
     {
       "id": "A5",
@@ -2835,7 +2662,7 @@
       "evidence": "robot (-2.58, 0.01, -2.11), sofa moved 0.000 m, errors=0",
       "detail": null,
       "repro": "drive into the sofa for 2.6 s and check positions/velocities stay sane",
-      "ms": 3614
+      "ms": 3611
     },
     {
       "id": "A6",
@@ -2843,10 +2670,10 @@
       "name": "rapid view/surround/night toggles do not break the app",
       "sev": "P1",
       "pass": true,
-      "evidence": "ready=true, mode=first, night=true, surround=false, errors=0, rAF fps after 60.1/52.3, calls 167",
+      "evidence": "ready=true, mode=first, night=true, surround=false, errors=0, rAF fps after 60.6/60.3, calls 228",
       "detail": null,
       "repro": "press V/C/L three times each in quick succession, then measure fps",
-      "ms": 4712
+      "ms": 4594
     },
     {
       "id": "A7",
@@ -2854,10 +2681,10 @@
       "name": "resize during play keeps the app alive",
       "sev": "P1",
       "pass": true,
-      "evidence": "robot moved 0.630 m while resizing; mid-resize overflow=0, errors 0->0, fps 60, map x=1244",
+      "evidence": "robot moved 0.618 m while resizing; mid-resize overflow=0, errors 0->0, fps 60, map x=1244",
       "detail": null,
       "repro": "hold W, resize to 390x844, resize back to 1440x900, release W",
-      "ms": 2318
+      "ms": 2314
     },
     {
       "id": "L5",
