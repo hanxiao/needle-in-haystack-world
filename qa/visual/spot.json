@@ -1,0 +1,385 @@
+{
+ "readyMs": 861,
+ "logs": [],
+ "shots": {
+  "s-spawn-default": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -3.379999904632568,
+     0.8836024046899145,
+     0.44982061699089015
+    ],
+    "quat": [
+     -0.16385028357890769,
+     0,
+     0,
+     0.9864852176140865
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "room": "LIVING ROOM",
+   "draw": 299,
+   "fps": 60,
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   }
+  },
+  "s-win-day": {
+   "cam": {
+    "mode": "first",
+    "pos": [
+     -3.5,
+     0.36155052423477174,
+     -1.16
+    ],
+    "quat": [
+     0.14943813247359922,
+     0,
+     0,
+     0.9887710779360422
+    ],
+    "fov": 62,
+    "aspect": 1.6
+   },
+   "room": "LIVING ROOM",
+   "draw": 172,
+   "fps": 60,
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   }
+  },
+  "s-study-fp": {
+   "cam": {
+    "mode": "first",
+    "pos": [
+     3.474862130634477,
+     0.3499572867155075,
+     1.7414060904573878
+    ],
+    "quat": [
+     -0.006025670990117462,
+     -0.970208945063843,
+     -0.02426027806179751,
+     0.24097662358740943
+    ],
+    "fov": 62,
+    "aspect": 1.6
+   },
+   "room": "STUDY",
+   "draw": 189,
+   "fps": 60,
+   "hud": {
+    "room": "STUDY",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   }
+  },
+  "s-bath-fp": {
+   "cam": {
+    "mode": "first",
+    "pos": [
+     1.1553128812542348,
+     0.35995343267917634,
+     1.4501348510070218
+    ],
+    "quat": [
+     0.004389050262773173,
+     -0.9841574835199128,
+     0.024609064190003804,
+     0.17552543356800399
+    ],
+    "fov": 62,
+    "aspect": 1.6
+   },
+   "room": "BATHROOM",
+   "draw": 218,
+   "fps": 60,
+   "hud": {
+    "room": "BATHROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   }
+  },
+  "s-clip-bed": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -1.66955152646905,
+     0.5369552838300552,
+     1.7907583139609202
+    ],
+    "quat": [
+     -0.04765155512442642,
+     0.7884724790710508,
+     0.06158107777081335,
+     0.610121504212366
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "room": "BEDROOM",
+   "draw": 290,
+   "fps": 60,
+   "hud": {
+    "room": "BEDROOM",
+    "target": "BASKET CLOTHES · 600 g · OUT OF REACH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   }
+  },
+  "s-clip-study": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     3.4466276421593656,
+     0.32212888794064176,
+     0.9003651886879819
+    ],
+    "quat": [
+     0.01016793842832369,
+     0.9714369582671292,
+     0.04234409900525804,
+     -0.2332677140546003
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "room": "STUDY",
+   "draw": 277,
+   "fps": 60,
+   "hud": {
+    "room": "STUDY",
+    "target": "DESK · 26 kg · OUT OF REACH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   }
+  },
+  "s-clip-bath": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     0.7018801223249965,
+     0.35073181173316925,
+     1.1706719105802108
+    ],
+    "quat": [
+     0.0065806994286181,
+     0.9844632013000127,
+     0.037809266945867434,
+     -0.1713457294891732
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "room": "BATHROOM",
+   "draw": 276,
+   "fps": 60,
+   "hud": {
+    "room": "BATHROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   }
+  },
+  "s-clip-hall": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     0.07707113504009332,
+     0.3809817835339171,
+     3.4934867477651848
+    ],
+    "quat": [
+     -0.04524096893056836,
+     -8.436617088443944e-9,
+     -3.8207193381438186e-10,
+     0.9989761031827655
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "room": "HALLWAY",
+   "draw": 420,
+   "fps": 60,
+   "hud": {
+    "room": "HALLWAY",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   }
+  },
+  "s-bed-tp": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -2.707990549372293,
+     0.5057840050832353,
+     1.1686733200820207
+    ],
+    "quat": [
+     -0.035625712869088534,
+     0.9289929897968716,
+     0.09283912139817557,
+     0.35648805173365017
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "room": "BEDROOM",
+   "draw": 282,
+   "fps": 60,
+   "hud": {
+    "room": "BEDROOM",
+    "target": "BED · 75 kg · OUT OF REACH",
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   }
+  },
+  "s-night-spawn": {
+   "cam": {
+    "mode": "third",
+    "pos": [
+     -3.3799000072479237,
+     0.8837024063826859,
+     0.44982061699088993
+    ],
+    "quat": [
+     -0.16385028357890763,
+     2.655364005307879e-16,
+     4.4104274195533286e-17,
+     0.9864852176140865
+    ],
+    "fov": 55,
+    "aspect": 1.6
+   },
+   "room": "LIVING ROOM",
+   "draw": 299,
+   "fps": 60,
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   }
+  },
+  "s-night-win": {
+   "cam": {
+    "mode": "first",
+    "pos": [
+     -3.5,
+     0.36155052423477174,
+     -1.16
+    ],
+    "quat": [
+     0.14943813247359922,
+     0,
+     0,
+     0.9887710779360422
+    ],
+    "fov": 62,
+    "aspect": 1.6
+   },
+   "room": "LIVING ROOM",
+   "draw": 172,
+   "fps": 60,
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   }
+  },
+  "s-night-living": {
+   "cam": {
+    "mode": "first",
+    "pos": [
+     -1.2323082641729823,
+     0.34993930101394655,
+     -0.6899696272670226
+    ],
+    "quat": [
+     -0.022093441951707118,
+     0.4676625275464318,
+     0.011693999540081434,
+     0.8835535583802299
+    ],
+    "fov": 62,
+    "aspect": 1.6
+   },
+   "room": "LIVING ROOM",
+   "draw": 236,
+   "fps": 60,
+   "hud": {
+    "room": "LIVING ROOM",
+    "target": null,
+    "held": null,
+    "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
+   }
+  }
+ },
+ "hud": {
+  "hint": {
+   "x": 570.4,
+   "y": 864,
+   "w": 299.2,
+   "h": 14
+  },
+  "map": {
+   "x": 1244,
+   "y": 16,
+   "w": 180,
+   "h": 180
+  },
+  "mapHTML": "<span class=\"hud-tag\">SURROUND</span><div class=\"hud-map-dot\" id=\"hud-map-dot\" style=\"transform: translate(-50%, -50%) rotate(0.239rad);\"></div>",
+  "samples": {
+   "front": {
+    "litRatio": 0.9966230301008921,
+    "mean": 132.69851858028295,
+    "w": 179,
+    "h": 134
+   },
+   "right": {
+    "litRatio": 0.9801967814558492,
+    "mean": 130.68631701826064,
+    "w": 179,
+    "h": 134
+   },
+   "left": {
+    "litRatio": 0.9975402318018844,
+    "mean": 129.85759748742322,
+    "w": 179,
+    "h": 134
+   },
+   "back": {
+    "litRatio": 0.9993746352038689,
+    "mean": 117.49269018038301,
+    "w": 179,
+    "h": 134
+   },
+   "map": {
+    "litRatio": 0.9996913580246913,
+    "mean": 119.03481481481481,
+    "w": 180,
+    "h": 180
+   }
+  },
+  "draw": 299,
+  "fps": 60,
+  "tri": 68532
+ },
+ "final": {
+  "fps": 60,
+  "draw": 236,
+  "errors": []
+ }
+}
