@@ -175,12 +175,12 @@ export function createRenderSystem(canvas, hudCanvas) {
       collectNightTargets();
       for (const t of nightTargets) {
         if (t.color !== null) {
-          const k = t.kind === 'window' ? 0.45 : 0.62;
+          const k = t.kind === 'window' ? 0.45 : t.kind === 'city' ? 0.78 : 0.62;
           t.m.color.setHex(t.color).lerp(new THREE.Color(0x0b1220), k);
         }
         if (t.kind === 'city' && t.emissive !== null) {
-          t.m.emissive.setHex(0xffc98a);
-          t.m.emissiveIntensity = Math.max(t.emissiveIntensity || 0, 0.75);
+          t.m.emissive.setHex(0xffb877);
+          t.m.emissiveIntensity = 0.22;
         }
       }
     } else {

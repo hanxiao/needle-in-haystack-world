@@ -16,8 +16,8 @@ export const CONFIG = {
     { id: 'kitchen', label: 'KITCHEN / DINING', lamp: [2.9, 2.44, -1.6], light: 6.6 },
     { id: 'bedroom', label: 'BEDROOM', lamp: [-3.5, 2.44, 2.3], light: 6.0 },
     { id: 'hallway', label: 'HALLWAY', lamp: [-0.4, 2.44, 2.3], light: 4.0 },
-    { id: 'bathroom', label: 'BATHROOM', lamp: [1.7, 2.44, 2.3], light: 2.6 },
-    { id: 'study', label: 'STUDY', lamp: [4.2, 2.44, 2.3], light: 8.5 },
+    { id: 'bathroom', label: 'BATHROOM', lamp: [1.7, 2.44, 2.3], light: 1.8 },
+    { id: 'study', label: 'STUDY', lamp: [4.2, 2.44, 2.3], light: 10.5 },
   ],
   spawn: { pos: [-3.6, 0.0, -1.2], yaw: 0 },
   robot: {

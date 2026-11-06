@@ -22,6 +22,26 @@ export function createCameraRig(camera, physics) {
   const _dir = new THREE.Vector3();
   const _right = new THREE.Vector3();
   const _tmp = new THREE.Vector3();
+  const _camShape = physics && physics.RAPIER ? new physics.RAPIER.Ball(0.11) : null;
+  const _camRot = { x: 0, y: 0, z: 0, w: 1 };
+  function cameraBlocked(pos, robot) {
+    if (!_camShape) return false;
+    const hit = physics.world.intersectionWithShape(
+      { x: pos.x, y: pos.y, z: pos.z },
+      _camRot,
+      _camShape,
+      undefined,
+      undefined,
+      undefined,
+      robot && robot.body ? robot.body : undefined,
+      (collider) => {
+        const o = physics.colliderToObj.get(collider.handle);
+        if (!o) return false;
+        return o.isStatic || (o.tags && o.tags.includes('furniture') && o.mass >= 5);
+      }
+    );
+    return !!hit;
+  }
 
   function orbit(dx, dy) {
     if (state.mode === 'third') {
@@ -120,6 +140,10 @@ export function createCameraRig(camera, physics) {
         const d = Math.max(0.14, hit.distance - 0.1);
         state.desired.copy(state.target).addScaledVector(_dir, d);
       }
+    }
+
+    for (let i = 0; i < 8 && cameraBlocked(state.desired, robot); i++) {
+      state.desired.lerp(state.target, 0.18);
     }
 
     if (!state.initialized) {

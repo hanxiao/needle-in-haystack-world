@@ -130,7 +130,7 @@ html[data-ready="1"] #boot { opacity: 0; pointer-events: none; }
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   border-bottom: 9px solid var(--amber);
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 3px rgba(0, 0, 0, 0.55));
 }
 .hud-map-dot::after {
   content: "";
