@@ -1,0 +1,23 @@
+{
+  "name": "needle-in-haystack-world",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A messy 3D apartment you explore as a small robot with 360° vision and an arm. three.js + Rapier.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "serve": "node tools/serve.mjs",
+    "shot": "node tools/shot.mjs",
+    "qa": "node qa/run.mjs"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "0.21.0",
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "puppeteer-core": "25.16.0",
+    "vite": "8.3.6",
+    "vite-plugin-singlefile": "2.3.4"
+  }
+}
