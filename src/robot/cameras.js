@@ -8,7 +8,7 @@ import { ROBOT_DIMS } from './model.js';
 
 const FOV_SIDE = 120;
 const ASPECT_SIDE = 4 / 3;
-const FOV_TOP = 112;
+const FOV_TOP = 122; // 2.5 m height * tan(61 deg) = ~4.5 m half-width
 const NEAR = 0.02;
 const FAR = 40;
 const DOWN_TILT = -0.13; // ~7.5 degrees
@@ -48,7 +48,7 @@ export function createCameras() {
 
   const top = make(FOV_TOP, 1);
   top.name = 'robot_cam_top';
-  top.position.set(0, 2.3, 0);
+  top.position.set(0, 2.5, 0);
   top.rotation.set(-Math.PI / 2, 0, 0);
   // Trajectory line lives on layer 2: minimap only.
   top.layers.enable(TRAIL_LAYER);

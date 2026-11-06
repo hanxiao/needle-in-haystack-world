@@ -172,14 +172,15 @@ export function createCameraRig(camera, physics) {
       }
     }
 
-    // If the ideal camera sits inside furniture, first try higher/shifted orbits
-    // (over the sofa back, past a wardrobe) before collapsing toward the robot.
-    let blocked = cameraBlocked(state.desired, robot);
+    // If the ideal camera sits inside furniture or has no line of sight to the robot,
+    // first try higher/shifted orbits (over the sofa back, past a wardrobe).
+    let blocked = cameraBlocked(state.desired, robot) || !cameraSeesRobot(state.desired, head, robot);
     if (blocked) {
       const alts = [
         [0, 0.3, 1], [0.32, 0.32, 0.95], [-0.32, 0.32, 0.95],
         [0, 0.55, 0.95], [0.55, 0.42, 0.9], [-0.55, 0.42, 0.9],
         [0.85, 0.5, 0.85], [-0.85, 0.5, 0.85],
+        [1.2, 0.35, 0.75], [-1.2, 0.35, 0.75], [1.5, 0.45, 0.7], [-1.5, 0.45, 0.7],
       ];
       const headPoint = new THREE.Vector3(rp.x, rp.y + 0.30, rp.z);
       for (const [dyaw, dpitch, dscale] of alts) {
@@ -209,7 +210,7 @@ export function createCameraRig(camera, physics) {
     if (blocked) {
       // Low under-furniture perch first: when the robot is under a table the only
       // clear line of sight is from just outside the table edge at head height.
-      const lowPerch = [[0.55, 0.26], [0.85, 0.28], [0.35, 0.22]];
+      const lowPerch = [[0.55, 0.26], [0.85, 0.28], [0.35, 0.22], [0.7, 0.45], [0.9, 0.55]];
       for (const [back, up] of lowPerch) {
         _tmp.set(
           rp.x + Math.sin(state.yaw) * back,

@@ -543,6 +543,96 @@ export function artMaterials() {
   return _artMats;
 }
 
+// ------------------------------------------------------------- mirror glass
+
+let _mirrorMat = null;
+// Procedural "reflection" for the bathroom mirror: a dim reflected room with a
+// window glow, door band, counter edge and vignette. Cheaper than a Reflector
+// and stable at any frame rate.
+export function mirrorMaterial() {
+  if (_mirrorMat) return _mirrorMat;
+  const w = 256;
+  const h = 280;
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const g = c.getContext('2d');
+  const grd = g.createLinearGradient(0, 0, 0, h);
+  grd.addColorStop(0, '#cfd8d4');
+  grd.addColorStop(0.55, '#aab4b0');
+  grd.addColorStop(1, '#8d9590');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, w, h);
+  // reflected opposite wall
+  g.fillStyle = 'rgba(228,233,229,0.30)';
+  g.fillRect(w * 0.24, h * 0.06, w * 0.52, h * 0.66);
+  // reflected window (soft bright block)
+  const winGrd = g.createLinearGradient(w * 0.56, 0, w * 0.9, 0);
+  winGrd.addColorStop(0, 'rgba(255,249,235,0.18)');
+  winGrd.addColorStop(0.5, 'rgba(255,249,235,0.55)');
+  winGrd.addColorStop(1, 'rgba(255,249,235,0.12)');
+  g.fillStyle = winGrd;
+  g.fillRect(w * 0.56, h * 0.1, w * 0.34, h * 0.46);
+  g.fillStyle = 'rgba(255,255,250,0.35)';
+  g.fillRect(w * 0.56, h * 0.3, w * 0.34, h * 0.012);
+  g.fillRect(w * 0.71, h * 0.1, w * 0.012, h * 0.46);
+  // reflected door (darker vertical band)
+  g.fillStyle = 'rgba(78,64,48,0.30)';
+  g.fillRect(w * 0.07, h * 0.08, w * 0.14, h * 0.82);
+  g.fillStyle = 'rgba(60,50,38,0.22)';
+  g.fillRect(w * 0.07, h * 0.08, w * 0.02, h * 0.82);
+  // reflected counter + basin
+  g.fillStyle = 'rgba(126,130,124,0.55)';
+  g.fillRect(0, h * 0.79, w, h * 0.21);
+  g.fillStyle = 'rgba(196,200,193,0.5)';
+  g.fillRect(w * 0.22, h * 0.8, w * 0.56, h * 0.03);
+  // tile joints in the lower reflection
+  g.strokeStyle = 'rgba(70,80,76,0.18)';
+  g.lineWidth = 1;
+  for (let y = h * 0.5; y < h * 0.8; y += h * 0.07) {
+    g.beginPath();
+    g.moveTo(0, y);
+    g.lineTo(w, y);
+    g.stroke();
+  }
+  for (let x = w * 0.1; x < w; x += w * 0.12) {
+    g.beginPath();
+    g.moveTo(x, h * 0.5);
+    g.lineTo(x, h * 0.8);
+    g.stroke();
+  }
+  // warm ceiling-light glow at the top
+  const glow = g.createRadialGradient(w * 0.36, h * 0.03, 2, w * 0.36, h * 0.03, h * 0.24);
+  glow.addColorStop(0, 'rgba(255,232,190,0.45)');
+  glow.addColorStop(1, 'rgba(255,232,190,0)');
+  g.fillStyle = glow;
+  g.fillRect(0, 0, w, h * 0.35);
+  // specular streak
+  g.save();
+  g.translate(w * 0.62, h * 0.2);
+  g.rotate(-0.5);
+  g.fillStyle = 'rgba(255,255,255,0.10)';
+  g.fillRect(-w * 0.35, 0, w * 0.7, h * 0.05);
+  g.restore();
+  // vignette
+  const vig = g.createRadialGradient(w * 0.5, h * 0.5, h * 0.2, w * 0.5, h * 0.5, h * 0.78);
+  vig.addColorStop(0, 'rgba(30,36,34,0)');
+  vig.addColorStop(1, 'rgba(30,36,34,0.42)');
+  g.fillStyle = vig;
+  g.fillRect(0, 0, w, h);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  _mirrorMat = new THREE.MeshStandardMaterial({
+    map: tex,
+    color: 0xffffff,
+    metalness: 0.38,
+    roughness: 0.07,
+    envMapIntensity: 0.85,
+  });
+  return _mirrorMat;
+}
+
 // -------------------------------------------------------------------- colours
 
 export const C = {

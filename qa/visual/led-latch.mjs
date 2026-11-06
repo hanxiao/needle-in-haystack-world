@@ -1,0 +1,45 @@
+import puppeteer from 'puppeteer-core';
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const browser = await puppeteer.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless:true, args:['--no-sandbox','--use-gl=angle','--use-angle=metal','--enable-gpu','--hide-scrollbars','--window-size=1440,900'], defaultViewport:{width:1440,height:900,deviceScaleFactor:1}});
+const page = await browser.newPage(); await page.bringToFront();
+const logs=[]; page.on('console',m=>{if(m.type()!=='debug')logs.push(m.type()+': '+m.text())}); page.on('pageerror',e=>logs.push('err: '+e.message));
+const t0=Date.now();
+await page.goto('http://127.0.0.1:4182/', {waitUntil:'domcontentloaded'});
+await page.waitForFunction('window.__APP__ && window.__APP__.ready===true');
+const readyMs=Date.now()-t0;
+await wait(2400);
+const out={readyMs,logs,states:{}};
+const shot = async (name) => { await page.screenshot({path:`qa/visual/shots/r5-${name}.png`}); out.states[name] = await page.evaluate(()=>({hud:window.__APP__.qa.hudText(), robot:window.__APP__.state().robot, draw:window.__APP__.state().drawCalls})); };
+// baseline spawn + hud samples
+await shot('spawn');
+out.samples = await page.evaluate(()=>{ const rects=window.__APP__.qa.hudRects(); const s={}; for(const p of rects.panels) s[p.key]=window.__APP__.qa.sampleHud(p); s.map=window.__APP__.qa.sampleHud(rects.map); return s; });
+// HOLD: set camera first, then grab, then still immediately (within 1.1 s latch)
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.teleportNear('mug_white',0.34); });
+await wait(900);
+await page.evaluate(()=>{ const A=window.__APP__; const r=A.state().robot; A.qa.setView('third'); A.qa.setCamera(r.yaw+Math.PI,0.18,0.95); });
+await wait(900);
+out.grab = await page.evaluate(()=>window.__APP__.qa.grabByName('mug_white'));
+await wait(250);
+await shot('hold-latch');
+await wait(1300);
+await shot('hold-after-1.3s');
+await page.evaluate(()=>window.__APP__.qa.release());
+await wait(250);
+await shot('release-latch');
+await wait(1300);
+await shot('release-after-1.3s');
+// PUSH: set camera first, contact sofa, then still immediately after release
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.teleportNear('sofa',0.5); });
+await wait(900);
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.aimAt('sofa'); const r=A.state().robot; A.qa.setCamera(r.yaw+Math.PI*0.6,0.18,1.0); });
+await wait(900);
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.hold('KeyW'); });
+await wait(700);
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.releaseKey('KeyW'); });
+await wait(200);
+await shot('push-latch');
+await wait(1400);
+await shot('push-after-1.4s');
+out.final = await page.evaluate(()=>({fps:window.__APP__.fps, draw:window.__APP__.state().drawCalls, errors:window.__APP__.state().errors}));
+console.log(JSON.stringify(out,null,1));
+await browser.close();

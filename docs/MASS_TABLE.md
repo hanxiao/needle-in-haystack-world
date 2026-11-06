@@ -1,6 +1,6 @@
 # Mass & physics audit — needle-in-haystack-world (round 2)
 
-Audited: every dynamic object in `src/world/**` (175 after the round-3 bookshelf fill) plus the static architecture/built-ins (22).
+Audited: every dynamic object in `src/world/**` (177 after the round-4 bathroom props) plus the static architecture/built-ins (24).
 Generated from the live world build (Rapier bodies read back after `physics.settle(120)`), so the
 table reflects what the engine actually instantiates — not the source constants.
 
@@ -8,9 +8,9 @@ table reflects what the engine actually instantiates — not the source constant
 
 | item | value |
 | --- | --- |
-| objects | 197 total — 175 dynamic, 22 static |
+| objects | 201 total — 177 dynamic, 24 static |
 | required QA masses | sofa 85, fridge 95, bed 75, wardrobe 120, dining_table 34, chair_1 5.5, coffee_table 13, mug_white 0.32, book_stack_1 1.4, laptop 1.6, plant_monstera 8, needle 0.0012 kg — all exact |
-| masses out of realistic range | 0 / 175 |
+| masses out of realistic range | 0 / 177 |
 | dynamic objects tagged as architecture | 0 |
 | heavy furniture (>= 20 kg) | 8: wardrobe 120, fridge 95, sofa 85, bed 75, bookshelf 42, dining_table 34, desk 26, armchair 21 |
 | heavy friction / restitution | 1.0 / 0.0 (explicit per-object overrides; `physics.addObject` gained `friction`/`restitution`) |
@@ -138,6 +138,8 @@ average friction-combine rule this gives ~0.8 effective friction against the woo
 | bath_mat | 0.35 | bath mat | 0.2–0.8 | OK |
 | dish_soap | 0.35 | bottle (bath/soap) | 0.2–0.7 | OK |
 | shampoo | 0.35 | bottle (bath/soap) | 0.2–0.7 | OK |
+| bath_bottle_1 | 0.35 | bottle (bath/soap) | 0.2–0.7 | OK |
+| bath_bottle_2 | 0.3 | bottle (bath/soap) | 0.2–0.7 | OK |
 | conditioner | 0.35 | bottle (bath/soap) | 0.2–0.7 | OK |
 | lotion | 0.35 | bottle (bath/soap) | 0.2–0.7 | OK |
 | mug_white | 0.32 | mug | 0.25–0.45 | OK |
@@ -232,6 +234,8 @@ average friction-combine rule this gives ~0.8 effective friction against the woo
 | entry_mat | hallway entry mat | 1 |
 | umbrella | umbrella leaning by the door | 1 |
 | drapes | draped cloth over chair backs / sofa arm / desk chair | 3 |
+| bathroom_shelf | small shelf + brackets above the toilet | 2 |
+| hand_towel | towel ring + folded hand towel on the west wall | 2 |
 
 All 22 are registered through `physics.addStaticObject` / `addStaticBox` (Rapier fixed bodies, mass = Infinity).
 Nothing tagged `architecture`, `wall`, `floor`, `ceiling`, `fixture` or `window` is dynamic, so the
@@ -329,3 +333,10 @@ Verification after round 3 (`node qa/physics/run.mjs --dir=dist`): **56 PASS / 0
 - G1 spawn interpenetration ≤ 2 mm: **PASS — deepest contact -1.0 mm** (desk_lamp↔mug_desk) across 243 pairs; 0 pairs > 2.5 mm (the 2.2 mm pen contact is gone; pen rests at ~0.1 mm).
 - G2 no dynamic body below floor: PASS (-0.0001 m).
 - All 6 room transitions drive + under-coffee-table drive pass with robot v2; 197 objects, 306 draw calls at spawn, 63.6k tris, 0 console errors.
+
+## Round 4 polish (bathroom mirror + props)
+
+- **Mirror**: replaced the flat grey panel with a procedural "reflection" canvas texture (dim reflected room: opposite wall, window glow, door band, counter edge, tile joints, ceiling-light glow, vignette, specular streak) on a `MeshStandardMaterial` (metalness 0.38, roughness 0.07, envMapIntensity 0.85) plus a chrome bevel frame around the wood surround. No extra render pass, no `Reflector`, so fps is unchanged (60 fps).
+- **Props**: `bathroom_shelf` (wood shelf + metal brackets above the toilet) with two dynamic bottles (`bath_bottle_1` 0.35 kg, `bath_bottle_2` 0.30 kg), and `hand_towel` (chrome towel ring + folded hand towel on the west wall between the door and the toilet).
+- Verified: 201 objects (177 dynamic / 24 static), 306 draw calls at spawn, 63.6k tris, 60 fps, 0 console errors; reviewer suite G1 deepest resting contact **-1.0 mm** (≤2 mm gate); all 6 room transitions + under-coffee-table drive pass.
+- Screenshots: qa/shots/mirror/mirror-a.png (framed mirror + reflection), mirror-b/c.png, shelf.png, towel.png, bath-fp.png.

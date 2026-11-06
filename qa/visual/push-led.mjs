@@ -1,0 +1,24 @@
+import puppeteer from 'puppeteer-core';
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const browser = await puppeteer.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless:true, args:['--no-sandbox','--use-gl=angle','--use-angle=metal','--enable-gpu','--hide-scrollbars','--window-size=1440,900'], defaultViewport:{width:1440,height:900,deviceScaleFactor:1}});
+const page = await browser.newPage(); await page.bringToFront();
+await page.goto('http://127.0.0.1:4182/', {waitUntil:'networkidle0'});
+await page.waitForFunction('window.__APP__ && window.__APP__.ready===true');
+await wait(2400);
+// place robot right against the sofa facing it, camera side-on
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.teleport(-2.5,-2.15,Math.PI); });
+await wait(800);
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.aimAt('sofa'); const r=A.state().robot; A.qa.setCamera(r.yaw+Math.PI*0.62,0.16,0.95); });
+await wait(800);
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.hold('KeyW'); });
+await wait(1200);
+const hud1 = await page.evaluate(()=>window.__APP__.qa.hudText());
+await page.screenshot({path:'qa/visual/shots/r5-push-holding.png'});
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.releaseKey('KeyW'); });
+await wait(250);
+const hud2 = await page.evaluate(()=>window.__APP__.qa.hudText());
+await page.screenshot({path:'qa/visual/shots/r5-push-released.png'});
+await wait(1300);
+await page.screenshot({path:'qa/visual/shots/r5-push-after.png'});
+console.log(JSON.stringify({hud1,hud2},null,1));
+await browser.close();

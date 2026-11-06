@@ -25,8 +25,8 @@ const LED_COLORS = {
   idle: 0xffa22a,
   move: 0x53e08a,
   boost: 0x39d7ff,
-  held: 0x8ea6ff,
-  push: 0xff6a3d,
+  held: 0x3f6bff,
+  push: 0xff5222,
 };
 
 const _aim = new THREE.Vector3();
@@ -228,6 +228,11 @@ export function createRobot(ctx, opts = {}) {
   let leanRoll = 0;
   let ledMode = 'idle';
   let ledPulse = 0;
+  // Hold/push LED colours latch briefly after the condition ends so a still frame
+  // right after a release / push still reads blue / orange-red.
+  const LED_LATCH = 1.1; // s
+  let ledHoldUntil = -1;
+  let ledPushUntil = -1;
   let time = 0;
   let moving = false;
   let boosting = false;
@@ -480,14 +485,18 @@ export function createRobot(ctx, opts = {}) {
     arm.update(step, aimVec);
 
     // ---- status LED
+    if (arm.held) ledHoldUntil = time + LED_LATCH;
+    if (pushCount > 0) ledPushUntil = time + LED_LATCH;
     let mode = 'idle';
     if (arm.held) mode = 'held';
     else if (pushCount > 0) mode = 'push';
+    else if (time < ledHoldUntil) mode = 'held';
+    else if (time < ledPushUntil) mode = 'push';
     else if (boosting && moving) mode = 'boost';
     else if (moving) mode = 'move';
     setLed(mode);
     ledPulse = mode === 'held' || mode === 'push' ? 0.5 + 0.5 * Math.sin(time * 5.5) : 1;
-    model.ledMaterial.emissiveIntensity = 1.2 + 1.2 * ledPulse;
+    model.ledMaterial.emissiveIntensity = 1.5 + 0.9 * ledPulse;
   }
 
   // ---------------------------------------------------------------- queries / control
@@ -570,6 +579,8 @@ export function createRobot(ctx, opts = {}) {
     leanPitch = 0;
     leanRoll = 0;
     model.visual.rotation.set(0, 0, 0);
+    ledHoldUntil = -1;
+    ledPushUntil = -1;
     setLed('idle');
     model.ledMaterial.emissiveIntensity = 1.8;
     aimVec = null;

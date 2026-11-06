@@ -1,3 +1,36 @@
+# round 5 — LED latch — 2026-11-06
+
+**Build:** `qa/frozen/index.html` — sha256 `c8d3c46c6181a9a3…`, 5,266,858 B. Only `robot.js` changed vs `1113ce6e` (hold/push LED latch + saturated colours).
+**Method:** `qa/visual/led-latch.mjs`, `push-led.mjs`, `move-led.mjs`; shots `qa/visual/shots/r5-*.png`.
+
+| state | ring colour in still | evidence |
+|---|---|---|
+| idle | amber/yellow (unchanged) | `r5-idle2.png` |
+| move | green/mint (unchanged) | `r5-move2.png` |
+| boost | cyan (unchanged) | `r5-boost2.png` |
+| hold | **vivid blue** (latched) | `r5-hold-latch.png` |
+| release → latch | blue persists at +250 ms, amber at +1.3 s (1.1 s latch confirmed) | `r5-release-latch.png`, `r5-release-after-1.3s.png` |
+| push (in contact) | **deep orange-red** | `r5-push-holding.png` |
+
+Regressions: none — 360 samples litRatio 0.98–1.0 (mean 116–139), 340 draw calls, 60 fps at rest, 0 console errors. Push latch after release could not be framed (camera buried in the sofa throw in that contrived pose) but the colour itself is verified while pushing.
+
+**Verdict: SHIP** on `c8d3c46c6181`. P2 LED legibility is fixed; no P1/P2 remain. Only P3 nits (static mirror texture, trail length on short sessions).
+
+# round 4 — P3 polish — 2026-11-06
+
+**Build:** `qa/frozen/index.html` — sha256 `1113ce6e8e063aaf…`, 5,266,760 B. Spot-check of the bathroom mirror, LED states, 4.5 m minimap, wall-slide camera.
+**Method:** `qa/visual/round4.mjs` + `fix4.mjs` + `leds.mjs`; shots `qa/visual/shots/r4-*.png`.
+
+| # | item | result | evidence |
+|---|---|---|---|
+| 1 | Bathroom mirror + shelf/bottles/hand towel | **PASS** | beveled chrome-framed mirror with a procedural reflected-room texture (no longer a blank panel), two bottles on the shelf, hand towel on the rail — `r4-mirror-up.png`, `r4-mirror-tp2.png` |
+| 2 | LED legibility in stills | **PASS for idle/move/boost, P2 for hold/push** | bright ring around the base: idle **amber**, move **green**, boost **cyan** all read clearly; hold state captured while the ring was obscured under the table and push read amber-yellow after W was released — `r4-leds.jpg`, `r4-led-hold3.png`, `r4-led-push3.png` |
+| 3 | Minimap 4.5 m coverage | **PASS** | wider map shows neighbouring rooms, trail reads longer, no ceiling; TRAIL legend under the map — `r4-map-trail-crop.png`, `r4-map.png` |
+| 4 | Wall-backed camera slide + occluder line of sight | **PASS** | open-floor wall poses slide along the wall (cam 0.83–1.12 m from robot, y up to 0.92) and keep the robot visible; sofa pose slid laterally to (−3.15, 0.99, −2.32) with only a small "remote" on the sight line; 0 shell violations — `r4-wall-east.png`, `r4-wall-north.png`, `r4-wall-south.png`, `r4-cam-sofa.png` |
+| 5 | Regressions | **PASS** | 360 feeds litRatio 0.98–1.0 (mean 116–139), 313 draw calls, 0 console errors, 1 request, ready 2109 ms; under-table/sofa poses still keep the robot visible |
+
+**Verdict: SHIP** on `1113ce6e8e06`. No P1. Remaining: **[P2]** verify/persist the hold (blue) and push (orange-red) LED colours — they were not cleanly visible in stills; **[P3]** mirror reflection is a static texture (fine for this scope); trail still short relative to the 4.5 m map in short sessions.
+
 # round 3c — camera shell clamp + push HUD — 2026-11-06
 
 **Build:** `qa/frozen/index.html` — sha256 `5e2c72c6e1c9f818…`, 5,263,156 B. Spot-check of the camera shell clamp and heavy-push HUD reach on top of `6f8adfa23859`.

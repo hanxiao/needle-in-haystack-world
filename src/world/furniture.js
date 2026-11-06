@@ -14,6 +14,7 @@ import {
   matOf,
   variant,
   swapUV,
+  mirrorMaterial,
   ROOMS,
 } from './helpers.js';
 
@@ -1039,7 +1040,7 @@ function buildVanity(ctx, shadows) {
   const ceramic = variant(ctx, 'ceramicWhite', { color: 0xc4bfb3, roughness: 0.38 });
   const top = variant(ctx, 'stone', { color: 0xbcb9b0 });
   const chrome = matOf(ctx, 'metalChrome');
-  const mirror = variant(ctx, 'mirror', { color: 0xb6c1c7, metalness: 0.35, roughness: 0.16 });
+  const mirror = mirrorMaterial();
   const frame = variant(ctx, 'woodLight', { color: 0xbdb2a0 });
   const w = 0.9;
   const d = 0.5;
@@ -1070,9 +1071,14 @@ function buildVanity(ctx, shadows) {
     b.box(frame, w / 2 - 0.03, 0.02, h - 0.1, [sx * w / 4, h / 2, d / 2 + 0.011]);
     b.box(chrome, 0.02, 0.02, 0.16, [sx * 0.04, 0.55, d / 2 + 0.03]);
   }
-  // mirror above
-  b.box(frame, 0.72, 0.03, 0.78, [0, 1.62, -d / 2 + 0.005]);
+  // mirror above: wood frame + dark shadow reveal + chrome bevel + reflection panel
+  b.box(frame, 0.74, 0.03, 0.8, [0, 1.62, -d / 2 + 0.005]);
+  b.box(frame, 0.7, 0.015, 0.76, [0, 1.62, -d / 2 + 0.012]);
   b.box(mirror, 0.64, 0.02, 0.7, [0, 1.62, -d / 2 + 0.022]);
+  b.box(chrome, 0.68, 0.016, 0.02, [0, 1.975, -d / 2 + 0.016], [0.38, 0, 0]);
+  b.box(chrome, 0.68, 0.016, 0.02, [0, 1.265, -d / 2 + 0.016], [-0.38, 0, 0]);
+  b.box(chrome, 0.02, 0.016, 0.73, [-0.325, 1.62, -d / 2 + 0.016], [0, 0.38, 0]);
+  b.box(chrome, 0.02, 0.016, 0.73, [0.325, 1.62, -d / 2 + 0.016], [0, -0.38, 0]);
   b.colliderBox(w + 0.02, d + 0.02, h + 0.04, [0, (h + 0.04) / 2, 0]);
   const obj = b.finish({
     name: 'bathroom_vanity',
@@ -1127,6 +1133,53 @@ function buildBathMat(ctx) {
     tags: ['clutter', 'mat'],
     grabbable: true,
     shadows: false,
+  });
+}
+
+function buildBathroomShelf(ctx) {
+  const b = new Batch(ctx, 'bathroom_shelf');
+  const wood = variant(ctx, 'woodLight', { color: 0xc9bda8 });
+  const metal = variant(ctx, 'metalBrushed', { color: 0xb6b9b8, metalness: 0.5, roughness: 0.35 });
+  // small shelf above the toilet on the west wall (face x = 0.66), facing +X
+  b.box(wood, 0.18, 0.55, 0.03, [0, 0.015, 0]);
+  b.box(wood, 0.02, 0.55, 0.06, [-0.07, 0.045, 0]);
+  for (const z of [-0.2, 0.2]) {
+    b.box(metal, 0.16, 0.02, 0.03, [0, -0.015, z]);
+    b.box(metal, 0.02, 0.02, 0.12, [-0.06, -0.055, z], [0, 0, 0.5]);
+  }
+  b.colliderBox(0.18, 0.55, 0.03, [0, 0.015, 0]);
+  b.colliderBox(0.02, 0.55, 0.06, [-0.07, 0.045, 0]);
+  return b.finish({
+    name: 'bathroom_shelf',
+    pos: [0.75, 1.42, 2.45],
+    isStatic: true,
+    material: 'wood',
+    room: 'bathroom',
+    tags: ['furniture', 'fixture', 'bathroom'],
+  });
+}
+
+function buildHandTowel(ctx) {
+  const b = new Batch(ctx, 'hand_towel');
+  const chrome = matOf(ctx, 'metalChrome');
+  const towel = variant(ctx, 'cotton', { color: 0xc3ccc6 });
+  const towelFold = variant(ctx, 'cotton', { color: 0xacb8b0 });
+  // ring on the west wall (face x = 0.66), plane parallel to the wall
+  b.torus(chrome, 0.055, 0.008, [0, 0.02, 0], [0, Math.PI / 2, 0], Math.PI * 2, 6, 14);
+  b.box(chrome, 0.05, 0.02, 0.03, [-0.02, 0.02, 0]);
+  // folded hand towel hanging through the ring
+  b.box(towel, 0.035, 0.2, 0.38, [0.012, -0.16, 0]);
+  b.box(towel, 0.05, 0.21, 0.035, [0.008, 0.03, 0]);
+  b.box(towelFold, 0.037, 0.2, 0.03, [0.012, -0.33, 0]);
+  b.colliderBox(0.08, 0.22, 0.42, [0.012, -0.14, 0]);
+  b.colliderBox(0.06, 0.12, 0.06, [-0.01, 0.02, 0]);
+  return b.finish({
+    name: 'hand_towel',
+    pos: [0.69, 1.29, 2.05],
+    isStatic: true,
+    material: 'fabric',
+    room: 'bathroom',
+    tags: ['furniture', 'fixture', 'bathroom'],
   });
 }
 
@@ -1408,6 +1461,8 @@ export function buildFurniture(ctx, shadows) {
   push(buildToilet(ctx, shadows));
   push(buildVanity(ctx, shadows));
   push(buildTowelRail(ctx));
+  push(buildBathroomShelf(ctx));
+  push(buildHandTowel(ctx));
   push(buildBathMat(ctx));
 
   push(buildDesk(ctx, shadows));

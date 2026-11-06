@@ -1,0 +1,33 @@
+import puppeteer from 'puppeteer-core';
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const browser = await puppeteer.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless:true, args:['--no-sandbox','--use-gl=angle','--use-angle=metal','--enable-gpu','--hide-scrollbars','--window-size=1440,900'], defaultViewport:{width:1440,height:900,deviceScaleFactor:1}});
+const page = await browser.newPage(); await page.bringToFront();
+await page.goto('http://127.0.0.1:4182/', {waitUntil:'networkidle0'});
+await page.waitForFunction('window.__APP__ && window.__APP__.ready===true');
+await wait(2400);
+const out={};
+// hold state: grab, stand still, front camera
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.teleportNear('mug_white',0.32); });
+await wait(900);
+out.grab = await page.evaluate(()=>window.__APP__.qa.grabByName('mug_white'));
+await wait(700);
+await page.evaluate(()=>{ const A=window.__APP__; const r=A.state().robot; A.qa.setCamera(r.yaw+Math.PI,0.16,0.85); });
+await wait(900);
+out.hold = await page.evaluate(()=>({hud:window.__APP__.qa.hudText(), held:window.__APP__.state().robot.held}));
+await page.screenshot({path:'qa/visual/shots/r4-led-hold3.png'});
+await page.evaluate(()=>window.__APP__.qa.release()); await wait(500);
+// push state: contact sofa, release W, keep aim
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.teleportNear('sofa',0.5); });
+await wait(900);
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.aimAt('sofa'); });
+await wait(300);
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.hold('KeyW'); });
+await wait(700);
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.releaseKey('KeyW'); });
+await wait(400);
+await page.evaluate(()=>{ const A=window.__APP__; A.qa.aimAt('sofa'); const r=A.state().robot; A.qa.setCamera(r.yaw+Math.PI*0.65,0.16,0.9); });
+await wait(900);
+out.push = await page.evaluate(()=>({hud:window.__APP__.qa.hudText(), robot:window.__APP__.state().robot}));
+await page.screenshot({path:'qa/visual/shots/r4-led-push3.png'});
+console.log(JSON.stringify(out,null,1));
+await browser.close();

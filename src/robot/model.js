@@ -216,16 +216,31 @@ export function buildRobotModel(ctx) {
   addShadows(headCap);
   head.add(headCap);
 
+  // Status LEDs share one emissive material; robot.js recolours/pulses it per state.
+  // toneMapped:false keeps the state colour pure and bright (amber/green/cyan/blue/red).
   const ledMaterial = new THREE.MeshStandardMaterial({
-    color: 0x241708,
+    color: 0x0a0a0a,
     emissive: 0xffa22a,
-    emissiveIntensity: 1.8,
-    roughness: 0.35,
-    metalness: 0.1,
+    emissiveIntensity: 1.9,
+    roughness: 0.4,
+    metalness: 0,
+    toneMapped: false,
   });
   const led = new THREE.Mesh(new THREE.SphereGeometry(0.006, 12, 8), ledMaterial);
   led.position.set(0.026, 0.049, -0.006);
   head.add(led);
+
+  // Bright status ring around the base top plate: readable from the third-person
+  // camera and from above (minimap), independent of the head orientation.
+  const ledRing = new THREE.Mesh(new THREE.TorusGeometry(0.127, 0.0055, 8, 56), ledMaterial);
+  ledRing.rotation.x = Math.PI / 2;
+  ledRing.position.y = 0.158;
+  visual.add(ledRing);
+
+  // Front status strip on the bumper (visible head-on and in the front camera).
+  const ledStrip = new THREE.Mesh(rounded(0.09, 0.013, 0.008, 2, 0.003), ledMaterial);
+  ledStrip.position.set(0, 0.1, -0.154);
+  visual.add(ledStrip);
 
   const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.0022, 0.0022, 0.034, 8), mats.metalDark);
   antenna.position.set(0.03, 0.065, 0.026);

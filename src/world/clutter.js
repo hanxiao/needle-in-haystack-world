@@ -1109,6 +1109,8 @@ export function buildClutter(ctx) {
   add(addToiletRoll(ctx, 'toilet_roll', 0.85, 1.002, 2.45, { yaw: 0.1 }));
   add(addScale(ctx, 'bathroom_scale', 1.55, 0.002, 1.15, { yaw: 0.2 }));
   add(addSponge(ctx, 'sponge_bath', 1.35, 0.662, 3.62, { room: 'bathroom' }));
+  add(addBottleSmall(ctx, 'bath_bottle_1', 0.75, 1.452, 2.32, { yaw: 0.2, h: 0.17, color: 0xd8cfc0, cap: 0x5a6b74, room: 'bathroom', mass: 0.35 }));
+  add(addBottleSmall(ctx, 'bath_bottle_2', 0.75, 1.452, 2.58, { yaw: -0.3, h: 0.14, color: 0xc8b9a4, cap: 0x3f4a52, room: 'bathroom', mass: 0.3 }));
 
   // ---- study desk
   add(addKeyboard(ctx, 'keyboard', 4.1, 0.752, 3.08, { yaw: 0.02 }));
