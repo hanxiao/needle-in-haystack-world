@@ -4,6 +4,8 @@ A messy six-room apartment you explore as a 0.42 m rover with 360° vision and o
 
 Live: <https://hanxiao.io/needle-in-haystack-world/>
 
+![Screenshot](docs/screenshot.png)
+
 ## Stack
 
 - three.js 0.187 (WebGL2, PBR, shadow maps, procedural textures)

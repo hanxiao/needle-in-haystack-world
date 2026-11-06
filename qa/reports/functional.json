@@ -1,6 +1,6 @@
 {
-  "round": 1,
-  "date": "2026-11-06T06:45:51.507Z",
+  "round": 3,
+  "date": "2026-11-06T06:48:56.352Z",
   "build": {
     "path": "/Users/hanxiao/Documents/needle-in-haystack-world/qa/frozen/index.html",
     "dir": "/Users/hanxiao/Documents/needle-in-haystack-world/qa/frozen",
@@ -8,9 +8,9 @@
     "sha256": "69db5f97c42e7caa20b199204e583783795510553559e783b48d1a501792a1e0",
     "mtime": "2026-11-06T06:43:43.256Z",
     "loadavg": [
-      2.88427734375,
-      4.89794921875,
-      10.70166015625
+      5.45068359375,
+      6.96044921875,
+      10.61865234375
     ],
     "cpus": 8
   },
@@ -67,7 +67,7 @@
   "total": 57,
   "pass": 57,
   "perf": {
-    "fps": "rAF 60.2 fps (121 frames / 2.01 s), app counter 60",
+    "fps": "rAF 60.4 fps (121 frames / 2.00 s), app counter 60",
     "calls": "299 draw calls"
   },
   "results": [
@@ -80,7 +80,7 @@
       "evidence": "5.00 MB (5241137 bytes)",
       "detail": null,
       "repro": "npm run build; ls -l dist/index.html",
-      "ms": 0
+      "ms": 1
     },
     {
       "id": "B2",
@@ -105,7 +105,7 @@
       "evidence": "inline data:application/wasm=true, .wasm requests=0",
       "detail": null,
       "repro": "serve dist/ and watch the network for a .wasm request",
-      "ms": 10
+      "ms": 11
     },
     {
       "id": "B4",
@@ -119,7 +119,7 @@
         "pageErrors": []
       },
       "repro": "open dist/index.html via file:// in Chrome",
-      "ms": 2389
+      "ms": 2606
     },
     {
       "id": "L1",
@@ -127,7 +127,7 @@
       "name": "ready and load <= 8 s",
       "sev": "P0",
       "pass": true,
-      "evidence": "ready in 870 ms",
+      "evidence": "ready in 1472 ms",
       "detail": null,
       "repro": "fresh page load on the served build",
       "ms": 0
@@ -180,10 +180,10 @@
       "name": "fps >= 50 over 2 s (1440x900)",
       "sev": "P0",
       "pass": true,
-      "evidence": "rAF 60.2 fps (121 frames / 2.01 s), app counter 60",
+      "evidence": "rAF 60.4 fps (121 frames / 2.00 s), app counter 60",
       "detail": null,
       "repro": "run the app for 2 s at 1440x900 and count rAF frames",
-      "ms": 2021
+      "ms": 2008
     },
     {
       "id": "P2",
@@ -194,7 +194,7 @@
       "evidence": "299 draw calls",
       "detail": null,
       "repro": "read renderer.info.render.calls in the main view",
-      "ms": 1
+      "ms": 2
     },
     {
       "id": "P3",
@@ -205,7 +205,7 @@
       "evidence": "68,532 triangles",
       "detail": null,
       "repro": "read renderer.info.render.triangles",
-      "ms": 14
+      "ms": 22
     },
     {
       "id": "P4",
@@ -213,10 +213,10 @@
       "name": "10 s soak: fps >= 50, draw calls stable, no errors",
       "sev": "P0",
       "pass": true,
-      "evidence": "sustained 60.1 fps over 10 s, per-second buckets 60.8,60,60,60,60,60,60,60,60,60 (min 60); app fps 60,60,60,60,60,60,60,60,60,60; calls 299-299; errors 0; load 2.7/8 cores; 10.9 s",
+      "evidence": "sustained 60.1 fps over 10 s, per-second buckets 60.7,60,60,60,60,60,60,60,60,60 (min 60); app fps 60,60,60,60,60,60,60,60,60,60; calls 299-299; errors 0; load 6.5/8 cores; 11.0 s",
       "detail": {
         "buckets": [
-          60.8,
+          60.7,
           60,
           60,
           60,
@@ -227,7 +227,7 @@
           60,
           60
         ],
-        "avgFps": 60.08,
+        "avgFps": 60.07000000000001,
         "retried": null,
         "appFps": [
           60,
@@ -254,10 +254,10 @@
           299
         ],
         "errors": 0,
-        "load": 2.7119140625
+        "load": 6.5
       },
       "repro": "leave the app running for 10 s and sample fps/drawCalls every second",
-      "ms": 11545
+      "ms": 11583
     },
     {
       "id": "W1",
@@ -321,7 +321,7 @@
         ]
       },
       "repro": "teleport to the centre of each of the six contract rooms and read state().room",
-      "ms": 1594
+      "ms": 1587
     },
     {
       "id": "W2",
@@ -338,7 +338,7 @@
           "pos": [
             -0.4,
             0,
-            1.16
+            1.14
           ],
           "ok": true
         },
@@ -349,7 +349,7 @@
           "pos": [
             1.39,
             0.01,
-            1.42
+            1.43
           ],
           "ok": true
         },
@@ -360,7 +360,7 @@
           "pos": [
             4.05,
             0,
-            1.66
+            1.65
           ],
           "ok": true
         },
@@ -380,7 +380,7 @@
           "expect": "BEDROOM",
           "got": "BEDROOM",
           "pos": [
-            -2.79,
+            -2.78,
             0,
             3.06
           ],
@@ -388,7 +388,7 @@
         }
       ],
       "repro": "reset, teleport near each doorway, hold W with the real keyboard until the room label changes",
-      "ms": 12155
+      "ms": 12175
     },
     {
       "id": "W3",
@@ -444,7 +444,7 @@
         "plant_monstera": 8
       },
       "repro": "read qa.object(name).mass and compare with the contract mass table",
-      "ms": 1
+      "ms": 0
     },
     {
       "id": "W5",
@@ -455,7 +455,7 @@
       "evidence": "171 dynamic bodies, 193 objects, 334 colliders",
       "detail": null,
       "repro": "read state().physics.dynamic",
-      "ms": 8
+      "ms": 1
     },
     {
       "id": "W6",
@@ -477,7 +477,7 @@
       "evidence": "0 objects below y=-0.1",
       "detail": [],
       "repro": "iterate qa.objects() and look for y < -0.1",
-      "ms": 1
+      "ms": 0
     },
     {
       "id": "I1",
@@ -485,10 +485,10 @@
       "name": "real W/S/A/D move the robot in 4 directions",
       "sev": "P0",
       "pass": true,
-      "evidence": "{\"KeyW\":{\"dx\":0.003,\"dz\":-0.739,\"moved\":0.739},\"KeyS\":{\"dx\":0,\"dz\":0.744,\"moved\":0.744},\"KeyA\":{\"dx\":-0.733,\"dz\":0.041,\"moved\":0.734},\"KeyD\":{\"dx\":0.359,\"dz\":0.005,\"moved\":0.359}}",
+      "evidence": "{\"KeyW\":{\"dx\":0.003,\"dz\":-0.738,\"moved\":0.738},\"KeyS\":{\"dx\":0,\"dz\":0.746,\"moved\":0.746},\"KeyA\":{\"dx\":-0.713,\"dz\":0.04,\"moved\":0.714},\"KeyD\":{\"dx\":0.407,\"dz\":0.006,\"moved\":0.407}}",
       "detail": null,
       "repro": "hold each of W/A/S/D for 0.7 s with real keyboard events",
-      "ms": 5442
+      "ms": 5459
     },
     {
       "id": "I2",
@@ -496,10 +496,10 @@
       "name": "Shift boost is faster than normal",
       "sev": "P1",
       "pass": true,
-      "evidence": "normal 1.223 m / 1.2 s (1.02 m/s), boost 1.930 m (1.61 m/s), ratio 1.58",
+      "evidence": "normal 1.223 m / 1.2 s (1.02 m/s), boost 1.942 m (1.62 m/s), ratio 1.59",
       "detail": null,
       "repro": "hold W for 1.2 s with and without Shift and compare distance",
-      "ms": 3732
+      "ms": 3724
     },
     {
       "id": "I3",
@@ -507,10 +507,10 @@
       "name": "mouse drag orbits the camera",
       "sev": "P1",
       "pass": true,
-      "evidence": "camera moved 1.326 m, quat delta 0.425",
+      "evidence": "camera moved 1.325 m, quat delta 0.424",
       "detail": null,
       "repro": "press LMB and drag 200x96 px across the viewport",
-      "ms": 1144
+      "ms": 1114
     },
     {
       "id": "I4",
@@ -521,7 +521,7 @@
       "evidence": "camera distance 1.884 m -> 1.266 m (delta -0.619 m)",
       "detail": null,
       "repro": "scroll the wheel over the canvas and read qa.cameraInfo()",
-      "ms": 911
+      "ms": 910
     },
     {
       "id": "I5",
@@ -534,8 +534,8 @@
         "chosen": {
           "name": "mug_white",
           "screen": {
-            "x": 605.3735337349842,
-            "y": 276.38481164643554
+            "x": 605.378695233894,
+            "y": 276.3754667846984
           },
           "hover": {
             "found": true,
@@ -544,8 +544,8 @@
             "ox": 0,
             "oy": 0,
             "screen": {
-              "x": 605.3735337349842,
-              "y": 276.38481164643554
+              "x": 605.378695233894,
+              "y": 276.3754667846984
             },
             "near": {
               "pos": [
@@ -568,9 +568,9 @@
               -1.9991521835327148
             ],
             "obj": [
-              -2.8799006938934326,
-              0.5152723789215088,
-              -1.7052417993545532
+              -2.8799030780792236,
+              0.5152895450592041,
+              -1.7052310705184937
             ],
             "hud": {
               "room": "LIVING ROOM",
@@ -592,7 +592,7 @@
             0.012100034356117256,
             -1.9991521835327148
           ],
-          "yaw": -2.1993146131910386,
+          "yaw": -2.1993337346401223,
           "held": "mug_white",
           "mode": "third",
           "grounded": true
@@ -603,7 +603,7 @@
             0.012100034356117256,
             -1.9991521835327148
           ],
-          "yaw": -2.199295642662434,
+          "yaw": -2.199320154343856,
           "held": null,
           "mode": "third",
           "grounded": true
@@ -611,7 +611,7 @@
         "settleDrift": 0
       },
       "repro": "teleport near a liftable object, put the real mouse cursor on it, LMB click twice",
-      "ms": 3877
+      "ms": 3876
     },
     {
       "id": "I6",
@@ -622,12 +622,12 @@
       "evidence": "final (-3.67, 0.00, -3.56), min z -3.56, max |x| 3.67 (bounds x±5.6 z±3.8)",
       "detail": {
         "final": [
-          -3.6660037061624693,
-          0.0001000249756470395,
-          -3.5599040629531373
+          -3.6672794844632373,
+          0.000100740287208273,
+          -3.559953683819913
         ],
-        "minZ": -3.5599536193331005,
-        "maxAbsX": 3.6663780212402344,
+        "minZ": -3.5599544721044367,
+        "maxAbsX": 3.6673344441464764,
         "samples": [
           [
             -3.6,
@@ -652,7 +652,7 @@
           [
             -3.6,
             0.01,
-            -1.89
+            -1.92
           ],
           [
             -3.6,
@@ -677,7 +677,7 @@
           [
             -3.67,
             0,
-            -2.7
+            -2.73
           ],
           [
             -3.67,
@@ -757,7 +757,7 @@
         ]
       },
       "repro": "boost into the south wall for 2.5 s and sample the robot position every 100 ms",
-      "ms": 3334
+      "ms": 3339
     },
     {
       "id": "I7",
@@ -768,7 +768,7 @@
       "evidence": "max z reached 3.110 m (wall interior 3.8, body radius ~0.15), final z 3.110",
       "detail": null,
       "repro": "boost at the north wall for 2.4 s and track the furthest z",
-      "ms": 3111
+      "ms": 3108
     },
     {
       "id": "I8",
@@ -779,7 +779,7 @@
       "evidence": "stopped at z=0.460 (wall interior face z=0.7), room=LIVING ROOM",
       "detail": null,
       "repro": "drive from the living room towards the solid z=0.7 partition for 1.9 s",
-      "ms": 2557
+      "ms": 2560
     },
     {
       "id": "G1",
@@ -815,18 +815,18 @@
           -2.0381293296813965
         ],
         "mugBefore": [
-          -2.8798739910125732,
-          0.5152729749679565,
-          -1.705265998840332
+          -2.8798940181732178,
+          0.5152732133865356,
+          -1.7052661180496216
         ],
         "mugAfter": [
-          -2.8798866271972656,
-          0.515272855758667,
-          -1.7052617073059082
+          -2.87990665435791,
+          0.5152731537818909,
+          -1.705262541770935
         ],
-        "mugY": 0.515272855758667,
+        "mugY": 0.5152731537818909,
         "robotY": 0.011910685300827034,
-        "objDist": 0.3499920592045801,
+        "objDist": 0.34998507828968767,
         "hud": {
           "room": "LIVING ROOM",
           "target": null,
@@ -835,7 +835,7 @@
         }
       },
       "repro": "qa.reset(); qa.teleportNear(\"mug_white\", 0.35); wait 600 ms; qa.grabByName(\"mug_white\")",
-      "ms": 1005
+      "ms": 1004
     },
     {
       "id": "G2",
@@ -860,7 +860,7 @@
         }
       },
       "repro": "grab the mug (hover + qa.grabByName) and read qa.hudText().held",
-      "ms": 1292
+      "ms": 1291
     },
     {
       "id": "G3",
@@ -871,7 +871,7 @@
       "evidence": "held mug_white->mug_white; robot moved 0.942 m, mug moved 0.943 m, mug-robot distance 0.71 m",
       "detail": null,
       "repro": "grab the mug, teleport to open floor, hold W for 0.9 s and compare mug/robot positions",
-      "ms": 2793
+      "ms": 2794
     },
     {
       "id": "G4",
@@ -879,10 +879,10 @@
       "name": "release drops the object and it settles",
       "sev": "P1",
       "pass": true,
-      "evidence": "held before=mug_white, grab={\"ok\":true}; held=null; settle pos (-3.722, 0.048, -2.622); drift over 0.6 s 0.0000 m",
+      "evidence": "held before=mug_white, grab={\"ok\":true}; held=null; settle pos (-3.725, 0.048, -2.647); drift over 0.6 s 0.0000 m",
       "detail": null,
       "repro": "grab the mug, qa.release(), wait 1.4 s, compare position over 0.6 s",
-      "ms": 2003
+      "ms": 2004
     },
     {
       "id": "G5",
@@ -893,7 +893,7 @@
       "evidence": "{\"g\":{\"ok\":false,\"reason\":\"too_heavy\",\"held\":null},\"held\":null}",
       "detail": null,
       "repro": "qa.teleportNear(\"sofa\", 0.5) then qa.grabByName(\"sofa\")",
-      "ms": 504
+      "ms": 502
     },
     {
       "id": "G6",
@@ -915,7 +915,7 @@
       "evidence": "grab={\"ok\":true,\"reason\":null,\"held\":\"needle\"}, held=needle, needleFound=true",
       "detail": null,
       "repro": "qa.teleportNear(\"needle\", 0.35) then qa.grabByName(\"needle\")",
-      "ms": 806
+      "ms": 805
     },
     {
       "id": "PH1",
@@ -928,7 +928,7 @@
         "found": true,
         "target": "sofa",
         "robot": [
-          -2.8287193775177,
+          -2.828719139099121,
           0.012100034356117256,
           -2.114996910095215
         ],
@@ -940,14 +940,14 @@
         "after": [
           -2.4998228549957275,
           0.4259975552558899,
-          -2.7559292316436768
+          -2.7559289932250977
         ],
-        "robotObjDist": 0.7199999891640158,
-        "moved": 0.0003950788657825338,
+        "robotObjDist": 0.7199998803043193,
+        "moved": 0.00039485859808655613,
         "mass": 85
       },
       "repro": "stand ~0.9 m from the sofa, hover it with the pointer, qa.action() once, measure displacement after 1.6 s",
-      "ms": 2541
+      "ms": 2543
     },
     {
       "id": "PH2",
@@ -960,9 +960,9 @@
         "found": true,
         "target": "chair_1",
         "robot": [
-          2.290327548980713,
-          0.00999952197074891,
-          -1.3639088869094849
+          2.290321111679077,
+          0.009966813921928414,
+          -1.3640385866165161
         ],
         "before": [
           1.7196872234344482,
@@ -970,16 +970,16 @@
           -1.5494539737701416
         ],
         "after": [
-          1.6434214115142822,
-          0.45245712995529175,
-          -1.531759262084961
+          1.6433947086334229,
+          0.4524572491645813,
+          -1.5317366123199463
         ],
-        "robotObjDist": 0.6000477984274882,
-        "moved": 0.0782916144262194,
+        "robotObjDist": 0.6000015835033374,
+        "moved": 0.07832274708806852,
         "mass": 5.5
       },
       "repro": "stand ~0.9 m from chair_1, hover it with the pointer, qa.action() once, measure displacement after 1.6 s",
-      "ms": 3546
+      "ms": 3533
     },
     {
       "id": "PH3",
@@ -1041,7 +1041,7 @@
         }
       ],
       "repro": "qa.reset(), wait 1.5 s, record 10 resting objects, wait 3 s, re-measure",
-      "ms": 4506
+      "ms": 4509
     },
     {
       "id": "PH4",
@@ -1093,7 +1093,7 @@
         }
       ],
       "repro": "record books on shelves + cushions on the sofa, wait 3 s, check they did not sink/fall",
-      "ms": 4205
+      "ms": 4203
     },
     {
       "id": "PH5",
@@ -1109,19 +1109,19 @@
           -1.2000000476837158
         ],
         "mugInit": [
-          -2.879904270172119,
-          0.5152742862701416,
-          -1.705221176147461
+          -2.8799049854278564,
+          0.5152746438980103,
+          -1.705210566520691
         ],
         "disturbed": [
-          -4.19373083114624,
-          0.04795117676258087,
-          -0.1928437501192093
+          -4.195805549621582,
+          0.047951072454452515,
+          -0.1935383677482605
         ],
         "mug": [
-          -2.8799045085906982,
-          0.515274167060852,
-          -1.7052236795425415
+          -2.879908561706543,
+          0.5152745246887207,
+          -1.7052123546600342
         ],
         "robot": [
           -3.5999999046325684,
@@ -1130,11 +1130,11 @@
         ],
         "held": null,
         "robotDelta": 0,
-        "mugDelta": 0.000002517546663515911,
-        "disturbedDelta": 2.00335361608502
+        "mugDelta": 0.000004000177797213201,
+        "disturbedDelta": 2.0041824097089664
       },
       "repro": "move robot + mug, then qa.reset() and compare with spawn/initial positions",
-      "ms": 3613
+      "ms": 3612
     },
     {
       "id": "H1",
@@ -1142,7 +1142,7 @@
       "name": "4 panels + minimap show live scene (not black)",
       "sev": "P0",
       "pass": true,
-      "evidence": "panels front lit 1.00/mean 138, right lit 1.00/mean 138, left lit 1.00/mean 130, back lit 1.00/mean 130; map lit 1.00/mean 135",
+      "evidence": "panels front lit 1.00/mean 137, right lit 1.00/mean 138, left lit 1.00/mean 130, back lit 1.00/mean 130; map lit 1.00/mean 135",
       "detail": {
         "rects": {
           "panels": [
@@ -1193,38 +1193,38 @@
         "panels": {
           "front": {
             "litRatio": 0.9974985408154757,
-            "mean": 137.50418299563634,
+            "mean": 137.4648267044665,
             "w": 179,
             "h": 134
           },
           "right": {
             "litRatio": 0.9996247811223213,
-            "mean": 137.57979654798632,
+            "mean": 137.58000500291837,
             "w": 179,
             "h": 134
           },
           "left": {
             "litRatio": 0.9989994163261903,
-            "mean": 130.0243892270491,
+            "mean": 130.03343617109982,
             "w": 179,
             "h": 134
           },
           "back": {
             "litRatio": 0.9994997081630952,
-            "mean": 130.4678423524834,
+            "mean": 130.46777286750606,
             "w": 179,
             "h": 134
           }
         },
         "map": {
           "litRatio": 0.9980555555555556,
-          "mean": 134.7445061728395,
+          "mean": 134.74453703703705,
           "w": 180,
           "h": 180
         }
       },
       "repro": "qa.sampleHud() each of the 4 surround panels and the minimap",
-      "ms": 915
+      "ms": 907
     },
     {
       "id": "H2",
@@ -1237,13 +1237,13 @@
         "normal": {
           "map": {
             "litRatio": 0.9980555555555556,
-            "mean": 134.74446502057614,
+            "mean": 134.7444135802469,
             "w": 180,
             "h": 180
           },
           "front": {
             "litRatio": 0.9974985408154757,
-            "mean": 137.38576669724006,
+            "mean": 137.38628088607243,
             "w": 179,
             "h": 134
           }
@@ -1251,13 +1251,13 @@
         "forced": {
           "map": {
             "litRatio": 0.9980555555555556,
-            "mean": 134.90986625514404,
+            "mean": 134.9099485596708,
             "w": 180,
             "h": 180
           },
           "front": {
             "litRatio": 0.9974985408154757,
-            "mean": 144.9567803440896,
+            "mean": 144.957294532922,
             "w": 179,
             "h": 134
           }
@@ -1265,23 +1265,23 @@
         "restored": {
           "map": {
             "litRatio": 0.9980555555555556,
-            "mean": 134.74446502057614,
+            "mean": 134.7444135802469,
             "w": 180,
             "h": 180
           },
           "front": {
             "litRatio": 0.9974985408154757,
-            "mean": 137.38576669724006,
+            "mean": 137.38628088607243,
             "w": 179,
             "h": 134
           }
         },
-        "frontDelta": 7.571013646849536,
+        "frontDelta": 7.571013646849565,
         "restoreDelta": 0,
-        "mapDelta": 0.16540123456789502
+        "mapDelta": 0.16553497942388162
       },
       "repro": "lock robot.group.visible=true for the HUD pass and diff the feed pixels vs normal",
-      "ms": 1513
+      "ms": 1528
     },
     {
       "id": "H3",
@@ -1294,7 +1294,7 @@
         "on": {
           "front": {
             "litRatio": 0.9974985408154757,
-            "mean": 137.38576669724006,
+            "mean": 137.38628088607243,
             "w": 179,
             "h": 134
           },
@@ -1306,7 +1306,7 @@
           },
           "left": {
             "litRatio": 0.9989994163261903,
-            "mean": 130.02280496956558,
+            "mean": 130.02276327857916,
             "w": 179,
             "h": 134
           },
@@ -1351,7 +1351,7 @@
         }
       },
       "repro": "press C with the real keyboard, sample the feed area, press C again",
-      "ms": 1222
+      "ms": 1216
     },
     {
       "id": "H4",
@@ -1362,7 +1362,7 @@
       "evidence": "main mean day 108.5 -> night 77.6 (28.5% change), state.night=true",
       "detail": null,
       "repro": "sample the main view, press L, sample again, press L to restore",
-      "ms": 2225
+      "ms": 2224
     },
     {
       "id": "H5",
@@ -1373,7 +1373,7 @@
       "evidence": "mode=first, camera 0.38 m from robot, main mean 59, back to third; shots/03-first-person.png",
       "detail": null,
       "repro": "press V, check cameraInfo()/state().robot.mode, screenshot, press V again",
-      "ms": 2196
+      "ms": 2211
     },
     {
       "id": "H6",
@@ -1435,7 +1435,7 @@
             "hint": "WASD DRIVE · DRAG LOOK · CLICK GRAB · V/C/L"
           },
           "canReach": true,
-          "robotObjDist": 0.4999983202669889
+          "robotObjDist": 0.4999950689155091
         },
         "push": {
           "found": true,
@@ -1451,7 +1451,7 @@
         }
       },
       "repro": "hover the mug and the sofa with the pointer and read qa.hudText().target",
-      "ms": 1883
+      "ms": 1892
     },
     {
       "id": "H8",
@@ -1658,7 +1658,7 @@
         ]
       },
       "repro": "resize to 390x844, move the real mouse to the centre, read qa.hudRects() + DOM rects, screenshot",
-      "ms": 1658
+      "ms": 1663
     },
     {
       "id": "H10",
@@ -1666,7 +1666,7 @@
       "name": "resize back to 1440x900 restores the layout",
       "sev": "P1",
       "pass": true,
-      "evidence": "viewport 1440x900; map x=1244 y=16 180x180; panels bottom-left=true; rAF fps 60.0/60.3; app fps 60; drawCalls 239; shots/07-resize-back-1440.png",
+      "evidence": "viewport 1440x900; map x=1244 y=16 180x180; panels bottom-left=true; rAF fps 60.5/59.9; app fps 60; drawCalls 239; shots/07-resize-back-1440.png",
       "detail": {
         "rects": {
           "panels": [
@@ -1724,18 +1724,18 @@
         },
         "fps": 60,
         "fps1": {
-          "fps": 60.03264789230822,
+          "fps": 60.453483944470676,
           "frames": 73,
-          "seconds": 1.2160049999952316
+          "seconds": 1.207539999961853
         },
         "fps2": {
-          "fps": 60.341050925123554,
+          "fps": 59.89596153671182,
           "frames": 73,
-          "seconds": 1.2097900000214576
+          "seconds": 1.2187799999713897
         }
       },
       "repro": "setViewport back to 1440x900, re-read qa.hudRects(), measure sustained fps, screenshot",
-      "ms": 4175
+      "ms": 4167
     },
     {
       "id": "A1",
@@ -1743,10 +1743,10 @@
       "name": "grab while driving, release while moving",
       "sev": "P1",
       "pass": true,
-      "evidence": "grab={\"ok\":true,\"reason\":null,\"held\":\"mug_white\"}; after drive+release held=null, robot (-2.57, 0.01, -1.79), mug y=0.515, errors=0",
+      "evidence": "grab={\"ok\":true,\"reason\":null,\"held\":\"mug_white\"}; after drive+release held=null, robot (-2.53, 0.01, -1.76), mug y=0.515, errors=0",
       "detail": null,
       "repro": "grab the mug, boost forward while clicking to release",
-      "ms": 2969
+      "ms": 2958
     },
     {
       "id": "A2",
@@ -1768,7 +1768,7 @@
       "evidence": "held=null, mug (-2.88, 0.52, -1.71), NaN=0, errors=0, dynamic=171",
       "detail": null,
       "repro": "qa.action() 12 times in quick succession while hovering the mug",
-      "ms": 2689
+      "ms": 2690
     },
     {
       "id": "A4",
@@ -1779,7 +1779,7 @@
       "evidence": "sofa (-2.50, 0.43, -2.76) -> (-2.50, 0.43, -2.76), moved 0.001 m, errors=0",
       "detail": null,
       "repro": "push the sofa 3 times from 0.9 m away and check it stays inside the shell",
-      "ms": 3369
+      "ms": 3371
     },
     {
       "id": "A5",
@@ -1787,7 +1787,7 @@
       "name": "driving into furniture does not launch it or the robot",
       "sev": "P1",
       "pass": true,
-      "evidence": "robot (-3.00, -0.00, -3.26), sofa moved 0.099 m, errors=0",
+      "evidence": "robot (-3.00, 0.00, -3.26), sofa moved 0.099 m, errors=0",
       "detail": null,
       "repro": "drive into the sofa for 1.6 s and check positions/velocities stay sane",
       "ms": 2613
@@ -1798,10 +1798,10 @@
       "name": "rapid view/surround/night toggles do not break the app",
       "sev": "P1",
       "pass": true,
-      "evidence": "ready=true, mode=first, night=true, surround=false, errors=0, rAF fps after 60.1/60.2, calls 395",
+      "evidence": "ready=true, mode=first, night=true, surround=false, errors=0, rAF fps after 60.5/60.2, calls 395",
       "detail": null,
       "repro": "press V/C/L three times each in quick succession, then measure fps",
-      "ms": 4615
+      "ms": 4593
     },
     {
       "id": "A7",
@@ -1809,10 +1809,10 @@
       "name": "resize during play keeps the app alive",
       "sev": "P1",
       "pass": true,
-      "evidence": "robot moved 1.823 m while resizing; mid-resize overflow=0, errors 0->0, fps 60, map x=1244",
+      "evidence": "robot moved 1.829 m while resizing; mid-resize overflow=0, errors 0->0, fps 60, map x=1244",
       "detail": null,
       "repro": "hold W, resize to 390x844, resize back to 1440x900, release W",
-      "ms": 2315
+      "ms": 2322
     },
     {
       "id": "L5",
